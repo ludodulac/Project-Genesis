@@ -1,5 +1,5 @@
 export type CellId = `${number}:${number}`;
-export type CellKind = 'ground' | 'water-source';
+export type CellKind = 'ground' | 'water-source' | 'seed' | 'bloom';
 export type Element = 'water';
 
 export interface Cell {
@@ -33,8 +33,6 @@ export function createInitialWorld(rows = 20, cols = 12): WorldState {
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       const id = cellId(row, col);
-      // A deterministic, low-amplitude relief: enough variation to create slopes,
-      // but never random so a situation can be replayed and understood.
       const broadWave = Math.sin(row * 0.72) * 0.09 + Math.cos(col * 0.83) * 0.08;
       const localVariation = ((row * 7 + col * 11) % 5) * 0.025;
       cells[id] = {
@@ -49,6 +47,15 @@ export function createInitialWorld(rows = 20, cols = 12): WorldState {
 
   const waterSource = cellId(Math.min(rows - 1, 7), Math.min(cols - 1, 8));
   if (cells[waterSource]) cells[waterSource].kind = 'water-source';
+
+  const seedPositions = [
+    cellId(Math.min(rows - 1, 5), Math.min(cols - 1, 3)),
+    cellId(Math.min(rows - 1, 10), Math.min(cols - 1, 9)),
+    cellId(Math.min(rows - 1, 16), Math.min(cols - 1, 5)),
+  ];
+  for (const seed of seedPositions) {
+    if (cells[seed] && cells[seed].kind === 'ground') cells[seed].kind = 'seed';
+  }
 
   const starts = [
     cellId(Math.min(rows - 1, 10), Math.min(cols - 1, 5)),
