@@ -8,14 +8,14 @@ interface CellShape { id: CellId; points: Point[] }
 const GAME_WIDTH = 390;
 const GAME_HEIGHT = 760;
 
-// EXP-007 — FAIRE POUSSER LE MONDE
-// The orthogonal world stays full-screen. Water can now be transported to
-// visible seed cells, which bloom and slightly reshape the terrain.
+// EXP-VIS-005 — READABLE RELIEF
+// Keep the orthogonal, mostly top-down world, but make height legible again.
+// Presentation only: simulation and gameplay rules stay untouched.
 const CELL = 36;
-const HEIGHT_PX = 8;
+const HEIGHT_PX = 15;
 const ORIGIN_X = -21;
-const ORIGIN_Y = 10;
-const WORLD_LIP = 14;
+const ORIGIN_Y = 16;
+const WORLD_LIP = 18;
 
 const GROUND = [0x6edb8f, 0x7bde97, 0x68d6a0, 0x8dde8b, 0x72d8ae];
 const WATER = 0x42bdec;
@@ -42,9 +42,7 @@ export class WorldScene extends Phaser.Scene {
     this.board = this.add.graphics();
     this.actors = this.add.graphics();
 
-    for (const cell of Object.values(this.world.cells)) {
-      this.visualHeights.set(cell.id, cell.height);
-    }
+    for (const cell of Object.values(this.world.cells)) this.visualHeights.set(cell.id, cell.height);
     for (const agent of this.world.agents) {
       this.agentPositions.set(agent.id, this.positionForCell(this.world.cells[agent.cellId]));
     }
@@ -91,12 +89,11 @@ export class WorldScene extends Phaser.Scene {
     const worldBottom = ORIGIN_Y + this.world.rows * CELL;
     this.board.fillStyle(0x356f5f, 1);
     this.board.fillRect(0, Math.min(worldBottom, GAME_HEIGHT - WORLD_LIP), GAME_WIDTH, WORLD_LIP);
-    this.board.fillStyle(0x24554f, 1);
-    this.board.fillRect(0, Math.min(worldBottom + WORLD_LIP, GAME_HEIGHT - 3), GAME_WIDTH, 3);
+    this.board.fillStyle(0x183f3d, 1);
+    this.board.fillRect(0, Math.min(worldBottom + WORLD_LIP, GAME_HEIGHT - 4), GAME_WIDTH, 4);
 
     const cells = Object.values(this.world.cells).sort((a, b) => a.row - b.row || a.col - b.col);
     for (const cell of cells) this.drawCell(cell);
-
     for (const agent of this.world.agents) this.drawAgent(agent, time);
   }
 
@@ -106,21 +103,27 @@ export class WorldScene extends Phaser.Scene {
     const x = ORIGIN_X + cell.col * CELL;
     const baseY = ORIGIN_Y + cell.row * CELL;
     const topY = baseY - lift;
+    const baseColor = this.colorFor(cell);
 
     const top: Point[] = [
-      { x, y: topY },
-      { x: x + CELL, y: topY },
-      { x: x + CELL, y: topY + CELL },
-      { x, y: topY + CELL },
+      { x, y: topY }, { x: x + CELL, y: topY },
+      { x: x + CELL, y: topY + CELL }, { x, y: topY + CELL },
     ];
 
-    const baseColor = this.colorFor(cell);
-    const faceHeight = Math.max(2, lift * 0.72);
-    this.board.fillStyle(shade(baseColor, 0.70), 1);
+    // A dark vertical face and a soft cast shadow make height readable while
+    // preserving the orthogonal top surface and near-zenithal camera.
+    const faceHeight = Math.max(3, lift * 0.86);
+    this.board.fillStyle(0x102f34, 0.13 + Math.min(0.15, visualHeight * 0.035));
+    this.board.fillRect(x + 3, topY + CELL + faceHeight, CELL - 1, 4 + faceHeight * 0.22);
+    this.board.fillStyle(shade(baseColor, 0.58), 1);
     this.board.fillRect(x, topY + CELL, CELL, faceHeight);
+    this.board.fillStyle(shade(baseColor, 0.74), 0.95);
+    this.board.fillRect(x + CELL - 3, topY + 2, 3, CELL + faceHeight - 2);
 
     this.board.fillStyle(baseColor, 1);
-    this.board.fillRect(x + 0.6, topY + 0.6, CELL - 1.2, CELL - 1.2);
+    this.board.fillRect(x + 0.7, topY + 0.7, CELL - 1.4, CELL - 1.4);
+    this.board.fillStyle(0xffffff, 0.055);
+    this.board.fillRect(x + 2, topY + 2, CELL - 4, 2);
 
     if (cell.kind === 'water-source') {
       this.board.fillStyle(0xbceeff, 0.82);
@@ -140,15 +143,9 @@ export class WorldScene extends Phaser.Scene {
       const cx = x + CELL * 0.50;
       const cy = topY + CELL * 0.47;
       this.board.lineStyle(2.2, 0x25754b, 0.9);
-      this.board.beginPath();
-      this.board.moveTo(cx, cy + 7);
-      this.board.lineTo(cx, cy - 4);
-      this.board.strokePath();
-      this.board.fillStyle(0xf6ef8a, 1);
-      this.board.fillCircle(cx, cy - 5, 3.3);
-      this.board.fillStyle(0xa9ec8b, 0.95);
-      this.board.fillEllipse(cx - 5, cy + 1, 7, 4);
-      this.board.fillEllipse(cx + 5, cy - 1, 7, 4);
+      this.board.beginPath(); this.board.moveTo(cx, cy + 7); this.board.lineTo(cx, cy - 4); this.board.strokePath();
+      this.board.fillStyle(0xf6ef8a, 1); this.board.fillCircle(cx, cy - 5, 3.3);
+      this.board.fillStyle(0xa9ec8b, 0.95); this.board.fillEllipse(cx - 5, cy + 1, 7, 4); this.board.fillEllipse(cx + 5, cy - 1, 7, 4);
     }
 
     this.board.lineStyle(
@@ -170,39 +167,23 @@ export class WorldScene extends Phaser.Scene {
   private drawAgent(agent: Agent, time: number): void {
     const p = this.agentPositions.get(agent.id);
     if (!p) return;
-
     const bob = Math.sin(time / 230 + (agent.id === 'mote-b' ? 1.8 : agent.id === 'mote-c' ? 3.4 : 0)) * 1.4;
     const y = p.y + bob;
-
-    this.actors.fillStyle(0x173f49, 0.13);
-    this.actors.fillEllipse(p.x, y + 9, 19, 6);
-
-    if (agent.carrying === 'water') {
-      this.actors.lineStyle(3, 0x59c8f3, 0.95);
-      this.actors.strokeCircle(p.x, y, 10.5);
-    }
-
-    this.actors.fillStyle(AGENT_COLORS[agent.id], 1);
-    this.actors.fillCircle(p.x, y, 8.2);
-    this.actors.fillStyle(0x173f49, 0.75);
-    this.actors.fillCircle(p.x - 2.5, y - 1.5, 1.1);
-    this.actors.fillCircle(p.x + 2.5, y - 1.5, 1.1);
+    this.actors.fillStyle(0x173f49, 0.18); this.actors.fillEllipse(p.x + 1, y + 10, 20, 7);
+    if (agent.carrying === 'water') { this.actors.lineStyle(3, 0x59c8f3, 0.95); this.actors.strokeCircle(p.x, y, 10.5); }
+    this.actors.fillStyle(AGENT_COLORS[agent.id], 1); this.actors.fillCircle(p.x, y, 8.2);
+    this.actors.fillStyle(0x173f49, 0.75); this.actors.fillCircle(p.x - 2.5, y - 1.5, 1.1); this.actors.fillCircle(p.x + 2.5, y - 1.5, 1.1);
   }
 
   private positionForCell(cell: Cell): Point {
     const height = this.visualHeights.get(cell.id) ?? cell.height;
-    return {
-      x: ORIGIN_X + cell.col * CELL + CELL / 2,
-      y: ORIGIN_Y + cell.row * CELL + CELL / 2 - height * HEIGHT_PX,
-    };
+    return { x: ORIGIN_X + cell.col * CELL + CELL / 2, y: ORIGIN_Y + cell.row * CELL + CELL / 2 - height * HEIGHT_PX };
   }
 
   private strokePolygon(points: Point[]): void {
-    this.board.beginPath();
-    this.board.moveTo(points[0].x, points[0].y);
+    this.board.beginPath(); this.board.moveTo(points[0].x, points[0].y);
     for (const point of points.slice(1)) this.board.lineTo(point.x, point.y);
-    this.board.closePath();
-    this.board.strokePath();
+    this.board.closePath(); this.board.strokePath();
   }
 }
 
@@ -216,8 +197,7 @@ function shade(color: number, factor: number): number {
 function pointInPolygon(x: number, y: number, points: Point[]): boolean {
   let inside = false;
   for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const a = points[i];
-    const b = points[j];
+    const a = points[i]; const b = points[j];
     const crosses = (a.y > y) !== (b.y > y) && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x;
     if (crosses) inside = !inside;
   }
