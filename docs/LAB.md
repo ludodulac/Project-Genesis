@@ -66,25 +66,43 @@ Les tests ont trouvé une structure décisionnelle réelle mais le joueur ne pos
 **Hypothèse**  
 Revenir au canon Genesis-01 : un monde, un geste, **une seule chose mobile**, dont le comportement reste observable indéfiniment. Avant de tester un compromis multi-agent, vérifier que le joueur comprend spontanément « je change le relief → sa trajectoire change ».
 
-**Contraintes**
-- pas de tutoriel ;
-- pas de destination/haven ;
-- pas de source, graine ou eau dans la première lecture ;
-- pas de nouvel input ;
-- l'objet ne devient jamais définitivement inerte ;
-- conserver la redistribution de terrain ;
-- mouvement simple, local et prévisible plutôt que pathfinding orienté vers un but invisible.
+**Prototype**  
+La version jouable utilise maintenant un monde dédié sans haven, source, graine ni eau visibles, avec une seule mote jaune. À chaque sculpture, elle choisit localement le voisin accessible le plus bas. Elle n'a pas d'état terminal.
 
-**Question**  
-Peut-on obtenir un jouet plaisant où une seule chose cherche continuellement le relief bas et où sculpter devant elle produit immédiatement un changement visible de direction ?
+**Sentinelles**
+- la mote choisit le voisin bas sans objectif caché ;
+- relever une case peut la détourner vers la vallée créée par redistribution ;
+- elle ne passe jamais en état `arrived` ;
+- l'ancien moteur multi-agent reste intact et testé séparément.
 
-**Statut** `NEXT`.
+**Observation CI**  
+La première sentinelle de « mouvement continu » exigeait arbitrairement plus de deux cellules visitées. Elle a échoué alors que les propriétés fondamentales passaient. Cette exigence a été supprimée plutôt que de tordre le moteur pour satisfaire le test. Le run corrigé est vert et déployé.
+
+**Décision** `TEST-HUMAN`, sous réserve d'un dernier problème de mouvement découvert ci-dessous.
+
+## EXP-021 — Mémoire minimale contre le ping-pong
+**Hypothèse**  
+Le choix purement « voisin le plus bas » peut produire une oscillation A↔B qui ressemble à une animation mécanique plutôt qu'à une chose qui circule dans le relief.
+
+**Prototype minimal**  
+La mote conserve seulement la case précédente. Si plusieurs sorties sont accessibles, elle préfère une autre case au retour immédiat ; elle peut revenir en arrière si c'est réellement la seule sortie.
+
+**Pourquoi cette mémoire est acceptable**  
+Ce n'est ni une destination ni un pathfinding caché. C'est une inertie minimale et lisible : continuer plutôt que rebondir instantanément.
+
+**Sentinelle**  
+Si l'ancienne case est la plus basse mais qu'une autre sortie est accessible, la mote ne revient pas immédiatement en arrière.
+
+**Statut** `TEST` jusqu'à validation CI.
 
 ## EXP-VIS-005 — Relief lisible
 Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
 
 ## Direction actuelle
 
-Le signal abstrait de compromis d'EXP-017/018 reste conservé comme connaissance, mais il est **trop tôt pour le mettre au premier plan**. Le verrou réel est plus fondamental : la causalité entre le doigt, le relief et le mouvement n'est pas encore lisible.
+Le signal abstrait de compromis d'EXP-017/018 reste conservé comme connaissance, mais il est **trop tôt pour le mettre au premier plan**. Le verrou réel est plus fondamental : la causalité entre le doigt, le relief et le mouvement doit devenir évidente et plaisante avant toute réintroduction d'une deuxième entité.
 
-Priorité : simplifier jusqu'à ce que cette causalité soit évidente sans explication. Ensuite seulement réintroduire une deuxième chose et chercher si la redistribution crée naturellement un compromis perceptible.
+La branche active est donc :
+`sculpture locale → vallée/bosse lisible → une mote continue → trajectoire locale compréhensible`
+
+Aucune nouvelle ressource, aucun tutoriel et aucune nouvelle commande tant que cette boucle n'est pas validée humainement.
