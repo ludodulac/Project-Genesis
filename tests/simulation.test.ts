@@ -61,4 +61,32 @@ describe('terrain simulation', () => {
       cellId: source,
     });
   });
+
+  it('consumes carried water to bloom a seed and reshape that cell', () => {
+    const world = createInitialWorld(6, 6);
+    const seed = cellId(2, 3);
+    const approach = cellId(2, 2);
+    const agent = world.agents[0];
+    agent.cellId = approach;
+    agent.carrying = 'water';
+    world.cells[seed].kind = 'seed';
+    world.cells[approach].height = 1.2;
+    world.cells[seed].height = 0.5;
+    world.cells[cellId(1, 2)].height = 1.3;
+    world.cells[cellId(3, 2)].height = 1.3;
+    world.cells[cellId(2, 1)].height = 1.3;
+
+    const beforeSeedHeight = world.cells[seed].height;
+    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
+
+    expect(result.state.agents[0].cellId).toBe(seed);
+    expect(result.state.agents[0].carrying).toBeNull();
+    expect(result.state.cells[seed].kind).toBe('bloom');
+    expect(result.state.cells[seed].height).toBeCloseTo(beforeSeedHeight + 0.24);
+    expect(result.events).toContainEqual({
+      type: 'CELL_BLOOMED',
+      agentId: 'mote-a',
+      cellId: seed,
+    });
+  });
 });
