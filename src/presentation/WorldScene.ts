@@ -8,14 +8,14 @@ interface CellShape { id: CellId; points: Point[] }
 const GAME_WIDTH = 390;
 const GAME_HEIGHT = 760;
 
-// EXP-003: near top-down board view.
-// The cell surface dominates; vertical sides are only a subtle relief cue.
+// EXP-004: balanced near-top-down projection.
+// More top-down than the original, but with enough tilt to keep the relief readable.
 // Presentation only: simulation and world topology stay unchanged.
-const TILE_W = 66;
-const TILE_H = 62;
-const HEIGHT_PX = 9;
+const TILE_W = 68;
+const TILE_H = 57;
+const HEIGHT_PX = 13;
 const ORIGIN_X = GAME_WIDTH / 2;
-const ORIGIN_Y = 178;
+const ORIGIN_Y = 190;
 
 const PALETTE = [0x6edb8f, 0x81e19c, 0x65d7a0, 0x98df88, 0x74d7b2];
 
@@ -46,7 +46,7 @@ export class WorldScene extends Phaser.Scene {
     this.add.text(GAME_WIDTH / 2, 98, 'Une case monte. Le relief répond.', {
       fontFamily: 'system-ui, sans-serif', fontSize: '14px', color: '#426a73',
     }).setOrigin(0.5);
-    this.add.text(GAME_WIDTH / 2, 690, 'EXP-003 · PRESQUE VUE DU DESSUS', {
+    this.add.text(GAME_WIDTH / 2, 690, 'EXP-004 · VUE ÉQUILIBRÉE', {
       fontFamily: 'system-ui, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#56717a',
     }).setOrigin(0.5);
 
@@ -83,19 +83,19 @@ export class WorldScene extends Phaser.Scene {
     const cells = Object.values(this.world.cells).sort((a, b) => (a.row + a.col) - (b.row + b.col) || a.row - b.row);
     for (const cell of cells) this.drawCell(cell);
 
-    const bob = Math.sin(time / 260) * 1.5;
-    this.orbLayer.fillStyle(0x183d55, 0.1);
-    this.orbLayer.fillEllipse(this.orbX, this.orbY + 8, 24, 7);
+    const bob = Math.sin(time / 260) * 1.7;
+    this.orbLayer.fillStyle(0x183d55, 0.11);
+    this.orbLayer.fillEllipse(this.orbX, this.orbY + 9, 25, 7.5);
     this.orbLayer.fillStyle(0xffd84f, 1);
-    this.orbLayer.fillCircle(this.orbX, this.orbY - 1 + bob, 11);
+    this.orbLayer.fillCircle(this.orbX, this.orbY - 1 + bob, 11.5);
     this.orbLayer.fillStyle(0xfff2a6, 0.95);
-    this.orbLayer.fillCircle(this.orbX - 3.5, this.orbY - 5.5 + bob, 3.2);
+    this.orbLayer.fillCircle(this.orbX - 3.7, this.orbY - 6 + bob, 3.3);
   }
 
   private drawCell(cell: Cell): void {
     const visualHeight = this.visualHeights.get(cell.id) ?? cell.height;
     const center = this.positionFor(cell.row, cell.col, visualHeight);
-    const lift = 2 + visualHeight * 4;
+    const lift = 4 + visualHeight * 6;
     const top: Point[] = [
       { x: center.x, y: center.y - TILE_H / 2 },
       { x: center.x + TILE_W / 2, y: center.y },
@@ -106,8 +106,8 @@ export class WorldScene extends Phaser.Scene {
     const leftSide = [top[2], top[3], { x: top[3].x, y: top[3].y + lift }, { x: top[2].x, y: top[2].y + lift }];
 
     const baseColor = PALETTE[(cell.row * 2 + cell.col) % PALETTE.length];
-    this.fillPolygon(rightSide, shade(baseColor, 0.88));
-    this.fillPolygon(leftSide, shade(baseColor, 0.82));
+    this.fillPolygon(rightSide, shade(baseColor, 0.84));
+    this.fillPolygon(leftSide, shade(baseColor, 0.76));
     this.fillPolygon(top, baseColor);
     this.board.lineStyle(this.selected === cell.id ? 3 : 1.1, this.selected === cell.id ? 0xffffff : 0x2e816e, this.selected === cell.id ? 0.95 : 0.2);
     this.strokePolygon(top);
@@ -117,7 +117,7 @@ export class WorldScene extends Phaser.Scene {
   private positionForCell(cell: Cell, orb = false): Point {
     const height = this.visualHeights.get(cell.id) ?? cell.height;
     const point = this.positionFor(cell.row, cell.col, height);
-    return orb ? { x: point.x, y: point.y - TILE_H / 2 - 5 } : point;
+    return orb ? { x: point.x, y: point.y - TILE_H / 2 - 6 } : point;
   }
 
   private positionFor(row: number, col: number, height: number): Point {
