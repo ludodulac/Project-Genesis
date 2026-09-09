@@ -2,7 +2,7 @@ export type CellId=`${number}:${number}`;
 export type CellKind='ground'|'water-source'|'seed'|'bloom'|'haven'|'spring';
 export type Element='water';
 export interface Cell{id:CellId;row:number;col:number;height:number;kind:CellKind;}
-export interface Agent{id:'mote-a'|'mote-b'|'mote-c';cellId:CellId;carrying:Element|null;targetId:CellId;arrived:boolean;}
+export interface Agent{id:'mote-a'|'mote-b'|'mote-c';cellId:CellId;previousCellId?:CellId;carrying:Element|null;targetId:CellId;arrived:boolean;}
 export interface WorldState{rows:number;cols:number;cells:Record<CellId,Cell>;agents:Agent[];}
 export function cellId(row:number,col:number):CellId{return `${row}:${col}`;}
 export function createInitialWorld(rows=20,cols=12):WorldState{
