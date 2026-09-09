@@ -61,7 +61,25 @@ Le protocole a été recommencé après une ambiguïté de formulation entre « 
 
 **Apprentissage** : cette frontière révèle une attente physique distincte, sans invalider la causalité générale creux→bille. La représentation ronde de la bille suggère qu'un contact direct devrait avoir une conséquence sur elle. Le comportement actuel « je creuse sa case et elle reste dedans » est cohérent avec un bassin, mais incohérent avec l'affordance perçue d'une bille ronde manipulable.
 
-**Décision** : conserver `PROMOTE-PARTIAL` pour creux→bille et classer uniquement le cas « toucher la case occupée » en `ITERATE`. Ne pas enrichir le système. La prochaine hypothèse doit résoudre cette frontière avec la règle la plus simple possible, puis retester la prédiction avant de toucher.
+### Recherche de frontière — résultats utiles
+La direction d'un déplacement latéral après un simple tap centré n'est pas contenue dans l'entrée. Sans asymétrie visible, toute sortie nord/sud/est/ouest demanderait donc hasard, ordre fixe, mémoire ou autre tie-break caché : ces variantes sont rejetées car elles reproduiraient précisément la faiblesse d'EXP-021.
+
+Calcul sur le monde jouable initial : la bille démarre vers `(10,6)` à une hauteur d'environ `0.4572`. Son voisin le plus bas est seulement `0.00515` plus bas, soit environ `0.11 px` avec `HEIGHT_PX=22`. Une règle « tap sur la bille → va vers le voisin naturellement le plus bas » serait donc déterministe mais pratiquement invisible au départ.
+
+Simulation de 500 états obtenus après 1 à 12 pressions locales : avec la règle actuelle de creux, la bille se retrouve presque toujours dans un minimum local. Après un tap sur sa propre case, la pression l'enfonce encore et **0 %** des états simulés offrent ensuite une descente vers un voisin. Une variante « relâcher la bille et laisser la gravité choisir » ne résout donc pas la frontière : sans modifier le terrain, seulement ~3 % de ces états possèdent même un voisin strictement plus bas, et quasiment aucun avec un écart visuellement fort.
+
+La variante « utiliser le point exact du doigt sur le côté de la petite bille comme direction de poussée » est également fragile : le diamètre visuel actuel est d'environ `19 px`, sensiblement inférieur aux tailles de cible tactile confortables usuelles. Encoder gauche/droite/haut/bas dans quelques pixels à l'intérieur de la bille demanderait une précision que le doigt ne fournit pas de manière fiable. `DROP` comme candidat principal.
+
+Une variante reste structurellement testable sans direction cachée : **un contact direct fournit l'énergie, mais le terrain fournit la direction**. Le candidat le moins arbitraire serait alors de sortir vers l'unique bord voisin le plus bas, même si ce bord est plus haut que le fond du creux actuel. Sur 1000 états simulés issus de déplacements par creusement adjacent, l'écart entre le bord le plus bas et le deuxième plus bas est ≥ `1 px` dans ~82 % des états et ≥ `2 px` dans ~66 %. Cela rend la direction parfois visible, contrairement au relief initial. Mais cette règle ferait ponctuellement « monter » la bille hors d'un bassin : elle doit donc être considérée comme une **impulsion externe** et non comme de la gravité. Elle reste un candidat, pas une règle promue.
+
+**Décision de recherche** :
+- `DROP` hasard / direction fixe / mémoire / ancien sens de déplacement ;
+- `DROP` direction basée sur un sous-ciblage fin à l'intérieur de la petite bille ;
+- `DROP` simple « release + gravité », car la bille est presque toujours déjà dans le creux ;
+- `KEEP-CANDIDATE` impulsion directe dont la direction est entièrement choisie par le relief visible ;
+- ne rien déployer tant qu'une variante n'a pas une causalité formulable sans règle cachée.
+
+**Statut frontière** : `ITERATE-RESEARCH`.
 
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
