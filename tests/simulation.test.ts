@@ -89,4 +89,32 @@ describe('terrain simulation', () => {
       cellId: seed,
     });
   });
+
+  it('allows a bloom created by one agent to reroute another agent in the same deterministic step', () => {
+    const world = createInitialWorld(6, 6);
+    const seed = cellId(2, 3);
+    const waterApproach = cellId(2, 2);
+    const observer = cellId(1, 3);
+    const alternate = cellId(1, 4);
+
+    world.agents[0].cellId = waterApproach;
+    world.agents[0].carrying = 'water';
+    world.agents[1].cellId = observer;
+    world.agents[2].cellId = cellId(5, 0);
+
+    world.cells[seed].kind = 'seed';
+    world.cells[waterApproach].height = 1.2;
+    world.cells[seed].height = 0.5;
+    world.cells[observer].height = 1.0;
+    world.cells[alternate].height = 0.65;
+    world.cells[cellId(0, 3)].height = 1.3;
+    world.cells[cellId(1, 2)].height = 1.3;
+    world.cells[cellId(2, 2)].height = 1.2;
+
+    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
+
+    expect(result.state.cells[seed].kind).toBe('bloom');
+    expect(result.state.cells[seed].height).toBeCloseTo(0.74);
+    expect(result.state.agents[1].cellId).toBe(alternate);
+  });
 });
