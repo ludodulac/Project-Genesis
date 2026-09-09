@@ -90,31 +90,43 @@ describe('terrain simulation', () => {
     });
   });
 
-  it('allows a bloom created by one agent to reroute another agent in the same deterministic step', () => {
-    const world = createInitialWorld(6, 6);
-    const seed = cellId(2, 3);
-    const waterApproach = cellId(2, 2);
-    const observer = cellId(1, 3);
-    const alternate = cellId(1, 4);
+  it('does not let agent array order change movement decisions', () => {
+    const makeScenario = () => {
+      const world = createInitialWorld(6, 6);
+      const seed = cellId(2, 3);
+      const waterApproach = cellId(2, 2);
+      const observer = cellId(1, 3);
+      const alternate = cellId(1, 4);
 
-    world.agents[0].cellId = waterApproach;
-    world.agents[0].carrying = 'water';
-    world.agents[1].cellId = observer;
-    world.agents[2].cellId = cellId(5, 0);
+      world.agents[0].cellId = waterApproach;
+      world.agents[0].carrying = 'water';
+      world.agents[1].cellId = observer;
+      world.agents[2].cellId = cellId(5, 0);
 
-    world.cells[seed].kind = 'seed';
-    world.cells[waterApproach].height = 1.2;
-    world.cells[seed].height = 0.5;
-    world.cells[observer].height = 1.0;
-    world.cells[alternate].height = 0.65;
-    world.cells[cellId(0, 3)].height = 1.3;
-    world.cells[cellId(1, 2)].height = 1.3;
-    world.cells[cellId(2, 2)].height = 1.2;
+      world.cells[seed].kind = 'seed';
+      world.cells[waterApproach].height = 1.2;
+      world.cells[seed].height = 0.5;
+      world.cells[observer].height = 1.0;
+      world.cells[alternate].height = 0.65;
+      world.cells[cellId(0, 3)].height = 1.3;
+      world.cells[cellId(1, 2)].height = 1.3;
+      world.cells[cellId(2, 2)].height = 1.2;
+      return world;
+    };
 
-    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
+    const normal = makeScenario();
+    const reversed = makeScenario();
+    reversed.agents.reverse();
 
-    expect(result.state.cells[seed].kind).toBe('bloom');
-    expect(result.state.cells[seed].height).toBeCloseTo(0.74);
-    expect(result.state.agents[1].cellId).toBe(alternate);
+    const normalResult = simulate(normal, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
+    const reversedResult = simulate(reversed, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
+
+    const positions = (result: ReturnType<typeof simulate>) => Object.fromEntries(
+      result.state.agents.map((agent) => [agent.id, agent.cellId]),
+    );
+
+    expect(positions(normalResult)).toEqual(positions(reversedResult));
+    expect(normalResult.state.cells[seed].kind).toBe('bloom');
+    expect(reversedResult.state.cells[seed].kind).toBe('bloom');
   });
 });
