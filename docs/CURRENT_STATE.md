@@ -2,49 +2,82 @@
 
 ## État réel
 
-Le dépôt contient maintenant le prototype Genesis EXP-006 — **Diriger le vivant**.
+Le dépôt contient maintenant un prototype vivant basé sur EXP-006/007, tandis qu'EXP-008 compare expérimentalement deux verbes de sculpture sans encore modifier la version jouable.
 
-### Présent
-- vision Genesis et principes d'architecture définis ;
+### Présent dans la version jouable
 - runtime Phaser 4 + TypeScript + Vite ;
 - état du monde sérialisable ;
 - simulation séparée du rendu ;
-- action canonique unique `RAISE_CELL` ;
+- action tactile unique `RAISE_CELL` ;
 - plateau orthogonal de 20 × 12 cellules ;
 - grille carrée alignée horizontalement/verticalement ;
-- terrain qui occupe presque tout l'écran et dépasse latéralement le viewport ;
-- petite marche visible au bord inférieur pour suggérer l'épaisseur et la limite du monde ;
-- relief déterministe, sans génération aléatoire ;
-- réaction douce des cellules voisines à une élévation ;
+- terrain plein écran avec bords latéraux hors champ ;
+- petite marche visible au bord inférieur du monde ;
+- relief initial déterministe ;
 - trois petits êtres autonomes ;
-- déplacement déterministe d'une case vers le voisin clairement le plus bas après chaque action ;
+- chaque action produit une étape de déplacement déterministe ;
+- décisions de mouvement calculées depuis un même état du terrain, indépendamment de l'ordre du tableau des agents ;
 - une source d'eau explicite ;
-- un être qui atteint la source transporte l'eau, avec retour visuel ;
+- un être peut transporter l'eau ;
+- trois cases-graine fixes et visibles ;
+- un être porteur d'eau qui atteint une graine consomme l'eau, transforme la graine en pousse et augmente légèrement la hauteur de cette cellule ;
+- retour visuel distinct pour eau, graines, pousses et agents chargés ;
 - interaction tactile plein écran ;
-- tests de simulation pour la déformation, le déplacement et la collecte d'eau ;
+- tests de simulation couvrant déformation, déplacement, collecte d'eau, floraison et indépendance vis-à-vis de l'ordre des agents ;
 - workflow CI + GitHub Pages.
 
-### Expérience active
+### Gouvernance du laboratoire
 
-**EXP-006 — Diriger le vivant**
+`AI_START_HERE.md` définit désormais explicitement le mode **laboratoire autonome de game design** :
 
-Question : **est-ce que déformer le monde suffit à créer des décisions compréhensibles sur les trajectoires de plusieurs êtres ?**
+`hypothèse → prototype minimal → test → observation → décision → conservation/abandon → expérience suivante`
 
-Le test cherche notamment le moment où le joueur commence à anticiper : « si je soulève cette case, cet être va probablement descendre par là ».
+Une expérience n'est jamais automatiquement le jeu. Les mécaniques ne sont promues dans `GAMEPLAY.md` qu'après preuve suffisante de valeur ludique.
 
-### À vérifier sur téléphone
-- lisibilité de la grille orthogonale plein écran ;
-- sensation de monde plus vaste grâce aux bords hors champ et à la petite marche ;
-- plaisir tactile du relief ;
-- compréhension spontanée du déplacement des trois êtres ;
-- lisibilité de la source d'eau ;
-- satisfaction lorsqu'un être récupère l'eau ;
-- apparition ou non de décisions intéressantes avec une seule action.
+### Expérience jouable active
+
+**EXP-007 — Faire pousser le monde**
+
+Boucle actuelle :
+
+`terrain → déplacement → eau → croissance → nouveau terrain`
+
+Le scénario contrôlé confirme que la croissance laisse bien une trace spatiale. Un premier reroutage dans la même étape a été rejeté parce qu'il dépendait d'un ordre interne invisible des agents. La simulation a été corrigée pour rendre cette priorité explicite et indépendante de l'ordre du tableau.
+
+### Expérience de comparaison active
+
+**EXP-008 — Sculpter plutôt qu'empiler**
+
+La version jouable conserve encore `RAISE_CELL` tel qu'il existe aujourd'hui.
+
+Dans `src/experiments/exp008Terrain.ts`, deux variantes sont comparées sans contaminer le moteur retenu :
+
+- `accumulate` : la cible et ses voisins gagnent de la hauteur ;
+- `redistribute` : la cible monte en prélevant approximativement la même quantité de matière à ses voisins.
+
+Les scénarios automatisés comparent conservation de hauteur moyenne, amplitude du relief et création de minima locaux. Ces mesures servent à caractériser les variantes, pas à décider laquelle est amusante.
+
+### Vérifié
+- EXP-006 et la première version jouable de la boucle eau/graines ont déjà passé CI et déploiement ;
+- la séparation des mouvements et interactions est couverte par une sentinelle d'indépendance à l'ordre des agents ;
+- les derniers changements doivent toujours être considérés vérifiés uniquement si leur run CI associé est vert.
+
+### À vérifier humainement sur téléphone
+Le prochain test humain devra rester court. Observer principalement :
+
+1. est-ce que l'on commence spontanément à anticiper les trajectoires avant de toucher ?
+2. est-ce que le cycle eau → graine → pousse crée une conséquence suffisamment lisible et satisfaisante pour donner envie de la provoquer volontairement ?
+
+### Non promu / encore incertain
+- déplacement autonome comme mécanique définitive ;
+- eau ;
+- graines / croissance ;
+- `RAISE_CELL` dans sa forme actuelle ;
+- redistribution de matière d'EXP-008.
 
 ### Absent volontairement
 - feu ;
-- végétation ;
-- combinaison d'éléments ;
+- autres éléments ;
 - combat ;
 - adversaire ;
 - condition de victoire ;
@@ -55,16 +88,13 @@ Le test cherche notamment le moment où le joueur commence à anticiper : « si 
 - progression ;
 - boutique ;
 - cartes ;
+- grosse infrastructure ;
 - assets définitifs.
 
 ## Ordre de recherche
 
-Le projet suit actuellement cette chaîne :
+La chaîne `terrain → mouvement → transport → interaction → objectif → adversité` reste une heuristique, pas une roadmap obligatoire.
 
-`terrain → mouvement → transport → interaction → objectif → adversaire`
+La prochaine hypothèse active est EXP-008 : **le verbe de sculpture devient-il plus profond si soulever une zone crée automatiquement un creux ou un coût spatial ailleurs ?**
 
-Une couche n'est ajoutée que lorsque la précédente produit une sensation ou une décision suffisamment intéressante pour justifier la suivante.
-
-## Critère de réussite actuel
-
-Le prototype n'a pas besoin d'être un jeu complet. Il réussit si, en quelques interactions, le joueur comprend qu'il **ne déplace pas directement les êtres : il sculpte leur monde pour influencer ce qu'ils vont faire**.
+Si la réponse contrôlée est prometteuse, la variante sera rendue jouable pour comparaison tactile. Sinon elle sera parkée ou abandonnée sans toucher à la fondation.
