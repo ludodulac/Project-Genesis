@@ -63,16 +63,6 @@ Le geste de déformer le relief devient une vraie décision de jeu si plusieurs 
 - une seule case-source d'eau ;
 - lorsqu'un être atteint cette source, il transporte visiblement l'eau.
 
-**Ce que l'expérience ne teste pas encore**  
-- feu ;
-- végétation ;
-- combinaison d'éléments ;
-- combat ;
-- adversaire ;
-- score ;
-- condition de victoire ;
-- progression.
-
 **Question de test**  
 Est-ce que le joueur commence spontanément à raisonner en termes de relief et de trajectoire — « si je soulève ici, lequel va partir où ? » — et est-ce que rejoindre la source d'eau crée un petit moment de satisfaction/compréhension ?
 
@@ -84,3 +74,45 @@ Est-ce que le joueur commence spontanément à raisonner en termes de relief et 
 
 **À conserver**  
 Même si la source d'eau n'est pas amusante, conserver la règle de recherche : une action simple, conséquences lisibles, zéro hasard caché, nouvelles couches introduites une par une.
+
+---
+
+## EXP-007 — Faire pousser le monde
+
+**Hypothèse**  
+Transporter une propriété devient réellement intéressant lorsque cette propriété laisse une conséquence permanente qui modifie ensuite le terrain et les trajectoires.
+
+**Prototype**  
+- conserver intégralement le geste `RAISE_CELL`, les trois êtres et la source d'eau d'EXP-006 ;
+- ajouter seulement trois cases-graine fixes et visibles ;
+- un être chargé d'eau qui atteint une graine consomme son eau ;
+- la graine devient une pousse ;
+- la pousse élève légèrement sa cellule, donc peut modifier une pente future ;
+- aucune autre ressource, aucun feu, aucun score, aucun objectif ajouté.
+
+**Boucle testée**  
+`terrain → déplacement → eau → croissance → nouveau terrain`
+
+**Question de test**  
+Est-ce que le joueur commence à planifier sur plusieurs conséquences : guider un être vers l'eau, puis vers une graine, tout en anticipant que la pousse changera ensuite la géographie ?
+
+**Critère de promotion**  
+La croissance mérite de rester seulement si elle provoque au moins une décision nouvelle liée au relief. Si elle n'est qu'une animation satisfaisante sans modifier le raisonnement, la règle doit être simplifiée ou supprimée.
+
+**Ce que l'expérience ne teste toujours pas**  
+- feu ;
+- interactions élémentaires multiples ;
+- combat ;
+- adversaire ;
+- score ;
+- condition de victoire ;
+- progression.
+
+**Observation**  
+À tester sur téléphone.
+
+**Décision**  
+`ITERATE` — expérience en cours.
+
+**À conserver**  
+Une propriété collectée doit avoir une conséquence compréhensible sur le monde ; éviter les bonus abstraits ou les inventaires sans effet spatial.
