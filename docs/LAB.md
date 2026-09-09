@@ -11,76 +11,84 @@ Le relief était trop plat et le rôle des petits êtres incompréhensible. Ne p
 
 **Décision** `ITERATE` — les êtres ne sont pas promus.
 
-**À conserver**  
-Conséquences lisibles, zéro hasard caché, anticipation comme critère.
-
 ## EXP-007 — Faire pousser le monde
-**Hypothèse**  
-Une propriété transportée devient intéressante si elle laisse une conséquence spatiale permanente.
-
-**Test contrôlé**  
-Eau collectée → graine traversée → graine devient bloom → relief augmente. La simulation en phases évite qu'un ordre interne invisible décide du résultat.
-
-**Décision** `ITERATE`.
+Eau collectée → graine traversée → bloom → relief augmenté. La simulation en phases évite qu'un ordre interne invisible décide du résultat. `ITERATE`.
 
 ## EXP-008 — Sculpter plutôt qu'empiler
-**Comparaison contrôlée**  
-Initial : amplitude ≈ 0.416, minima locaux 8. Accumulation : amplitude ≈ 0.888, minima 8, moyenne en hausse. Redistribution : amplitude ≈ 0.712, minima 13, moyenne conservée.
-
-**Décision** `ITERATE` — la redistribution reste le meilleur candidat actuel pour le verbe de sculpture.
+Redistribution de matière conservée comme meilleur candidat actuel pour le verbe de sculpture. `ITERATE`.
 
 ## EXP-010 — Le détour
-**Hypothèse**  
-Une montagne devient intéressante si elle redirige au lieu de simplement bloquer.
-
-**Test**  
-Le pathfinding déterministe cherche un chemin praticable autour d'une crête. Une sentinelle vérifie qu'une même sculpture peut perturber une mote sans modifier la route directe d'une autre.
-
-**Observation**  
-Le détour transforme le relief en outil de routage. Mais « faire un chemin plus long » n'est pas encore une conséquence suffisamment riche.
-
-**Décision** `PROMOTE-PARTIAL` — conserver le routage/détour comme infrastructure expérimentale, pas comme gameplay final.
+Le relief peut rediriger au lieu de simplement bloquer. Le pathfinding reste une infrastructure de laboratoire et non le jeu lui-même. `PROMOTE-PARTIAL`.
 
 ## EXP-011 — Le détour opportuniste
-**Hypothèse**  
-Un détour devient une décision s'il peut faire traverser une opportunité visible que la route directe évitait.
-
-**Prototype**  
-Petites sources visibles sur le plateau. Elles ne sont pas des objectifs. Une mote qui en traverse une transporte de l'eau.
-
-**Test automatisé**  
-Une sentinelle reproductible vérifie qu'une mote traversant une source devient porteuse d'eau.
-
-**Décision** `ITERATE`.
-
-**À conserver**  
-Les opportunités doivent vivre dans le monde, pas dans des boutons. Le joueur modifie la route ; il ne commande pas la collecte.
+Une source traversée charge une mote en eau sans nouvelle commande joueur. L'opportunité vit dans le monde. `ITERATE`.
 
 ## EXP-012 — Fermer la chaîne
+`relief → détour → source → transport → graine → croissance → nouveau relief`. La causalité est testable, mais le fun et la lisibilité restent à prouver humainement. `TEST`.
+
+## EXP-013 — Faux compromis
 **Hypothèse**  
-Le premier moment émergent plausible apparaît quand une sculpture produit indirectement une transformation ailleurs : `relief → détour → source → transport → graine → croissance`.
+Une même sculpture devait aider A tout en forçant B à se détourner.
 
-**Prototype minimal**  
-Une mote chargée en eau qui traverse une graine transforme celle-ci en bloom, consomme l'eau et soulève légèrement la cellule. Aucun nouvel input.
+**Observation contrôlée**  
+Le premier scénario était mal construit : B conservait exactement sa route directe. Le test a échoué alors que les autres scénarios passaient.
 
-**Test automatisé**  
-La chaîne eau → bloom → modification de hauteur est maintenant une sentinelle explicite.
+**Décision** `DROP` pour ce scénario précis.
 
-**Ce que le test ne prouve pas**  
-Il prouve la causalité et le déterminisme, pas que la chaîne est amusante ni perceptible sur téléphone.
+**À conserver**  
+Un test qui contredit l'histoire souhaitée vaut mieux qu'une mécanique déclarée intéressante trop tôt.
 
-**Décision** `TEST` — première chaîne à évaluer comme candidat « ah oui ».
+## EXP-013b — Ouverture / fermeture simultanée
+**Hypothèse**  
+La redistribution locale peut ouvrir la case voisine utile à A en l'abaissant tout en fermant à B la case touchée en la relevant.
+
+**Prototype**  
+A dépend d'une voisine initialement juste trop haute. B dépend directement de la case sculptée. Un seul toucher doit rendre la route directe d'A praticable et celle de B impraticable.
+
+**Décision** `TEST` — sentinelle en validation.
+
+## EXP-014 — Opportunité qui prépare le futur
+**Observation contrôlée**  
+Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant.
+
+**Décision** `PROMOTE-PARTIAL` — conserver la chaîne comme matière de design, pas comme objectif final.
+
+## EXP-015 — Le bénéfice devient coût
+**Observation contrôlée**  
+La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin.
+
+**Décision** `PROMOTE-PARTIAL`.
+
+**Pourquoi c'est intéressant**  
+Une conséquence positive locale n'est plus globalement positive : elle reconfigure le problème spatial d'une autre entité.
+
+## EXP-016 — Conséquence réciproque
+**Hypothèse**  
+Le coût créé pour B peut devenir une nouvelle opportunité : la croissance provoquée par A force B vers une source, ce qui le charge à son tour en eau.
+
+**Prototype**  
+A fait pousser une graine sur la route de B ; le détour de B passe par une source.
+
+**Décision** `TEST` — scénario déterministe en validation.
+
+## EXP-017 — Deux gestes, deux intérêts incompatibles
+**Hypothèse**  
+Une vraie décision apparaît si deux gestes valides sur le même état optimisent des intérêts différents et qu'aucun geste ne domine simplement l'autre.
+
+**Prototype**  
+- geste A : sculpter une case qui abaisse la route d'A mais relève la source/route de B ;
+- geste B : ne pas toucher cette zone, laissant B prendre la source mais A perdre son chemin direct.
+
+**Critère**  
+Le scénario n'est intéressant que si le choix `favoriser A` empêche réellement le bénéfice de B, tandis que `favoriser B` empêche réellement le bénéfice direct d'A.
+
+**Décision** `TEST` — c'est actuellement l'hypothèse la plus proche d'une vraie décision de jeu.
 
 ## EXP-VIS-005 — Relief lisible
 Le relief visuel utilise davantage de déplacement vertical, faces sombres et ombres tout en conservant une grille orthogonale. `TEST`.
 
-## Prochaine recherche — bifurcation avec coût
+## Prochaine recherche
 
-Ne pas ajouter un deuxième élément maintenant. La prochaine hypothèse est plus stricte : **une route utile doit avoir un coût spatial visible**. Une sculpture pourrait envoyer une mote vers une source puis une graine, tout en rendant simultanément la destination d'une autre mote plus difficile.
+Si EXP-017 tient, ne pas ajouter de système. Construire plusieurs variantes spatiales du même dilemme pour vérifier qu'il ne dépend pas d'un placement artificiel unique. Chercher surtout si la conséquence secondaire peut être exploitée plutôt qu'évitée.
 
-Critères de promotion :
-- la conséquence peut être anticipée avant le toucher ;
-- un geste influence au moins deux intérêts ;
-- le bénéfice n'est pas automatiquement dominant ;
-- la chaîne reste compréhensible sans texte ;
-- le joueur peut découvrir une solution non explicitement enseignée.
+Si EXP-017 ne tient pas, modifier ou simplifier la logique de mouvement plutôt que d'empiler une nouvelle mécanique.
