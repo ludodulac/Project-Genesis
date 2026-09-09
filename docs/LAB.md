@@ -27,131 +27,109 @@ La partie intéressante même si l'expérience globale échoue.
 **Hypothèse**  
 Déformer directement un petit relief sous le doigt peut être plaisant avant même l'existence d'un objectif de jeu.
 
-**Prototype**  
-Un plateau compact. Toucher une cellule augmente sa hauteur. Les cellules voisines accompagnent légèrement la déformation. Un objet simple réagit à la pente.
-
 **Observation**  
-Les premiers retours ont surtout servi à préciser la représentation du monde : davantage de cases, beaucoup plus d'espace occupé, et une vue moins isométrique.
+Les retours ont précisé la représentation : beaucoup de cases, monde plein écran, mais la dernière vue est devenue trop plate pour lire facilement le relief.
 
 **Décision**  
 `ITERATE`.
 
 **À conserver**  
-Le terrain lui-même reste l'objet principal de l'expérience.
+Le terrain lui-même reste l'objet principal de l'expérience. Une vue majoritairement du dessus doit néanmoins conserver une lecture 3D immédiate.
 
 ---
 
 ## EXP-006 — Diriger le vivant
 
 **Hypothèse**  
-Le geste de déformer le relief devient une vraie décision de jeu si plusieurs petits êtres se déplacent selon des lois simples et prévisibles, et si certaines cases leur transmettent une propriété visible.
-
-**Références de design**  
-- *From Dust* : le terrain et les phénomènes naturels produisent les situations par interaction plutôt que par scripts isolés.
-- *Into the Breach* : conséquences déterministes et lisibles pour permettre anticipation et apprentissage.
-- *Dorfromantik* : rendre satisfaisante l'interaction répétée au cœur du jeu.
-- *Baba Is You* : une nouvelle règle n'est intéressante que si ses interactions produisent suffisamment de situations à explorer.
+Déformer le relief devient une décision si plusieurs petits êtres suivent des lois prévisibles et si le joueur commence spontanément à anticiper leurs trajectoires.
 
 **Prototype**  
-- monde orthogonal de carrés, plein écran ;
-- 20 × 12 cellules, avec le territoire qui dépasse latéralement le viewport ;
-- petite marche visible au bord inférieur du monde ;
-- action unique conservée : `RAISE_CELL` ;
-- trois petits êtres autonomes ;
-- après chaque action, chacun descend d'une seule case vers le voisin clairement le plus bas ;
-- aucune décision aléatoire ;
-- une seule case-source d'eau ;
-- lorsqu'un être atteint cette source, il transporte visiblement l'eau.
+Monde orthogonal plein écran, action terrain unique, trois êtres autonomes, déplacement déterministe vers une pente plus basse, source d'eau transportable.
 
-**Question de test**  
-Est-ce que le joueur commence spontanément à raisonner en termes de relief et de trajectoire — « si je soulève ici, lequel va partir où ? » — et est-ce que rejoindre la source d'eau crée un petit moment de satisfaction/compréhension ?
+**Observation humaine**  
+Le testeur ne comprend pas spontanément quoi faire avec les petits êtres ni ce que leur présence lui demande. C'est une donnée négative importante : la proposition actuelle ne communique pas encore son intention par le comportement seul.
 
-**Observation**  
-À tester sur téléphone.
+Ce problème ne doit pas être masqué par un tutoriel ou des flèches. Soit le comportement des êtres devient naturellement signifiant, soit ils seront simplifiés, remplacés ou supprimés.
 
 **Décision**  
-`ITERATE` — le déplacement déterministe et le transport restent en laboratoire, non promus.
+`ITERATE` — ne pas promouvoir les êtres actuels.
 
 **À conserver**  
-Une action simple, conséquences lisibles, zéro hasard caché, nouvelles couches introduites une par une.
+Conséquences lisibles, zéro hasard caché, anticipation comme critère de qualité.
 
 ---
 
 ## EXP-007 — Faire pousser le monde
 
 **Hypothèse**  
-Transporter une propriété devient réellement intéressant lorsque cette propriété laisse une conséquence permanente qui modifie ensuite le terrain et les trajectoires.
-
-**Prototype**  
-- conserver le geste `RAISE_CELL`, les trois êtres et la source d'eau d'EXP-006 ;
-- ajouter seulement trois cases-graine fixes et visibles ;
-- un être chargé d'eau qui atteint une graine consomme son eau ;
-- la graine devient une pousse ;
-- la pousse élève légèrement sa cellule ;
-- aucune autre ressource, aucun feu, aucun score, aucun objectif ajouté.
+Transporter une propriété devient intéressant lorsqu'elle laisse une conséquence permanente qui modifie le terrain.
 
 **Boucle testée**  
 `terrain → déplacement → eau → croissance → nouveau terrain`
 
-**Scénarios contrôlés**  
-- eau collectée : vérifié ;
-- eau consommée par une graine : vérifié ;
-- pousse modifiant réellement la hauteur : vérifié ;
-- premier essai de réaction en chaîne : une pousse créée par `mote-a` pouvait rerouter `mote-b` dans la même étape.
-
-**Observation**  
-Le premier reroutage semblait prometteur mais dépendait de l'ordre des agents dans le tableau. C'est une fausse émergence : le joueur ne peut ni voir ni déduire cette priorité interne. Ce comportement est rejeté.
-
-La simulation a donc été séparée en phases : tous les déplacements sont décidés depuis le même état du terrain, puis appliqués, puis les interactions de cases sont résolues dans un ordre explicite et stable. Une transformation créée à cette étape influence les décisions suivantes, pas celles déjà prises.
+**Observation contrôlée**  
+Eau collectée, eau consommée par une graine et croissance modifiant la hauteur sont vérifiées. Une première réaction en chaîne a été rejetée parce qu'elle dépendait de l'ordre interne des agents. La simulation a été séparée en phases afin que tous les mouvements lisent le même état.
 
 **Décision**  
-`ITERATE` — conserver la croissance comme candidat parce qu'elle laisse une trace spatiale, mais rejeter toute causalité dépendant d'un ordre caché. Pas encore de promotion dans `GAMEPLAY.md` avant test humain.
+`ITERATE` — croissance candidate, non promue.
 
 **À conserver**  
-- une propriété collectée doit avoir un effet spatial compréhensible ;
-- les chaînes doivent être anticipables ;
-- un détail d'implémentation invisible ne doit jamais devenir une règle de gameplay ;
-- les effets permanents du joueur sur le monde sont une piste forte.
+Une propriété collectée doit produire un effet spatial compréhensible ; aucune causalité ne doit dépendre d'une priorité invisible.
 
 ---
 
 ## EXP-008 — Sculpter plutôt qu'empiler
 
 **Hypothèse**  
-Le verbe actuel est encore trop unidirectionnel : toucher ajoute de la hauteur, donc le joueur finit surtout par empiler des bosses. Un geste plus fort pourrait redistribuer le relief : **faire monter ici doit créer un coût ou un creux ailleurs**. Cela produirait naturellement montagnes, vallées, compromis et détournements sans ajouter de bouton.
+Un geste qui redistribue la matière peut créer plus de compromis qu'un geste qui ajoute seulement de la hauteur.
 
-**Pourquoi maintenant**  
-EXP-006/007 montrent que les trajectoires deviennent intéressantes quand la géographie change. Avant d'ajouter feu, danger ou objectif, il faut vérifier que le verbe fondamental de sculpture produit lui-même assez de décisions.
-
-**Prototype minimal**  
-Deux variantes pures sont isolées dans `src/experiments/exp008Terrain.ts` :
-
-- A — `accumulate` : cible + voisins montent ;
-- B — `redistribute` : la cible monte en prélevant approximativement la même quantité de matière à ses quatre voisins.
-
-La version jouable n'est pas encore modifiée.
-
-**Scénario contrôlé**  
-Une même séquence de huit touches est appliquée à un monde 14 × 10.
+**Comparaison contrôlée**  
+Sur une séquence identique :
+- initial : amplitude ≈ `0.416`, minima locaux `8` ;
+- accumulation : amplitude ≈ `0.888`, minima `8`, moyenne en hausse ;
+- redistribution : amplitude ≈ `0.712`, minima `13`, moyenne conservée.
 
 **Observation**  
-L'hypothèse initiale « la redistribution produira une amplitude totale plus grande » est fausse sur ce scénario :
-
-- terrain initial : amplitude ≈ `0.416`, minima locaux `8` ;
-- accumulation : amplitude ≈ `0.888`, minima locaux `8`, hauteur moyenne en hausse ;
-- redistribution : amplitude ≈ `0.712`, minima locaux `13`, hauteur moyenne conservée.
-
-L'accumulation crée donc des pics plus extrêmes. La redistribution crée moins d'extrêmes, mais davantage de **bassins distincts** sans gonfler progressivement le monde.
-
-C'est potentiellement plus intéressant pour Genesis : le bénéfice n'est pas « plus de relief », mais « plus de structure négative » — davantage de creux susceptibles d'attirer, piéger ou canaliser des êtres.
+La redistribution ne crée pas les pics les plus extrêmes, mais davantage de bassins distincts et une géographie positive/négative. Elle est maintenant la variante jouable active pour comparaison tactile.
 
 **Décision**  
-`ITERATE` — la variante B mérite une comparaison jouable, mais pas parce qu'elle est objectivement supérieure. Elle produit une géographie qualitativement différente qui correspond mieux à l'idée montagnes + vallées + compromis.
+`ITERATE` — candidat fort pour le verbe de sculpture, pas encore promu.
 
-**Prochaine hypothèse**  
-Rendre temporairement la redistribution jouable et observer si un seul toucher donne plus souvent l'impression de **sculpter une décision** plutôt que simplement ajouter une bosse.
+**À conserver**  
+Un résultat qui contredit l'hypothèse modifie la documentation ; les minima locaux sont utiles pour caractériser les terrains de circulation.
 
-**À conserver même si B échoue**  
-- mesurer les variantes avec des scripts identiques avant de les promouvoir ;
-- un résultat qui contredit l'hypothèse doit modifier la documentation, pas être masqué ;
-- les minima locaux peuvent être une métrique utile pour caractériser les terrains de circulation.
+---
+
+## EXP-VIS-005 — Relief lisible sans perdre la vue du dessus
+
+**Signal humain**  
+Le plateau actuel paraît trop plat : le testeur ne lit plus suffisamment la 3D.
+
+**Hypothèse**  
+On peut garder les cases orthogonales et une caméra majoritairement zénithale tout en rendant les montagnes et vallées immédiatement compréhensibles grâce à davantage de déplacement vertical, des faces sombres et des ombres cohérentes.
+
+**Prototype**  
+Modification de présentation uniquement : amplitude visuelle du relief accrue, face verticale plus profonde, petite face latérale et ombre portée. Aucun changement de simulation.
+
+**Question**  
+Une seule touche permet-elle maintenant de voir clairement ce qui monte et ce qui descend sans retrouver l'ancien aspect isométrique ?
+
+**Décision**  
+`TEST`.
+
+---
+
+## Prochaine recherche — conflit spatial lisible
+
+Le prochain problème de game design n'est pas d'ajouter un élément. C'est de découvrir une conséquence suffisamment évidente pour que les êtres — ou leur remplacement — aient une raison d'exister sans explication textuelle.
+
+Hypothèse prioritaire : **une même sculpture doit pouvoir aider une trajectoire et en compromettre une autre**. Cela introduirait un compromis avec le seul verbe du terrain.
+
+Critères :
+- intention perceptible sans tutoriel ;
+- anticipation possible avant le geste ;
+- conséquence visuelle immédiate ;
+- au moins deux intérêts spatiaux en tension ;
+- aucune règle cachée.
+
+Si les êtres actuels n'expriment pas clairement ce conflit, ils ne seront pas protégés.
