@@ -31,10 +31,56 @@ Déformer directement un petit relief sous le doigt peut être plaisant avant m�
 Un plateau compact. Toucher une cellule augmente sa hauteur. Les cellules voisines accompagnent légèrement la déformation. Un objet simple réagit à la pente.
 
 **Observation**  
+Les premiers retours ont surtout servi à préciser la représentation du monde : davantage de cases, beaucoup plus d'espace occupé, et une vue moins isométrique.
+
+**Décision**  
+`ITERATE`.
+
+**À conserver**  
+Le terrain lui-même reste l'objet principal de l'expérience.
+
+---
+
+## EXP-006 — Diriger le vivant
+
+**Hypothèse**  
+Le geste de déformer le relief devient une vraie décision de jeu si plusieurs petits êtres se déplacent selon des lois simples et prévisibles, et si certaines cases leur transmettent une propriété visible.
+
+**Références de design**  
+- *From Dust* : le terrain et les phénomènes naturels produisent les situations par interaction plutôt que par scripts isolés.
+- *Into the Breach* : conséquences déterministes et lisibles pour permettre anticipation et apprentissage.
+- *Dorfromantik* : rendre satisfaisante l'interaction répétée au cœur du jeu.
+- *Baba Is You* : une nouvelle règle n'est intéressante que si ses interactions produisent suffisamment de situations à explorer.
+
+**Prototype**  
+- monde orthogonal de carrés, plein écran ;
+- 20 × 12 cellules, avec le territoire qui dépasse latéralement le viewport ;
+- petite marche visible au bord inférieur du monde ;
+- action unique conservée : `RAISE_CELL` ;
+- trois petits êtres autonomes ;
+- après chaque action, chacun descend d'une seule case vers le voisin clairement le plus bas ;
+- aucune décision aléatoire ;
+- une seule case-source d'eau ;
+- lorsqu'un être atteint cette source, il transporte visiblement l'eau.
+
+**Ce que l'expérience ne teste pas encore**  
+- feu ;
+- végétation ;
+- combinaison d'éléments ;
+- combat ;
+- adversaire ;
+- score ;
+- condition de victoire ;
+- progression.
+
+**Question de test**  
+Est-ce que le joueur commence spontanément à raisonner en termes de relief et de trajectoire — « si je soulève ici, lequel va partir où ? » — et est-ce que rejoindre la source d'eau crée un petit moment de satisfaction/compréhension ?
+
+**Observation**  
 À tester sur téléphone.
 
 **Décision**  
-`ITERATE` — expérience initiale.
+`ITERATE` — expérience en cours.
 
 **À conserver**  
-À déterminer après test tactile réel.
+Même si la source d'eau n'est pas amusante, conserver la règle de recherche : une action simple, conséquences lisibles, zéro hasard caché, nouvelles couches introduites une par une.
