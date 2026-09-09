@@ -4,134 +4,22 @@ import { cellId, createInitialWorld } from '../src/world/model';
 
 describe('terrain simulation', () => {
   it('raises the target by draining direct neighbours without mutating the input', () => {
-    const world = createInitialWorld(3, 3);
-    const targetId = cellId(1, 1);
-    const neighbourId = cellId(1, 0);
-    const beforeTarget = world.cells[targetId].height;
-    const beforeNeighbour = world.cells[neighbourId].height;
-    const beforeMean = Object.values(world.cells).reduce((sum, cell) => sum + cell.height, 0) / 9;
-
-    const result = simulate(world, { type: 'RAISE_CELL', cellId: targetId });
-    const afterMean = Object.values(result.state.cells).reduce((sum, cell) => sum + cell.height, 0) / 9;
-
-    expect(world.cells[targetId].height).toBe(beforeTarget);
-    expect(result.state.cells[targetId].height).toBeCloseTo(beforeTarget + 0.40);
-    expect(result.state.cells[neighbourId].height).toBeCloseTo(beforeNeighbour - 0.10);
-    expect(afterMean).toBeCloseTo(beforeMean, 10);
+    const world=createInitialWorld(3,3),targetId=cellId(1,1),neighbourId=cellId(1,0);const beforeTarget=world.cells[targetId].height,beforeNeighbour=world.cells[neighbourId].height,beforeMean=Object.values(world.cells).reduce((s,c)=>s+c.height,0)/9;const result=simulate(world,{type:'RAISE_CELL',cellId:targetId});const afterMean=Object.values(result.state.cells).reduce((s,c)=>s+c.height,0)/9;expect(world.cells[targetId].height).toBe(beforeTarget);expect(result.state.cells[targetId].height).toBeCloseTo(beforeTarget+.40);expect(result.state.cells[neighbourId].height).toBeCloseTo(beforeNeighbour-.10);expect(afterMean).toBeCloseTo(beforeMean,10);
   });
 
-  it('moves agents deterministically toward a clearly lower neighbouring cell', () => {
-    const world = createInitialWorld(5, 5);
-    const agent = world.agents[0];
-    const center = cellId(2, 2);
-    agent.cellId = center;
-    world.cells[center].height = 1.4;
-    world.cells[cellId(1, 2)].height = 0.8;
-    world.cells[cellId(2, 1)].height = 1.1;
-    world.cells[cellId(2, 3)].height = 1.2;
-    world.cells[cellId(3, 2)].height = 1.0;
-
-    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(4, 4) });
-
-    expect(result.state.agents[0].cellId).toBe(cellId(1, 2));
-    expect(result.events).toContainEqual({
-      type: 'AGENT_MOVED',
-      agentId: 'mote-a',
-      from: center,
-      to: cellId(1, 2),
-    });
+  it('moves a mote toward its visible haven when the slope is traversable',()=>{
+    const world=createInitialWorld(5,5),agent=world.agents[0],center=cellId(2,2);agent.cellId=center;agent.targetId=cellId(0,2);agent.arrived=false;world.cells[center].height=1;world.cells[cellId(1,2)].height=1.05;world.cells[cellId(2,1)].height=.5;world.cells[cellId(2,3)].height=.5;world.cells[cellId(3,2)].height=.5;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(cellId(1,2));
   });
 
-  it('lets an agent collect water when it reaches the source', () => {
-    const world = createInitialWorld(10, 10);
-    const source = cellId(7, 8);
-    const approach = cellId(7, 7);
-    const agent = world.agents[0];
-    agent.cellId = approach;
-    world.cells[approach].height = 1.2;
-    world.cells[source].height = 0.5;
-    world.cells[cellId(6, 7)].height = 1.3;
-    world.cells[cellId(8, 7)].height = 1.3;
-    world.cells[cellId(7, 6)].height = 1.3;
-
-    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(0, 0) });
-
-    expect(result.state.agents[0].cellId).toBe(source);
-    expect(result.state.agents[0].carrying).toBe('water');
-    expect(result.events).toContainEqual({
-      type: 'AGENT_CHARGED',
-      agentId: 'mote-a',
-      element: 'water',
-      cellId: source,
-    });
+  it('lets a steep ridge block the direct route so sculpting can create a detour',()=>{
+    const world=createInitialWorld(5,5),agent=world.agents[0],center=cellId(2,2);agent.cellId=center;agent.targetId=cellId(0,2);agent.arrived=false;world.cells[center].height=.5;world.cells[cellId(1,2)].height=1.2;world.cells[cellId(2,1)].height=.5;world.cells[cellId(2,3)].height=.5;world.cells[cellId(3,2)].height=.5;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(center);
   });
 
-  it('consumes carried water to bloom a seed and reshape that cell', () => {
-    const world = createInitialWorld(6, 6);
-    const seed = cellId(2, 3);
-    const approach = cellId(2, 2);
-    const agent = world.agents[0];
-    agent.cellId = approach;
-    agent.carrying = 'water';
-    world.cells[seed].kind = 'seed';
-    world.cells[approach].height = 1.2;
-    world.cells[seed].height = 0.5;
-    world.cells[cellId(1, 2)].height = 1.3;
-    world.cells[cellId(3, 2)].height = 1.3;
-    world.cells[cellId(2, 1)].height = 1.3;
-
-    const beforeSeedHeight = world.cells[seed].height;
-    const result = simulate(world, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
-
-    expect(result.state.agents[0].cellId).toBe(seed);
-    expect(result.state.agents[0].carrying).toBeNull();
-    expect(result.state.cells[seed].kind).toBe('bloom');
-    expect(result.state.cells[seed].height).toBeCloseTo(beforeSeedHeight + 0.24);
-    expect(result.events).toContainEqual({
-      type: 'CELL_BLOOMED',
-      agentId: 'mote-a',
-      cellId: seed,
-    });
+  it('marks a mote as arrived when it reaches its haven',()=>{
+    const world=createInitialWorld(5,5),agent=world.agents[0],goal=cellId(1,2),start=cellId(2,2);agent.cellId=start;agent.targetId=goal;agent.arrived=false;world.cells[start].height=.7;world.cells[goal].height=.7;world.cells[cellId(2,1)].height=1.2;world.cells[cellId(2,3)].height=1.2;world.cells[cellId(3,2)].height=1.2;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(goal);expect(result.state.agents[0].arrived).toBe(true);expect(result.events).toContainEqual({type:'AGENT_ARRIVED',agentId:'mote-a',cellId:goal});
   });
 
-  it('does not let agent array order change movement decisions', () => {
-    const seed = cellId(2, 3);
-
-    const makeScenario = () => {
-      const world = createInitialWorld(6, 6);
-      const waterApproach = cellId(2, 2);
-      const observer = cellId(1, 3);
-      const alternate = cellId(1, 4);
-
-      world.agents[0].cellId = waterApproach;
-      world.agents[0].carrying = 'water';
-      world.agents[1].cellId = observer;
-      world.agents[2].cellId = cellId(5, 0);
-
-      world.cells[seed].kind = 'seed';
-      world.cells[waterApproach].height = 1.2;
-      world.cells[seed].height = 0.5;
-      world.cells[observer].height = 1.0;
-      world.cells[alternate].height = 0.65;
-      world.cells[cellId(0, 3)].height = 1.3;
-      world.cells[cellId(1, 2)].height = 1.3;
-      world.cells[cellId(2, 2)].height = 1.2;
-      return world;
-    };
-
-    const normal = makeScenario();
-    const reversed = makeScenario();
-    reversed.agents.reverse();
-
-    const normalResult = simulate(normal, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
-    const reversedResult = simulate(reversed, { type: 'RAISE_CELL', cellId: cellId(5, 5) });
-
-    const positions = (result: ReturnType<typeof simulate>) => Object.fromEntries(
-      result.state.agents.map((agent) => [agent.id, agent.cellId]),
-    );
-
-    expect(positions(normalResult)).toEqual(positions(reversedResult));
-    expect(normalResult.state.cells[seed].kind).toBe('bloom');
-    expect(reversedResult.state.cells[seed].kind).toBe('bloom');
+  it('does not let agent array order change movement decisions',()=>{
+    const make=()=>{const w=createInitialWorld(6,6);w.agents[0].cellId=cellId(3,2);w.agents[0].targetId=cellId(1,2);w.agents[1].cellId=cellId(3,3);w.agents[1].targetId=cellId(1,3);w.agents[2].cellId=cellId(5,0);w.agents[2].targetId=cellId(5,5);for(const a of w.agents)a.arrived=false;return w;};const normal=make(),reversed=make();reversed.agents.reverse();const a=simulate(normal,{type:'RAISE_CELL',cellId:cellId(0,0)}),b=simulate(reversed,{type:'RAISE_CELL',cellId:cellId(0,0)});const positions=(r:ReturnType<typeof simulate>)=>Object.fromEntries(r.state.agents.map(x=>[x.id,x.cellId]));expect(positions(a)).toEqual(positions(b));
   });
 });
