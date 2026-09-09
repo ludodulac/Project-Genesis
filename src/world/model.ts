@@ -23,7 +23,7 @@ export function cellId(row: number, col: number): CellId {
   return `${row}:${col}`;
 }
 
-export function createInitialWorld(rows = 5, cols = 5): WorldState {
+export function createInitialWorld(rows = 12, cols = 12): WorldState {
   const cells = {} as Record<CellId, Cell>;
 
   for (let row = 0; row < rows; row += 1) {
