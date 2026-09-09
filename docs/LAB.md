@@ -5,44 +5,8 @@ Ce document conserve les expériences de game design afin que les essais ratés 
 ## Format
 `hypothèse → prototype minimal → test → observation → décision → conservation/abandon → expérience suivante`
 
-## EXP-006 — Diriger le vivant
-Le relief était trop plat et le rôle des petits êtres incompréhensible. Ne pas masquer cela avec du tutoriel. `ITERATE`.
-
-## EXP-007 — Faire pousser le monde
-Eau collectée → graine traversée → bloom → relief augmenté. La simulation en phases évite qu'un ordre interne invisible décide du résultat. `ITERATE`.
-
-## EXP-008 — Sculpter plutôt qu'empiler
-Redistribution de matière conservée comme meilleur candidat actuel pour le verbe de sculpture. `ITERATE`.
-
-## EXP-010 — Le détour
-Le relief peut rediriger au lieu de simplement bloquer. Le pathfinding reste une infrastructure de laboratoire et non le jeu lui-même. `PROMOTE-PARTIAL`.
-
-## EXP-011 — Le détour opportuniste
-Une source traversée charge une mote en eau sans nouvelle commande joueur. L'opportunité vit dans le monde. `ITERATE`.
-
-## EXP-012 — Fermer la chaîne
-`relief → détour → source → transport → graine → croissance → nouveau relief`. La causalité est testable, mais le fun et la lisibilité restent à prouver humainement. `TEST`.
-
-## EXP-013 — Faux compromis
-Le premier scénario censé aider A et gêner B était faux : B gardait exactement sa route. `DROP`.
-
-## EXP-013b — Ouverture / fermeture simultanée
-Une même sculpture abaisse la voisine nécessaire à A tout en relevant la case directe de B. `PROMOTE-PARTIAL`.
-
-## EXP-014 — Opportunité qui prépare le futur
-Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant. `PROMOTE-PARTIAL`.
-
-## EXP-015 — Le bénéfice devient coût
-La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin. `PROMOTE-PARTIAL`.
-
-## EXP-016 — Réciprocité automatique
-La croissance provoquée par A ne force pas naturellement B vers une source voisine : B trouve une autre route. `DROP`.
-
-## EXP-017 — Deux gestes, deux intérêts incompatibles
-Deux gestes sur un même état peuvent favoriser des intérêts incompatibles. `PROMOTE-PARTIAL`.
-
-## EXP-018 — Robustesse géométrique
-Le motif ouverture/fermeture survit à plusieurs translations et au miroir horizontal. Tests et build passent. `PROMOTE-PARTIAL`.
+## EXP-006 à EXP-018 — connaissances conservées
+EXP-006/007 ont montré que relief plat et êtres incompréhensibles ne doivent pas être masqués par un tutoriel. EXP-008 conserve la redistribution de matière comme piste de sculpture. EXP-010 à 018 ont démontré techniquement détours, chaînes et compromis multi-agent, avec EXP-016 abandonné lorsqu'une jolie chaîne ne se produisait pas naturellement. Ces résultats restent du laboratoire, pas la version jouable.
 
 ## EXP-019 — Porter le compromis dans le monde jouable
 Le test humain ne perçoit ni compromis ni chaîne ressource/croissance ; les agents qui arrivent semblent simplement cesser de fonctionner. `DROP`.
@@ -50,56 +14,50 @@ Le test humain ne perçoit ni compromis ni chaîne ressource/croissance ; les ag
 **Apprentissage** : trop d'inférences avant le verbe fondamental. Ne pas masquer avec tutoriel, texte ou flèches.
 
 ## EXP-020 — Retour au jouet
-Une seule mote, aucun objectif ni ressource visible, sculpture par redistribution, mouvement local. Les sentinelles techniques passent, mais la lisibilité humaine reste le vrai verrou. `ITERATE`.
+Une seule mote, aucun objectif ni ressource visible, sculpture et mouvement local. Les sentinelles techniques passent, mais la lisibilité humaine reste le verrou. `ITERATE`.
 
 ## EXP-021 — Mémoire minimale contre le ping-pong
-**Hypothèse**  
-Une mémoire d'une case pourrait supprimer le rebond A↔B sans devenir perceptible comme règle distincte du relief.
+**Test humain** : le joueur n'a pas l'impression de pouvoir influencer la boule ; même en cliquant au même endroit, elle semble partir dans beaucoup de directions et il ne sait pas comment la déplacer.
 
-**Test humain**  
-Le joueur rapporte : il n'a pas l'impression de pouvoir influencer la boule ; même en cliquant au même endroit, elle semble partir dans beaucoup de directions différentes ; il ne sait pas comment la déplacer.
+**Décision** `DROP`.
 
-**Observation**  
-Le logiciel est déterministe, mais le comportement n'est pas humainement prédictible. La mémoire anti-retour et le déplacement automatique à chaque geste font que la mote paraît prendre des décisions propres. Le terrain n'est pas lu comme la cause suffisante de la direction.
+**Conservation** : **déterminisme logiciel ≠ prédictibilité humaine**. Une règle invisible n'est acceptable que si elle renforce une causalité déjà lisible.
 
-**Décision** `DROP` comme règle de la branche jouable.
+## EXP-022a — Descendre vers le voisin visible le plus bas
+**Hypothèse** : retirer toute mémoire et faire descendre la mote vers son voisin strictement le plus bas.
 
-**Conservation**  
-L'expérience a établi une distinction essentielle : **déterminisme logiciel ≠ prédictibilité humaine**. Une règle invisible n'est acceptable que si elle renforce une causalité déjà lisible ; elle ne doit pas fabriquer artificiellement une impression de vie.
+**Observation CI importante** : une sentinelle supposait qu'en relevant une case voisine de la mote, la redistribution créerait une destination évidente ailleurs. Elle a échoué : relever la voisine drainait en réalité la case sous la mote, qui devenait elle-même un bassin et la mote restait immobile.
 
-## EXP-022 — J'observe → je prédis → je sculpte → je constate
-**Hypothèse**  
-Avant de rendre la mote vivante, rendre sa causalité visible. Son prochain mouvement doit pouvoir être prédit en regardant uniquement sa case et le relief orthogonal voisin.
+Ce n'est pas un bug moteur. C'est une faiblesse de la relation geste→relief→mouvement : même avec une règle de mouvement simple, la sculpture « je relève ici et je creuse autour » demande encore de prévoir une conséquence indirecte. Le test avait encodé une intuition humaine fausse.
 
-**Prototype minimal**  
-La mémoire anti-ping-pong est retirée de la décision expérimentale. Après la sculpture, la mote regarde uniquement ses quatre voisines visibles : si au moins une est strictement plus basse que sa case, elle va vers la plus basse ; sinon elle reste sur place. Aucune destination, aucun pathfinding, aucune inertie cachée, aucune préférence historique.
+**Décision** `ITERATE`, ne pas corriger le test pour préserver artificiellement cette interaction.
 
-La règle expérimentale est donc volontairement austère : **la boule descend vers le voisin visible le plus bas, ou ne bouge pas**.
+## EXP-022b — Presser pour creuser, puis rouler
+**Hypothèse** : pour isoler la causalité la plus lisible possible, inverser temporairement le geste dans la branche jouet. Le doigt enfonce directement la case touchée ; la matière est redistribuée vers ses voisines. La boule ne possède aucune mémoire et descend uniquement si une direction visible est strictement la plus basse.
 
-**Sentinelles**
-- elle choisit le voisin strictement plus bas le plus bas ;
-- elle reste immobile si aucune descente n'existe ;
-- deux états visuellement identiques produisent le même mouvement même si leur ancienne mémoire interne diffère ;
-- la sculpture reste la redistribution existante.
+**Prototype minimal** :
+- toucher = enfoncer la case touchée ;
+- une case adjacente touchée devient directement une vallée ;
+- la boule peut donc rouler vers cette case ;
+- aucune destination, inertie ou historique ;
+- en cas d'égalité exacte entre les deux meilleures descentes, la boule ne choisit pas arbitrairement : elle reste en place.
 
-**Ce que les tests automatiques peuvent prouver**  
-Déterminisme, absence de dépendance à la mémoire, relation exacte entre hauteurs et destination.
+**Sentinelles** :
+- presser chacune des quatre cases adjacentes sur terrain plat attire la boule vers cette case ;
+- aucune direction cachée en cas d'égalité ;
+- une ancienne mémoire interne ne change pas le résultat ;
+- l'ancien moteur EXP-008/010-018 reste séparé et inchangé.
 
-**Ce qu'ils ne peuvent pas prouver**  
-Que le joueur voit assez bien les différences de hauteur pour prédire le résultat.
+**Pourquoi ce changement est acceptable** : ce n'est pas encore une décision sur le verbe final. C'est un instrument expérimental pour tester si une relation spatiale directe `je creuse là → elle roule là` peut devenir humainement prédictible. Si même cette version échoue, le problème sera probablement visuel ou plus fondamental que la logique de mouvement.
 
-**Test humain décisif**  
-Avant chaque toucher, demander au joueur de montrer/dire où il pense que la boule va aller. Puis seulement toucher et comparer prédiction/résultat. Répéter plusieurs fois sans expliquer la règle. Le signal recherché est une proportion croissante de prédictions correctes, pas simplement l'impression vague d'avoir influencé la boule.
+**Test humain décisif** : avant de toucher une case adjacente à la boule, demander « où penses-tu qu'elle va aller ? ». Faire plusieurs essais dans des directions différentes. Ne pas expliquer la règle. Chercher des prédictions régulièrement correctes.
 
-**Statut** `TEST-CI`, puis `TEST-HUMAN` si la build est valide.
+**Statut** `TEST-CI` puis `TEST-HUMAN`.
 
 ## EXP-VIS-005 — Relief lisible
-Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
+Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
 
 ## Direction actuelle
-Le verrou prioritaire n'est ni le caractère de la mote ni la profondeur du système : c'est la **causalité lisible**.
+`j'observe → je prédis → je presse/creuse → je constate`
 
-Branche active :
-`j'observe le relief → je prédis → je sculpte → je constate`
-
-Aucune nouvelle ressource, aucun tutoriel, aucune nouvelle commande, aucune inertie supplémentaire tant que le joueur ne peut pas régulièrement anticiper le prochain déplacement à partir de ce qu'il voit.
+Pas de nouvelle ressource, deuxième entité, destination, pathfinding, inertie, mémoire, tutoriel, score, combat ou progression tant que cette causalité élémentaire n'est pas prédictible humainement.
