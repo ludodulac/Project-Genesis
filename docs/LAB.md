@@ -48,11 +48,20 @@ Ce n'est pas un bug moteur. C'est une faiblesse de la relation geste→relief→
 - une ancienne mémoire interne ne change pas le résultat ;
 - l'ancien moteur EXP-008/010-018 reste séparé et inchangé.
 
-**Pourquoi ce changement est acceptable** : ce n'est pas encore une décision sur le verbe final. C'est un instrument expérimental pour tester si une relation spatiale directe `je creuse là → elle roule là` peut devenir humainement prédictible. Si même cette version échoue, le problème sera probablement visuel ou plus fondamental que la logique de mouvement.
+**Test humain — causalité générale** : le joueur formule spontanément, sans explication, « je creuse quelque part et la bille tend à aller vers le creux ». Il arrive un peu à la déplacer ainsi. C'est le premier langage terrain→bille formulé spontanément. La causalité creux→bille est donc `PROMOTE-PARTIAL` et doit être préservée tant qu'un test ultérieur ne la contredit pas.
 
-**Test humain décisif** : avant de toucher une case adjacente à la boule, demander « où penses-tu qu'elle va aller ? ». Faire plusieurs essais dans des directions différentes. Ne pas expliquer la règle. Chercher des prédictions régulièrement correctes.
+### Frontière isolée — toucher la case occupée
+Le protocole a été recommencé après une ambiguïté de formulation entre « case sous la bille » et « case où se trouve la bille » ; les réponses contaminées ne sont pas retenues.
 
-**Statut** `TEST-CI` puis `TEST-HUMAN`.
+**Prédiction humaine valide, avant toucher** : en touchant exactement la case verte occupée par la bille, le joueur pense qu'elle va « aller quelque part autour », sans savoir où.
+
+**Observation** : après un toucher unique de cette case, la bille reste au même endroit.
+
+**Explication spontanée du joueur** : il a l'impression d'avoir appuyé sur la case comme s'il n'avait pas vraiment touché la bille. Puisque la bille est ronde, il s'attend intuitivement à ce qu'un appui directement sur elle la fasse bouger hors de la case ; le résultat actuel lui donne plutôt l'impression d'une bille collée à sa case.
+
+**Apprentissage** : cette frontière révèle une attente physique distincte, sans invalider la causalité générale creux→bille. La représentation ronde de la bille suggère qu'un contact direct devrait avoir une conséquence sur elle. Le comportement actuel « je creuse sa case et elle reste dedans » est cohérent avec un bassin, mais incohérent avec l'affordance perçue d'une bille ronde manipulable.
+
+**Décision** : conserver `PROMOTE-PARTIAL` pour creux→bille et classer uniquement le cas « toucher la case occupée » en `ITERATE`. Ne pas enrichir le système. La prochaine hypothèse doit résoudre cette frontière avec la règle la plus simple possible, puis retester la prédiction avant de toucher.
 
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
