@@ -3,133 +3,84 @@
 Ce document conserve les expériences de game design afin que les essais ratés produisent de la connaissance et ne soient pas répétés sans raison.
 
 ## Format
-
-### EXP-XXX — Nom
-**Hypothèse**  
-Ce que nous pensons rendre amusant, lisible ou satisfaisant.
-
-**Prototype**  
-La plus petite modification permettant de tester l'hypothèse.
-
-**Observation**  
-Ce qui s'est réellement passé en jouant ou dans un scénario contrôlé.
-
-**Décision**  
-`PROMOTE` / `ITERATE` / `PARK` / `DROP`.
-
-**À conserver**  
-La partie intéressante même si l'expérience globale échoue.
-
----
-
-## EXP-001 — Soulever le monde
-
-**Hypothèse**  
-Déformer directement un petit relief sous le doigt peut être plaisant avant même l'existence d'un objectif de jeu.
-
-**Observation**  
-Les retours ont précisé la représentation : beaucoup de cases, monde plein écran, mais la dernière vue est devenue trop plate pour lire facilement le relief.
-
-**Décision**  
-`ITERATE`.
-
-**À conserver**  
-Le terrain lui-même reste l'objet principal de l'expérience. Une vue majoritairement du dessus doit néanmoins conserver une lecture 3D immédiate.
-
----
+`hypothèse → prototype minimal → test → observation → décision → conservation/abandon → expérience suivante`
 
 ## EXP-006 — Diriger le vivant
-
-**Hypothèse**  
-Déformer le relief devient une décision si plusieurs petits êtres suivent des lois prévisibles et si le joueur commence spontanément à anticiper leurs trajectoires.
-
-**Prototype**  
-Monde orthogonal plein écran, action terrain unique, trois êtres autonomes, déplacement déterministe vers une pente plus basse, source d'eau transportable.
-
 **Observation humaine**  
-Le testeur ne comprend pas spontanément quoi faire avec les petits êtres ni ce que leur présence lui demande. C'est une donnée négative importante : la proposition actuelle ne communique pas encore son intention par le comportement seul.
+Le relief était trop plat et le rôle des petits êtres incompréhensible. Ne pas masquer cela avec du tutoriel.
 
-Ce problème ne doit pas être masqué par un tutoriel ou des flèches. Soit le comportement des êtres devient naturellement signifiant, soit ils seront simplifiés, remplacés ou supprimés.
-
-**Décision**  
-`ITERATE` — ne pas promouvoir les êtres actuels.
+**Décision** `ITERATE` — les êtres ne sont pas promus.
 
 **À conserver**  
-Conséquences lisibles, zéro hasard caché, anticipation comme critère de qualité.
-
----
+Conséquences lisibles, zéro hasard caché, anticipation comme critère.
 
 ## EXP-007 — Faire pousser le monde
-
 **Hypothèse**  
-Transporter une propriété devient intéressant lorsqu'elle laisse une conséquence permanente qui modifie le terrain.
+Une propriété transportée devient intéressante si elle laisse une conséquence spatiale permanente.
 
-**Boucle testée**  
-`terrain → déplacement → eau → croissance → nouveau terrain`
+**Test contrôlé**  
+Eau collectée → graine traversée → graine devient bloom → relief augmente. La simulation en phases évite qu'un ordre interne invisible décide du résultat.
 
-**Observation contrôlée**  
-Eau collectée, eau consommée par une graine et croissance modifiant la hauteur sont vérifiées. Une première réaction en chaîne a été rejetée parce qu'elle dépendait de l'ordre interne des agents. La simulation a été séparée en phases afin que tous les mouvements lisent le même état.
-
-**Décision**  
-`ITERATE` — croissance candidate, non promue.
-
-**À conserver**  
-Une propriété collectée doit produire un effet spatial compréhensible ; aucune causalité ne doit dépendre d'une priorité invisible.
-
----
+**Décision** `ITERATE`.
 
 ## EXP-008 — Sculpter plutôt qu'empiler
-
-**Hypothèse**  
-Un geste qui redistribue la matière peut créer plus de compromis qu'un geste qui ajoute seulement de la hauteur.
-
 **Comparaison contrôlée**  
-Sur une séquence identique :
-- initial : amplitude ≈ `0.416`, minima locaux `8` ;
-- accumulation : amplitude ≈ `0.888`, minima `8`, moyenne en hausse ;
-- redistribution : amplitude ≈ `0.712`, minima `13`, moyenne conservée.
+Initial : amplitude ≈ 0.416, minima locaux 8. Accumulation : amplitude ≈ 0.888, minima 8, moyenne en hausse. Redistribution : amplitude ≈ 0.712, minima 13, moyenne conservée.
+
+**Décision** `ITERATE` — la redistribution reste le meilleur candidat actuel pour le verbe de sculpture.
+
+## EXP-010 — Le détour
+**Hypothèse**  
+Une montagne devient intéressante si elle redirige au lieu de simplement bloquer.
+
+**Test**  
+Le pathfinding déterministe cherche un chemin praticable autour d'une crête. Une sentinelle vérifie qu'une même sculpture peut perturber une mote sans modifier la route directe d'une autre.
 
 **Observation**  
-La redistribution ne crée pas les pics les plus extrêmes, mais davantage de bassins distincts et une géographie positive/négative. Elle est maintenant la variante jouable active pour comparaison tactile.
+Le détour transforme le relief en outil de routage. Mais « faire un chemin plus long » n'est pas encore une conséquence suffisamment riche.
 
-**Décision**  
-`ITERATE` — candidat fort pour le verbe de sculpture, pas encore promu.
+**Décision** `PROMOTE-PARTIAL` — conserver le routage/détour comme infrastructure expérimentale, pas comme gameplay final.
 
-**À conserver**  
-Un résultat qui contredit l'hypothèse modifie la documentation ; les minima locaux sont utiles pour caractériser les terrains de circulation.
-
----
-
-## EXP-VIS-005 — Relief lisible sans perdre la vue du dessus
-
-**Signal humain**  
-Le plateau actuel paraît trop plat : le testeur ne lit plus suffisamment la 3D.
-
+## EXP-011 — Le détour opportuniste
 **Hypothèse**  
-On peut garder les cases orthogonales et une caméra majoritairement zénithale tout en rendant les montagnes et vallées immédiatement compréhensibles grâce à davantage de déplacement vertical, des faces sombres et des ombres cohérentes.
+Un détour devient une décision s'il peut faire traverser une opportunité visible que la route directe évitait.
 
 **Prototype**  
-Modification de présentation uniquement : amplitude visuelle du relief accrue, face verticale plus profonde, petite face latérale et ombre portée. Aucun changement de simulation.
+Petites sources visibles sur le plateau. Elles ne sont pas des objectifs. Une mote qui en traverse une transporte de l'eau.
 
-**Question**  
-Une seule touche permet-elle maintenant de voir clairement ce qui monte et ce qui descend sans retrouver l'ancien aspect isométrique ?
+**Test automatisé**  
+Une sentinelle reproductible vérifie qu'une mote traversant une source devient porteuse d'eau.
 
-**Décision**  
-`TEST`.
+**Décision** `ITERATE`.
 
----
+**À conserver**  
+Les opportunités doivent vivre dans le monde, pas dans des boutons. Le joueur modifie la route ; il ne commande pas la collecte.
 
-## Prochaine recherche — conflit spatial lisible
+## EXP-012 — Fermer la chaîne
+**Hypothèse**  
+Le premier moment émergent plausible apparaît quand une sculpture produit indirectement une transformation ailleurs : `relief → détour → source → transport → graine → croissance`.
 
-Le prochain problème de game design n'est pas d'ajouter un élément. C'est de découvrir une conséquence suffisamment évidente pour que les êtres — ou leur remplacement — aient une raison d'exister sans explication textuelle.
+**Prototype minimal**  
+Une mote chargée en eau qui traverse une graine transforme celle-ci en bloom, consomme l'eau et soulève légèrement la cellule. Aucun nouvel input.
 
-Hypothèse prioritaire : **une même sculpture doit pouvoir aider une trajectoire et en compromettre une autre**. Cela introduirait un compromis avec le seul verbe du terrain.
+**Test automatisé**  
+La chaîne eau → bloom → modification de hauteur est maintenant une sentinelle explicite.
 
-Critères :
-- intention perceptible sans tutoriel ;
-- anticipation possible avant le geste ;
-- conséquence visuelle immédiate ;
-- au moins deux intérêts spatiaux en tension ;
-- aucune règle cachée.
+**Ce que le test ne prouve pas**  
+Il prouve la causalité et le déterminisme, pas que la chaîne est amusante ni perceptible sur téléphone.
 
-Si les êtres actuels n'expriment pas clairement ce conflit, ils ne seront pas protégés.
+**Décision** `TEST` — première chaîne à évaluer comme candidat « ah oui ».
+
+## EXP-VIS-005 — Relief lisible
+Le relief visuel utilise davantage de déplacement vertical, faces sombres et ombres tout en conservant une grille orthogonale. `TEST`.
+
+## Prochaine recherche — bifurcation avec coût
+
+Ne pas ajouter un deuxième élément maintenant. La prochaine hypothèse est plus stricte : **une route utile doit avoir un coût spatial visible**. Une sculpture pourrait envoyer une mote vers une source puis une graine, tout en rendant simultanément la destination d'une autre mote plus difficile.
+
+Critères de promotion :
+- la conséquence peut être anticipée avant le toucher ;
+- un geste influence au moins deux intérêts ;
+- le bénéfice n'est pas automatiquement dominant ;
+- la chaîne reste compréhensible sans texte ;
+- le joueur peut découvrir une solution non explicitement enseignée.
