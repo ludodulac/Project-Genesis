@@ -93,7 +93,16 @@ Ce n'est ni une destination ni un pathfinding caché. C'est une inertie minimale
 **Sentinelle**  
 Si l'ancienne case est la plus basse mais qu'une autre sortie est accessible, la mote ne revient pas immédiatement en arrière.
 
-**Statut** `TEST` jusqu'à validation CI.
+**Garde-fou de supervision**  
+Cette mémoire est une règle invisible et doit donc rester sous suspicion. Elle est conservée uniquement si elle supprime le ping-pong mécanique sans devenir perceptible comme une logique séparée du relief. Le terrain doit rester la cause principale et anticipable du mouvement.
+
+Au prochain test humain, deux observations sont requises :
+1. le joueur a-t-il l'impression de pouvoir influencer la trajectoire en sculptant ?
+2. le mouvement semble-t-il découler naturellement du relief, ou la mote prend-elle parfois une décision qui paraît arbitraire ?
+
+Si l'anti-retour produit un choix que le relief ne permet pas d'anticiper, **ne pas ajouter davantage de mémoire**. Modifier ou simplifier la règle de mouvement elle-même. Si l'anti-retour ne fait qu'effacer le ping-pong et reste invisible, le conserver.
+
+**Statut** `TEST-HUMAN`.
 
 ## EXP-VIS-005 — Relief lisible
 Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
@@ -105,4 +114,4 @@ Le signal abstrait de compromis d'EXP-017/018 reste conservé comme connaissance
 La branche active est donc :
 `sculpture locale → vallée/bosse lisible → une mote continue → trajectoire locale compréhensible`
 
-Aucune nouvelle ressource, aucun tutoriel et aucune nouvelle commande tant que cette boucle n'est pas validée humainement.
+Aucune nouvelle ressource, aucun tutoriel et aucune nouvelle commande tant que cette boucle n'est pas validée humainement. Toute règle invisible ajoutée au mouvement doit être justifiée par une meilleure lecture du relief, jamais par le besoin de masquer une faiblesse de simulation.
