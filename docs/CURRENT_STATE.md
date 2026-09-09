@@ -2,120 +2,74 @@
 
 ## État réel
 
-Le dépôt contient maintenant un prototype vivant basé sur EXP-006/007, avec **EXP-008 — Sculpter plutôt qu'empiler** rendu jouable et déployé.
+Genesis est un prototype mobile Phaser + TypeScript où le joueur n'a qu'un verbe : **sculpter le terrain par redistribution locale**.
 
-### Présent dans la version jouable
-- runtime Phaser 4 + TypeScript + Vite ;
-- état du monde sérialisable ;
-- simulation séparée du rendu ;
-- action tactile unique `RAISE_CELL` ;
-- plateau orthogonal de 20 × 12 cellules ;
-- grille carrée alignée horizontalement/verticalement ;
-- terrain plein écran avec bords latéraux hors champ ;
-- petite marche visible au bord inférieur du monde ;
-- relief initial déterministe ;
-- trois petits êtres autonomes ;
-- chaque action produit une étape de déplacement déterministe ;
-- décisions de mouvement calculées depuis un même état du terrain, indépendamment de l'ordre du tableau des agents ;
-- une source d'eau explicite ;
-- un être peut transporter l'eau ;
-- trois cases-graine fixes et visibles ;
-- un être porteur d'eau qui atteint une graine consomme l'eau, transforme la graine en pousse et augmente légèrement la hauteur de cette cellule ;
-- retour visuel distinct pour eau, graines, pousses et agents chargés ;
-- interaction tactile plein écran ;
-- workflow CI + GitHub Pages.
+Le laboratoire a dépassé EXP-008 : EXP-010 à EXP-018 ont testé si ce verbe peut créer des trajectoires, opportunités et compromis sans ajouter de commandes.
 
-### Verbe de sculpture actuellement testé
+## Version jouable actuelle
+- plateau orthogonal 20 × 12 ;
+- relief déterministe avec volume visuel ;
+- toucher une cellule la relève en drainant ses voisines ;
+- hauteur moyenne approximativement conservée ;
+- trois êtres autonomes avec destinations visibles ;
+- déplacement déterministe et simultané ;
+- relief trop abrupt = passage impossible, détour possible ;
+- sources visibles donnant de l'eau au passage ;
+- graines transformées en bloom par un porteur d'eau ;
+- bloom qui relève sa cellule ;
+- simulation indépendante du rendu ;
+- invariance à l'ordre interne des agents testée ;
+- CI, build Vite et GitHub Pages.
 
-EXP-008 remplace temporairement l'ancienne accumulation par une redistribution de matière :
+## Ce que le laboratoire a réellement appris
 
-- la case touchée monte ;
-- ses quatre voisines directes descendent légèrement ;
-- la case touchée ne gagne que la quantité réellement prélevée aux voisines ;
-- la hauteur moyenne du terrain reste approximativement conservée ;
-- aucune nouvelle commande n'a été ajoutée.
+### Conservé
+**EXP-008 — redistribution** : meilleur candidat actuel pour le verbe, car relever une cellule abaisse ses voisines et crée naturellement des échanges spatiaux.
 
-Le but n'est pas de déclarer cette variante meilleure, mais de vérifier si un toucher produit davantage l'impression de **sculpter une décision** que d'ajouter une bosse.
+**EXP-010 — détour** : le relief peut modifier une trajectoire sans commander directement l'être.
 
-### Résultat contrôlé EXP-008
+**EXP-014/015 — conséquences futures** : une route peut collecter de l'eau, produire une croissance, puis cette croissance peut modifier la route d'un autre être.
 
-Sur une séquence identique de huit touches appliquée à un monde 14 × 10 :
+**EXP-017/018 — compromis** : deux gestes sur un même état peuvent favoriser des intérêts incompatibles, et le motif survit à plusieurs translations et à un miroir horizontal.
 
-- terrain initial : amplitude ≈ `0.416`, minima locaux `8` ;
-- ancienne accumulation : amplitude ≈ `0.888`, minima locaux `8`, hauteur moyenne en hausse ;
-- redistribution : amplitude ≈ `0.712`, minima locaux `13`, hauteur moyenne conservée.
+### Abandonné
+**EXP-013** : premier faux compromis ; B n'était en réalité pas gêné.
 
-Observation : la redistribution ne crée pas les pics les plus extrêmes, mais crée davantage de bassins locaux. C'est une différence de géographie, pas une preuve de fun.
+**EXP-016** : une croissance ne redirige pas automatiquement un autre être vers une opportunité intéressante. Ne pas forcer cette réciprocité.
 
-### Robustesse de la simulation
+## Hypothèse active — EXP-019
 
-Un premier comportement de réaction en chaîne d'EXP-007 a été rejeté parce qu'il dépendait de l'ordre des agents dans le tableau. La simulation est maintenant phasée :
+Le compromis robuste est maintenant porté dans la géographie initiale du plateau plutôt que laissé uniquement dans les tests.
 
-1. modification du terrain ;
-2. calcul simultané des intentions de déplacement ;
-3. application des déplacements ;
-4. résolution stable des interactions eau/graine.
+Situation recherchée :
 
-Une sentinelle vérifie que réordonner le tableau des agents ne change pas leurs décisions de mouvement.
+`A a une porte légèrement trop haute`
 
-### Vérifié
+à côté de
 
-Le run CI associé à la version jouable EXP-008 a réussi :
-- tests de simulation : succès ;
-- tests comparatifs EXP-008 : succès ;
-- build Vite : succès ;
-- déploiement GitHub Pages : succès.
+`B a une source sur sa route directe`
 
-### Gouvernance du laboratoire
+Toucher la source :
+- relève la source ;
+- abaisse la porte voisine par redistribution ;
+- peut ouvrir le passage direct de A ;
+- peut fermer la collecte directe de B.
 
-`AI_START_HERE.md` définit désormais explicitement le mode **laboratoire autonome de game design** :
+Aucune nouvelle règle et aucune nouvelle commande n'ont été ajoutées pour créer ce dilemme.
 
-`hypothèse → prototype minimal → test → observation → décision → conservation/abandon → expérience suivante`
+## Statut de confiance
 
-Une expérience n'est jamais automatiquement le jeu. Les mécaniques ne sont promues dans `GAMEPLAY.md` qu'après preuve suffisante de valeur ludique.
+**Prouvé automatiquement** : déterminisme, conservation approximative de matière, chaîne eau→croissance, croissance→coût de route, compromis local, robustesse du compromis sur plusieurs géométries.
 
-### Expérience jouable active
+**Non prouvé** : plaisir, compréhension spontanée, capacité à anticiper avant le toucher, désir de rejouer.
 
-**EXP-008 — Sculpter plutôt qu'empiler**
+## Prochain test humain
 
-La boucle complète encore présente est :
+Une seule question est désormais prioritaire sur téléphone :
 
-`sculpture du terrain → déplacement → eau → croissance → nouveau terrain`
+> Sans explication, vois-tu qu'en touchant certaines cases tu peux aider un petit être tout en changeant ce qui arrive à un autre ?
 
-EXP-006 et EXP-007 restent des sources d'apprentissage, pas des fondations intouchables.
+Si oui, approfondir une séquence de 2–3 décisions liées. Si non, ne pas ajouter de mécanique : améliorer la lisibilité ou simplifier les êtres.
 
-### À vérifier humainement sur téléphone
-
-Le prochain test humain devra rester très court. Observer principalement :
-
-1. un toucher donne-t-il davantage l'impression de créer **une montagne et une vallée en même temps** ?
-2. cette redistribution rend-elle les trajectoires plus intéressantes à anticiper, ou simplement plus chaotiques ?
-
-### Non promu / encore incertain
-- déplacement autonome comme mécanique définitive ;
-- eau ;
-- graines / croissance ;
-- redistribution de matière ;
-- importance réelle des minima locaux pour le plaisir de jeu.
-
-### Absent volontairement
-- feu ;
-- autres éléments ;
-- combat ;
-- adversaire ;
-- condition de victoire ;
-- score ;
-- backend ;
-- comptes ;
-- multijoueur ;
-- progression ;
-- boutique ;
-- cartes ;
-- grosse infrastructure ;
-- assets définitifs.
-
-## Prochaine hypothèse
-
-Avant d'ajouter un nouvel élément, chercher si le nouveau verbe de sculpture peut produire une première **situation de compromis** uniquement avec terrain + plusieurs êtres : une modification utile à un être doit pouvoir créer simultanément une opportunité ou un danger pour un autre.
-
-Si cette profondeur n'apparaît pas, simplifier ou changer le mouvement avant d'ajouter de nouvelles couches.
+## Toujours volontairement absent
+Feu, combat, ennemi, score, progression, nouvelle commande, deuxième ressource complexe, backend, comptes, multijoueur, boutique, cartes et grosse infrastructure.
