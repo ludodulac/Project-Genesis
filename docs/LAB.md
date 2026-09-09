@@ -123,24 +123,35 @@ Le verbe actuel est encore trop unidirectionnel : toucher ajoute de la hauteur, 
 **Pourquoi maintenant**  
 EXP-006/007 montrent que les trajectoires deviennent intéressantes quand la géographie change. Avant d'ajouter feu, danger ou objectif, il faut vérifier que le verbe fondamental de sculpture produit lui-même assez de décisions.
 
-**Prototype minimal envisagé**  
-Comparer deux variantes avec les mêmes êtres, eau et graines :
+**Prototype minimal**  
+Deux variantes pures sont isolées dans `src/experiments/exp008Terrain.ts` :
 
-- A — `RAISE_CELL` actuel : cible + voisins montent ;
-- B — déplacement de matière : cible monte, anneau proche descend légèrement, somme approximativement conservée.
+- A — `accumulate` : cible + voisins montent ;
+- B — `redistribute` : la cible monte en prélevant approximativement la même quantité de matière à ses quatre voisins.
 
-Aucune nouvelle ressource, aucun nouvel élément, aucun objectif.
+La version jouable n'est pas encore modifiée.
 
-**Mesures contrôlées**  
-Comparer sur des séquences identiques :
-- amplitude et diversité du relief ;
-- nombre de changements de trajectoire ;
-- fréquence des êtres bloqués dans des minima ;
-- capacité à créer volontairement un couloir, une barrière ou un bassin ;
-- stabilité du déterminisme.
+**Scénario contrôlé**  
+Une même séquence de huit touches est appliquée à un monde 14 × 10.
 
-**Question de test**  
-Est-ce que redistribuer le terrain crée plus de compromis et de possibilités avec le même geste, sans rendre la lecture confuse ?
+**Observation**  
+L'hypothèse initiale « la redistribution produira une amplitude totale plus grande » est fausse sur ce scénario :
+
+- terrain initial : amplitude ≈ `0.416`, minima locaux `8` ;
+- accumulation : amplitude ≈ `0.888`, minima locaux `8`, hauteur moyenne en hausse ;
+- redistribution : amplitude ≈ `0.712`, minima locaux `13`, hauteur moyenne conservée.
+
+L'accumulation crée donc des pics plus extrêmes. La redistribution crée moins d'extrêmes, mais davantage de **bassins distincts** sans gonfler progressivement le monde.
+
+C'est potentiellement plus intéressant pour Genesis : le bénéfice n'est pas « plus de relief », mais « plus de structure négative » — davantage de creux susceptibles d'attirer, piéger ou canaliser des êtres.
 
 **Décision**  
-`NEXT` — prochaine hypothèse active après validation technique de la simulation phasée.
+`ITERATE` — la variante B mérite une comparaison jouable, mais pas parce qu'elle est objectivement supérieure. Elle produit une géographie qualitativement différente qui correspond mieux à l'idée montagnes + vallées + compromis.
+
+**Prochaine hypothèse**  
+Rendre temporairement la redistribution jouable et observer si un seul toucher donne plus souvent l'impression de **sculpter une décision** plutôt que simplement ajouter une bosse.
+
+**À conserver même si B échoue**  
+- mesurer les variantes avec des scripts identiques avant de les promouvoir ;
+- un résultat qui contredit l'hypothèse doit modifier la documentation, pas être masqué ;
+- les minima locaux peuvent être une métrique utile pour caractériser les terrains de circulation.
