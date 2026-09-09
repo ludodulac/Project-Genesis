@@ -44,18 +44,31 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
 
   const events: WorldEvent[] = [];
 
+  // Phase 1: every agent reads the same post-terrain state and chooses a move.
+  // No interaction caused by another agent can alter a decision in this phase.
+  const moveIntents = new Map<Agent['id'], CellId>();
   for (const agent of next.agents) {
     const current = next.cells[agent.cellId];
     const destination = neighboursOf(next, current.id)
       .filter((cell) => cell.height < current.height - MOVE_THRESHOLD)
       .sort((a, b) => a.height - b.height || a.id.localeCompare(b.id))[0];
 
-    if (destination) {
-      const from = agent.cellId;
-      agent.cellId = destination.id;
-      events.push({ type: 'AGENT_MOVED', agentId: agent.id, from, to: destination.id });
-    }
+    if (destination) moveIntents.set(agent.id, destination.id);
+  }
 
+  // Phase 2: apply all moves.
+  for (const agent of next.agents) {
+    const destination = moveIntents.get(agent.id);
+    if (!destination) continue;
+    const from = agent.cellId;
+    agent.cellId = destination;
+    events.push({ type: 'AGENT_MOVED', agentId: agent.id, from, to: destination });
+  }
+
+  // Phase 3: resolve cell interactions in a stable, explicit order.
+  // Agent array order must never be a hidden gameplay variable.
+  const interactionOrder = [...next.agents].sort((a, b) => a.id.localeCompare(b.id));
+  for (const agent of interactionOrder) {
     const standingCell = next.cells[agent.cellId];
     if (standingCell.kind === 'water-source' && agent.carrying !== 'water') {
       agent.carrying = 'water';
