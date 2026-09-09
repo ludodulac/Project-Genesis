@@ -1,25 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { simulate } from '../src/simulation/simulate';
 import { cellId, createInitialWorld } from '../src/world/model';
-
-describe('terrain simulation', () => {
-  it('raises the target by draining direct neighbours without mutating the input', () => {
-    const world=createInitialWorld(3,3),targetId=cellId(1,1),neighbourId=cellId(1,0);const beforeTarget=world.cells[targetId].height,beforeNeighbour=world.cells[neighbourId].height,beforeMean=Object.values(world.cells).reduce((s,c)=>s+c.height,0)/9;const result=simulate(world,{type:'RAISE_CELL',cellId:targetId});const afterMean=Object.values(result.state.cells).reduce((s,c)=>s+c.height,0)/9;expect(world.cells[targetId].height).toBe(beforeTarget);expect(result.state.cells[targetId].height).toBeCloseTo(beforeTarget+.40);expect(result.state.cells[neighbourId].height).toBeCloseTo(beforeNeighbour-.10);expect(afterMean).toBeCloseTo(beforeMean,10);
-  });
-
-  it('moves a mote toward its visible haven when the slope is traversable',()=>{
-    const world=createInitialWorld(5,5),agent=world.agents[0],center=cellId(2,2);agent.cellId=center;agent.targetId=cellId(0,2);agent.arrived=false;world.cells[center].height=1;world.cells[cellId(1,2)].height=1.05;world.cells[cellId(2,1)].height=.5;world.cells[cellId(2,3)].height=.5;world.cells[cellId(3,2)].height=.5;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(cellId(1,2));
-  });
-
-  it('lets a steep ridge block the direct route so sculpting can create a detour',()=>{
-    const world=createInitialWorld(5,5),agent=world.agents[0],center=cellId(2,2);agent.cellId=center;agent.targetId=cellId(0,2);agent.arrived=false;world.cells[center].height=.5;world.cells[cellId(1,2)].height=1.2;world.cells[cellId(2,1)].height=.5;world.cells[cellId(2,3)].height=.5;world.cells[cellId(3,2)].height=.5;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(center);
-  });
-
-  it('marks a mote as arrived when it reaches its haven',()=>{
-    const world=createInitialWorld(5,5),agent=world.agents[0],goal=cellId(1,2),start=cellId(2,2);agent.cellId=start;agent.targetId=goal;agent.arrived=false;world.cells[start].height=.7;world.cells[goal].height=.7;world.cells[cellId(2,1)].height=1.2;world.cells[cellId(2,3)].height=1.2;world.cells[cellId(3,2)].height=1.2;const result=simulate(world,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(result.state.agents[0].cellId).toBe(goal);expect(result.state.agents[0].arrived).toBe(true);expect(result.events).toContainEqual({type:'AGENT_ARRIVED',agentId:'mote-a',cellId:goal});
-  });
-
-  it('does not let agent array order change movement decisions',()=>{
-    const make=()=>{const w=createInitialWorld(6,6);w.agents[0].cellId=cellId(3,2);w.agents[0].targetId=cellId(1,2);w.agents[1].cellId=cellId(3,3);w.agents[1].targetId=cellId(1,3);w.agents[2].cellId=cellId(5,0);w.agents[2].targetId=cellId(5,5);for(const a of w.agents)a.arrived=false;return w;};const normal=make(),reversed=make();reversed.agents.reverse();const a=simulate(normal,{type:'RAISE_CELL',cellId:cellId(0,0)}),b=simulate(reversed,{type:'RAISE_CELL',cellId:cellId(0,0)});const positions=(r:ReturnType<typeof simulate>)=>Object.fromEntries(r.state.agents.map(x=>[x.id,x.cellId]));expect(positions(a)).toEqual(positions(b));
-  });
+describe('terrain simulation',()=>{
+ it('redistributes matter without mutating input',()=>{const w=createInitialWorld(3,3),t=cellId(1,1),n=cellId(1,0),bt=w.cells[t].height,bn=w.cells[n].height,bm=Object.values(w.cells).reduce((s,c)=>s+c.height,0)/9,r=simulate(w,{type:'RAISE_CELL',cellId:t}),am=Object.values(r.state.cells).reduce((s,c)=>s+c.height,0)/9;expect(w.cells[t].height).toBe(bt);expect(r.state.cells[t].height).toBeCloseTo(bt+.4);expect(r.state.cells[n].height).toBeCloseTo(bn-.1);expect(am).toBeCloseTo(bm,10);});
+ it('takes a traversable direct step toward the haven',()=>{const w=createInitialWorld(5,5),a=w.agents[0],s=cellId(2,2);a.cellId=s;a.targetId=cellId(0,2);a.arrived=false;for(const c of Object.values(w.cells))c.height=.7;const r=simulate(w,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(r.state.agents[0].cellId).toBe(cellId(1,2));});
+ it('detours around a steep ridge instead of freezing',()=>{const w=createInitialWorld(5,5),a=w.agents[0],s=cellId(2,2);a.cellId=s;a.targetId=cellId(0,2);a.arrived=false;for(const c of Object.values(w.cells))c.height=.5;w.cells[cellId(1,2)].height=1.2;const r=simulate(w,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(r.state.agents[0].cellId).not.toBe(s);expect(r.state.agents[0].cellId).not.toBe(cellId(1,2));});
+ it('can make one sculpture affect two motes differently',()=>{const w=createInitialWorld(5,5);for(const c of Object.values(w.cells))c.height=.5;const a=w.agents[0],b=w.agents[1];a.cellId=cellId(3,1);a.targetId=cellId(0,1);a.arrived=false;b.cellId=cellId(3,3);b.targetId=cellId(0,3);b.arrived=false;const r=simulate(w,{type:'RAISE_CELL',cellId:cellId(2,1)});expect(r.state.agents[0].cellId).not.toBe(cellId(2,1));expect(r.state.agents[1].cellId).toBe(cellId(2,3));});
+ it('marks arrival',()=>{const w=createInitialWorld(5,5),a=w.agents[0],g=cellId(1,2),s=cellId(2,2);a.cellId=s;a.targetId=g;a.arrived=false;for(const c of Object.values(w.cells))c.height=.7;const r=simulate(w,{type:'RAISE_CELL',cellId:cellId(4,4)});expect(r.state.agents[0].cellId).toBe(g);expect(r.state.agents[0].arrived).toBe(true);});
+ it('keeps movement independent of agent array order',()=>{const make=()=>{const w=createInitialWorld(6,6);for(const c of Object.values(w.cells))c.height=.6;w.agents[0].cellId=cellId(3,2);w.agents[0].targetId=cellId(1,2);w.agents[1].cellId=cellId(3,3);w.agents[1].targetId=cellId(1,3);w.agents[2].cellId=cellId(5,0);w.agents[2].targetId=cellId(5,5);for(const a of w.agents)a.arrived=false;return w;},a=make(),b=make();b.agents.reverse();const ra=simulate(a,{type:'RAISE_CELL',cellId:cellId(0,0)}),rb=simulate(b,{type:'RAISE_CELL',cellId:cellId(0,0)}),pos=(r:ReturnType<typeof simulate>)=>Object.fromEntries(r.state.agents.map(x=>[x.id,x.cellId]));expect(pos(ra)).toEqual(pos(rb));});
 });
