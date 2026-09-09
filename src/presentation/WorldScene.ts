@@ -7,11 +7,17 @@ interface CellShape { id: CellId; points: Point[] }
 
 const GAME_WIDTH = 390;
 const GAME_HEIGHT = 760;
-const TILE_W = 70;
-const TILE_H = 36;
-const HEIGHT_PX = 28;
+
+// Presentation-only projection. The simulation never depends on these values.
+// A wide/flat diamond plus strong vertical relief makes the board feel like a
+// little physical landscape resting in front of the player rather than a map
+// seen from above.
+const TILE_W = 74;
+const TILE_H = 24;
+const HEIGHT_PX = 34;
+const DEPTH_PERSPECTIVE = 0.055;
 const ORIGIN_X = GAME_WIDTH / 2;
-const ORIGIN_Y = 250;
+const ORIGIN_Y = 292;
 
 const PALETTE = [0x6edb8f, 0x81e19c, 0x65d7a0, 0x98df88, 0x74d7b2];
 
@@ -96,6 +102,7 @@ export class WorldScene extends Phaser.Scene {
     this.board.fillStyle(0xdff7ff, 1);
     this.board.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
+    // Far cells first: nearby cells naturally overlap them and reinforce depth.
     const cells = Object.values(this.world.cells).sort((a, b) => (a.row + a.col) - (b.row + b.col) || a.row - b.row);
 
     for (const cell of cells) {
@@ -103,32 +110,36 @@ export class WorldScene extends Phaser.Scene {
     }
 
     const bob = Math.sin(time / 260) * 3;
+    const orbScale = this.depthScaleForCell(this.world.cells[this.world.orb.cellId]);
     this.orbLayer.fillStyle(0x183d55, 0.16);
-    this.orbLayer.fillEllipse(this.orbX, this.orbY + 13, 28, 10);
+    this.orbLayer.fillEllipse(this.orbX, this.orbY + 13 * orbScale, 28 * orbScale, 10 * orbScale);
     this.orbLayer.fillStyle(0xffd84f, 1);
-    this.orbLayer.fillCircle(this.orbX, this.orbY - 2 + bob, 13);
+    this.orbLayer.fillCircle(this.orbX, this.orbY - 2 * orbScale + bob, 13 * orbScale);
     this.orbLayer.fillStyle(0xfff2a6, 0.95);
-    this.orbLayer.fillCircle(this.orbX - 4, this.orbY - 7 + bob, 4);
+    this.orbLayer.fillCircle(this.orbX - 4 * orbScale, this.orbY - 7 * orbScale + bob, 4 * orbScale);
   }
 
   private drawCell(cell: Cell): void {
     const visualHeight = this.visualHeights.get(cell.id) ?? cell.height;
     const center = this.positionFor(cell.row, cell.col, visualHeight);
-    const lift = 10 + visualHeight * 17;
+    const scale = this.depthScaleForCell(cell);
+    const tileW = TILE_W * scale;
+    const tileH = TILE_H * scale;
+    const lift = (14 + visualHeight * 21) * scale;
 
     const top: Point[] = [
-      { x: center.x, y: center.y - TILE_H / 2 },
-      { x: center.x + TILE_W / 2, y: center.y },
-      { x: center.x, y: center.y + TILE_H / 2 },
-      { x: center.x - TILE_W / 2, y: center.y },
+      { x: center.x, y: center.y - tileH / 2 },
+      { x: center.x + tileW / 2, y: center.y },
+      { x: center.x, y: center.y + tileH / 2 },
+      { x: center.x - tileW / 2, y: center.y },
     ];
 
     const rightSide = [top[1], top[2], { x: top[2].x, y: top[2].y + lift }, { x: top[1].x, y: top[1].y + lift }];
     const leftSide = [top[2], top[3], { x: top[3].x, y: top[3].y + lift }, { x: top[2].x, y: top[2].y + lift }];
 
     const baseColor = PALETTE[(cell.row * 2 + cell.col) % PALETTE.length];
-    this.fillPolygon(rightSide, shade(baseColor, 0.68));
-    this.fillPolygon(leftSide, shade(baseColor, 0.54));
+    this.fillPolygon(rightSide, shade(baseColor, 0.66));
+    this.fillPolygon(leftSide, shade(baseColor, 0.48));
     this.fillPolygon(top, baseColor);
 
     this.board.lineStyle(this.selected === cell.id ? 3 : 1.2, this.selected === cell.id ? 0xffffff : 0x2e816e, this.selected === cell.id ? 0.95 : 0.26);
@@ -137,16 +148,24 @@ export class WorldScene extends Phaser.Scene {
     this.cellShapes.push({ id: cell.id, points: top });
   }
 
+  private depthScaleForCell(cell: Cell): number {
+    // row + col is the screen-depth axis in this projection.
+    return 0.82 + (cell.row + cell.col) * DEPTH_PERSPECTIVE;
+  }
+
   private positionForCell(cell: Cell, orb = false): Point {
     const height = this.visualHeights.get(cell.id) ?? cell.height;
     const point = this.positionFor(cell.row, cell.col, height);
-    return orb ? { x: point.x, y: point.y - TILE_H / 2 - 9 } : point;
+    const scale = this.depthScaleForCell(cell);
+    return orb ? { x: point.x, y: point.y - (TILE_H * scale) / 2 - 9 * scale } : point;
   }
 
   private positionFor(row: number, col: number, height: number): Point {
+    const depth = row + col;
+    const scale = 0.82 + depth * DEPTH_PERSPECTIVE;
     return {
-      x: ORIGIN_X + (col - row) * (TILE_W / 2),
-      y: ORIGIN_Y + (col + row) * (TILE_H / 2) - height * HEIGHT_PX,
+      x: ORIGIN_X + (col - row) * (TILE_W / 2) * scale,
+      y: ORIGIN_Y + depth * (TILE_H / 2) * scale - height * HEIGHT_PX * scale,
     };
   }
 
