@@ -1,44 +1,70 @@
 export type CellId = `${number}:${number}`;
+export type CellKind = 'ground' | 'water-source';
+export type Element = 'water';
 
 export interface Cell {
   id: CellId;
   row: number;
   col: number;
   height: number;
+  kind: CellKind;
 }
 
-export interface Orb {
-  id: 'orb';
+export interface Agent {
+  id: 'mote-a' | 'mote-b' | 'mote-c';
   cellId: CellId;
+  carrying: Element | null;
 }
 
 export interface WorldState {
   rows: number;
   cols: number;
   cells: Record<CellId, Cell>;
-  orb: Orb;
+  agents: Agent[];
 }
 
 export function cellId(row: number, col: number): CellId {
   return `${row}:${col}`;
 }
 
-export function createInitialWorld(rows = 12, cols = 12): WorldState {
+export function createInitialWorld(rows = 20, cols = 12): WorldState {
   const cells = {} as Record<CellId, Cell>;
 
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       const id = cellId(row, col);
-      const softRelief = ((row * 7 + col * 11) % 5) * 0.06;
-      cells[id] = { id, row, col, height: 0.45 + softRelief };
+      // A deterministic, low-amplitude relief: enough variation to create slopes,
+      // but never random so a situation can be replayed and understood.
+      const broadWave = Math.sin(row * 0.72) * 0.09 + Math.cos(col * 0.83) * 0.08;
+      const localVariation = ((row * 7 + col * 11) % 5) * 0.025;
+      cells[id] = {
+        id,
+        row,
+        col,
+        height: 0.52 + broadWave + localVariation,
+        kind: 'ground',
+      };
     }
   }
+
+  const waterSource = cellId(Math.min(rows - 1, 7), Math.min(cols - 1, 8));
+  if (cells[waterSource]) cells[waterSource].kind = 'water-source';
+
+  const starts = [
+    cellId(Math.min(rows - 1, 10), Math.min(cols - 1, 5)),
+    cellId(Math.min(rows - 1, 12), Math.min(cols - 1, 7)),
+    cellId(Math.min(rows - 1, 14), Math.min(cols - 1, 4)),
+  ];
 
   return {
     rows,
     cols,
     cells,
-    orb: { id: 'orb', cellId: cellId(Math.floor(rows / 2), Math.floor(cols / 2)) },
+    agents: [
+      { id: 'mote-a', cellId: starts[0], carrying: null },
+      { id: 'mote-b', cellId: starts[1], carrying: null },
+      { id: 'mote-c', cellId: starts[2], carrying: null },
+    ],
   };
 }
 
