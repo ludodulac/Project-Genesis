@@ -2,57 +2,69 @@
 
 ## État réel
 
-Le dépôt contient désormais le premier prototype Genesis-01.
+Le dépôt contient maintenant le prototype Genesis EXP-006 — **Diriger le vivant**.
 
 ### Présent
-- vision Genesis-01 définie ;
-- principes d'architecture définis ;
-- protocole de reprise IA défini ;
-- architecture conceptuelle définie ;
+- vision Genesis et principes d'architecture définis ;
 - runtime Phaser 4 + TypeScript + Vite ;
-- plateau isométrique procédural 5 × 5 ;
 - état du monde sérialisable ;
-- action canonique `RAISE_CELL` ;
 - simulation séparée du rendu ;
-- réaction douce des cellules voisines ;
-- un orbe simple descend vers un voisin clairement plus bas ;
-- rendu mobile plein écran et interaction tactile ;
-- tests de simulation ;
+- action canonique unique `RAISE_CELL` ;
+- plateau orthogonal de 20 × 12 cellules ;
+- grille carrée alignée horizontalement/verticalement ;
+- terrain qui occupe presque tout l'écran et dépasse latéralement le viewport ;
+- petite marche visible au bord inférieur pour suggérer l'épaisseur et la limite du monde ;
+- relief déterministe, sans génération aléatoire ;
+- réaction douce des cellules voisines à une élévation ;
+- trois petits êtres autonomes ;
+- déplacement déterministe d'une case vers le voisin clairement le plus bas après chaque action ;
+- une source d'eau explicite ;
+- un être qui atteint la source transporte l'eau, avec retour visuel ;
+- interaction tactile plein écran ;
+- tests de simulation pour la déformation, le déplacement et la collecte d'eau ;
 - workflow CI + GitHub Pages.
 
-### Vérifié
-Le premier workflow CI a installé les dépendances, exécuté les tests de simulation et produit le build Vite avec succès le 9 septembre 2026.
+### Expérience active
 
-### En attente de vérification réelle
-- déploiement GitHub Pages final ;
-- ouverture sur un vrai téléphone ;
-- qualité tactile et visuelle ;
-- envie réelle de continuer à manipuler le terrain.
+**EXP-006 — Diriger le vivant**
+
+Question : **est-ce que déformer le monde suffit à créer des décisions compréhensibles sur les trajectoires de plusieurs êtres ?**
+
+Le test cherche notamment le moment où le joueur commence à anticiper : « si je soulève cette case, cet être va probablement descendre par là ».
+
+### À vérifier sur téléphone
+- lisibilité de la grille orthogonale plein écran ;
+- sensation de monde plus vaste grâce aux bords hors champ et à la petite marche ;
+- plaisir tactile du relief ;
+- compréhension spontanée du déplacement des trois êtres ;
+- lisibilité de la source d'eau ;
+- satisfaction lorsqu'un être récupère l'eau ;
+- apparition ou non de décisions intéressantes avec une seule action.
 
 ### Absent volontairement
+- feu ;
+- végétation ;
+- combinaison d'éléments ;
+- combat ;
+- adversaire ;
+- condition de victoire ;
+- score ;
 - backend ;
 - comptes ;
 - multijoueur ;
 - progression ;
 - boutique ;
-- système de cartes ;
-- assets définitifs ;
-- score, adversaire ou condition de victoire.
+- cartes ;
+- assets définitifs.
 
-## Jalón actuel
+## Ordre de recherche
 
-**Genesis-01 — Terrain tactile**
+Le projet suit actuellement cette chaîne :
 
-Le prototype permet déjà conceptuellement :
-1. de voir un plateau lisible ;
-2. de toucher une cellule ;
-3. de modifier sa hauteur dans l'état canonique ;
-4. de faire réagir doucement les cellules voisines ;
-5. de montrer cette transition sans faire porter la règle par l'animation ;
-6. de faire réagir un objet simple à la pente.
+`terrain → mouvement → transport → interaction → objectif → adversaire`
 
-## Critère de réussite
+Une couche n'est ajoutée que lorsque la précédente produit une sensation ou une décision suffisamment intéressante pour justifier la suivante.
 
-Le prochain test n'est plus architectural. Il est sensoriel : **sur téléphone, a-t-on spontanément envie de continuer à toucher et déformer ce petit monde ?**
+## Critère de réussite actuel
 
-Si la réponse est non, modifier d'abord le jouet et le game feel avant d'ajouter des systèmes de jeu.
+Le prototype n'a pas besoin d'être un jeu complet. Il réussit si, en quelques interactions, le joueur comprend qu'il **ne déplace pas directement les êtres : il sculpte leur monde pour influencer ce qu'ils vont faire**.
