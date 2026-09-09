@@ -8,10 +8,9 @@ interface CellShape { id: CellId; points: Point[] }
 const GAME_WIDTH = 390;
 const GAME_HEIGHT = 760;
 
-// EXP-006 — DIRIGER LE VIVANT
-// The world is now an orthogonal square grid that fills the phone. It extends
-// past the lateral viewport and exposes only a small lower "step", suggesting
-// that the visible board is a fragment of a larger mysterious world.
+// EXP-007 — FAIRE POUSSER LE MONDE
+// The orthogonal world stays full-screen. Water can now be transported to
+// visible seed cells, which bloom and slightly reshape the terrain.
 const CELL = 36;
 const HEIGHT_PX = 8;
 const ORIGIN_X = -21;
@@ -20,6 +19,8 @@ const WORLD_LIP = 14;
 
 const GROUND = [0x6edb8f, 0x7bde97, 0x68d6a0, 0x8dde8b, 0x72d8ae];
 const WATER = 0x42bdec;
+const SEED = 0xd8bd63;
+const BLOOM = 0x53c96f;
 const AGENT_COLORS: Record<Agent['id'], number> = {
   'mote-a': 0xffd95a,
   'mote-b': 0xff846d,
@@ -84,7 +85,6 @@ export class WorldScene extends Phaser.Scene {
     this.actors.clear();
     this.cellShapes = [];
 
-    // The void is only visible below the small physical edge of the world.
     this.board.fillStyle(0x173f49, 1);
     this.board.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
@@ -114,11 +114,7 @@ export class WorldScene extends Phaser.Scene {
       { x, y: topY + CELL },
     ];
 
-    const baseColor = cell.kind === 'water-source'
-      ? WATER
-      : GROUND[(cell.row * 3 + cell.col * 5) % GROUND.length];
-
-    // A narrow lower face keeps the terrain volumetric without rotating the grid.
+    const baseColor = this.colorFor(cell);
     const faceHeight = Math.max(2, lift * 0.72);
     this.board.fillStyle(shade(baseColor, 0.70), 1);
     this.board.fillRect(x, topY + CELL, CELL, faceHeight);
@@ -133,6 +129,28 @@ export class WorldScene extends Phaser.Scene {
       this.board.fillCircle(x + CELL * 0.31, topY + CELL * 0.29, CELL * 0.045);
     }
 
+    if (cell.kind === 'seed') {
+      this.board.fillStyle(0x7f6631, 0.88);
+      this.board.fillCircle(x + CELL * 0.50, topY + CELL * 0.51, CELL * 0.11);
+      this.board.fillStyle(0xf3dc88, 0.92);
+      this.board.fillCircle(x + CELL * 0.46, topY + CELL * 0.46, CELL * 0.045);
+    }
+
+    if (cell.kind === 'bloom') {
+      const cx = x + CELL * 0.50;
+      const cy = topY + CELL * 0.47;
+      this.board.lineStyle(2.2, 0x25754b, 0.9);
+      this.board.beginPath();
+      this.board.moveTo(cx, cy + 7);
+      this.board.lineTo(cx, cy - 4);
+      this.board.strokePath();
+      this.board.fillStyle(0xf6ef8a, 1);
+      this.board.fillCircle(cx, cy - 5, 3.3);
+      this.board.fillStyle(0xa9ec8b, 0.95);
+      this.board.fillEllipse(cx - 5, cy + 1, 7, 4);
+      this.board.fillEllipse(cx + 5, cy - 1, 7, 4);
+    }
+
     this.board.lineStyle(
       this.selected === cell.id ? 2.2 : 0.7,
       this.selected === cell.id ? 0xffffff : 0x245e55,
@@ -140,6 +158,13 @@ export class WorldScene extends Phaser.Scene {
     );
     this.strokePolygon(top);
     this.cellShapes.push({ id: cell.id, points: top });
+  }
+
+  private colorFor(cell: Cell): number {
+    if (cell.kind === 'water-source') return WATER;
+    if (cell.kind === 'seed') return SEED;
+    if (cell.kind === 'bloom') return BLOOM;
+    return GROUND[(cell.row * 3 + cell.col * 5) % GROUND.length];
   }
 
   private drawAgent(agent: Agent, time: number): void {
