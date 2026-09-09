@@ -1,205 +1,26 @@
 import Phaser from 'phaser';
 import { simulate } from '../simulation/simulate';
 import { createInitialWorld, type Agent, type Cell, type CellId, type WorldState } from '../world/model';
-
 interface Point { x: number; y: number }
 interface CellShape { id: CellId; points: Point[] }
-
-const GAME_WIDTH = 390;
-const GAME_HEIGHT = 760;
-
-// EXP-VIS-005 — READABLE RELIEF
-// Keep the orthogonal, mostly top-down world, but make height legible again.
-// Presentation only: simulation and gameplay rules stay untouched.
-const CELL = 36;
-const HEIGHT_PX = 15;
-const ORIGIN_X = -21;
-const ORIGIN_Y = 16;
-const WORLD_LIP = 18;
-
-const GROUND = [0x6edb8f, 0x7bde97, 0x68d6a0, 0x8dde8b, 0x72d8ae];
-const WATER = 0x42bdec;
-const SEED = 0xd8bd63;
-const BLOOM = 0x53c96f;
-const AGENT_COLORS: Record<Agent['id'], number> = {
-  'mote-a': 0xffd95a,
-  'mote-b': 0xff846d,
-  'mote-c': 0xf7f2df,
-};
-
+const GAME_WIDTH=390, GAME_HEIGHT=760, CELL=36, HEIGHT_PX=15, ORIGIN_X=-21, ORIGIN_Y=16, WORLD_LIP=18;
+const GROUND=[0x6edb8f,0x7bde97,0x68d6a0,0x8dde8b,0x72d8ae], WATER=0x42bdec, SEED=0xd8bd63, BLOOM=0x53c96f;
+const AGENT_COLORS:Record<Agent['id'],number>={'mote-a':0xffd95a,'mote-b':0xff846d,'mote-c':0xf7f2df};
+const HAVEN_COLORS:Record<Agent['id'],number>=AGENT_COLORS;
 export class WorldScene extends Phaser.Scene {
-  private world: WorldState = createInitialWorld();
-  private visualHeights = new Map<CellId, number>();
-  private cellShapes: CellShape[] = [];
-  private agentPositions = new Map<Agent['id'], Point>();
-  private board!: Phaser.GameObjects.Graphics;
-  private actors!: Phaser.GameObjects.Graphics;
-  private selected: CellId | null = null;
-
-  constructor() { super('world'); }
-
-  create(): void {
-    this.board = this.add.graphics();
-    this.actors = this.add.graphics();
-
-    for (const cell of Object.values(this.world.cells)) this.visualHeights.set(cell.id, cell.height);
-    for (const agent of this.world.agents) {
-      this.agentPositions.set(agent.id, this.positionForCell(this.world.cells[agent.cellId]));
-    }
-
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      const hit = [...this.cellShapes].reverse().find((shape) => pointInPolygon(pointer.x, pointer.y, shape.points));
-      if (!hit) return;
-      this.selected = hit.id;
-      this.world = simulate(this.world, { type: 'RAISE_CELL', cellId: hit.id }).state;
-    });
-
-    this.redraw(0);
-  }
-
-  update(time: number, delta: number): void {
-    const terrainSmoothing = 1 - Math.exp(-delta / 110);
-    const actorSmoothing = 1 - Math.exp(-delta / 125);
-
-    for (const cell of Object.values(this.world.cells)) {
-      const current = this.visualHeights.get(cell.id) ?? cell.height;
-      this.visualHeights.set(cell.id, current + (cell.height - current) * terrainSmoothing);
-    }
-
-    for (const agent of this.world.agents) {
-      const current = this.agentPositions.get(agent.id) ?? this.positionForCell(this.world.cells[agent.cellId]);
-      const target = this.positionForCell(this.world.cells[agent.cellId]);
-      this.agentPositions.set(agent.id, {
-        x: current.x + (target.x - current.x) * actorSmoothing,
-        y: current.y + (target.y - current.y) * actorSmoothing,
-      });
-    }
-
-    this.redraw(time);
-  }
-
-  private redraw(time: number): void {
-    this.board.clear();
-    this.actors.clear();
-    this.cellShapes = [];
-
-    this.board.fillStyle(0x173f49, 1);
-    this.board.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    const worldBottom = ORIGIN_Y + this.world.rows * CELL;
-    this.board.fillStyle(0x356f5f, 1);
-    this.board.fillRect(0, Math.min(worldBottom, GAME_HEIGHT - WORLD_LIP), GAME_WIDTH, WORLD_LIP);
-    this.board.fillStyle(0x183f3d, 1);
-    this.board.fillRect(0, Math.min(worldBottom + WORLD_LIP, GAME_HEIGHT - 4), GAME_WIDTH, 4);
-
-    const cells = Object.values(this.world.cells).sort((a, b) => a.row - b.row || a.col - b.col);
-    for (const cell of cells) this.drawCell(cell);
-    for (const agent of this.world.agents) this.drawAgent(agent, time);
-  }
-
-  private drawCell(cell: Cell): void {
-    const visualHeight = this.visualHeights.get(cell.id) ?? cell.height;
-    const lift = visualHeight * HEIGHT_PX;
-    const x = ORIGIN_X + cell.col * CELL;
-    const baseY = ORIGIN_Y + cell.row * CELL;
-    const topY = baseY - lift;
-    const baseColor = this.colorFor(cell);
-
-    const top: Point[] = [
-      { x, y: topY }, { x: x + CELL, y: topY },
-      { x: x + CELL, y: topY + CELL }, { x, y: topY + CELL },
-    ];
-
-    // A dark vertical face and a soft cast shadow make height readable while
-    // preserving the orthogonal top surface and near-zenithal camera.
-    const faceHeight = Math.max(3, lift * 0.86);
-    this.board.fillStyle(0x102f34, 0.13 + Math.min(0.15, visualHeight * 0.035));
-    this.board.fillRect(x + 3, topY + CELL + faceHeight, CELL - 1, 4 + faceHeight * 0.22);
-    this.board.fillStyle(shade(baseColor, 0.58), 1);
-    this.board.fillRect(x, topY + CELL, CELL, faceHeight);
-    this.board.fillStyle(shade(baseColor, 0.74), 0.95);
-    this.board.fillRect(x + CELL - 3, topY + 2, 3, CELL + faceHeight - 2);
-
-    this.board.fillStyle(baseColor, 1);
-    this.board.fillRect(x + 0.7, topY + 0.7, CELL - 1.4, CELL - 1.4);
-    this.board.fillStyle(0xffffff, 0.055);
-    this.board.fillRect(x + 2, topY + 2, CELL - 4, 2);
-
-    if (cell.kind === 'water-source') {
-      this.board.fillStyle(0xbceeff, 0.82);
-      this.board.fillCircle(x + CELL * 0.38, topY + CELL * 0.36, CELL * 0.11);
-      this.board.fillStyle(0xffffff, 0.38);
-      this.board.fillCircle(x + CELL * 0.31, topY + CELL * 0.29, CELL * 0.045);
-    }
-
-    if (cell.kind === 'seed') {
-      this.board.fillStyle(0x7f6631, 0.88);
-      this.board.fillCircle(x + CELL * 0.50, topY + CELL * 0.51, CELL * 0.11);
-      this.board.fillStyle(0xf3dc88, 0.92);
-      this.board.fillCircle(x + CELL * 0.46, topY + CELL * 0.46, CELL * 0.045);
-    }
-
-    if (cell.kind === 'bloom') {
-      const cx = x + CELL * 0.50;
-      const cy = topY + CELL * 0.47;
-      this.board.lineStyle(2.2, 0x25754b, 0.9);
-      this.board.beginPath(); this.board.moveTo(cx, cy + 7); this.board.lineTo(cx, cy - 4); this.board.strokePath();
-      this.board.fillStyle(0xf6ef8a, 1); this.board.fillCircle(cx, cy - 5, 3.3);
-      this.board.fillStyle(0xa9ec8b, 0.95); this.board.fillEllipse(cx - 5, cy + 1, 7, 4); this.board.fillEllipse(cx + 5, cy - 1, 7, 4);
-    }
-
-    this.board.lineStyle(
-      this.selected === cell.id ? 2.2 : 0.7,
-      this.selected === cell.id ? 0xffffff : 0x245e55,
-      this.selected === cell.id ? 0.92 : 0.18,
-    );
-    this.strokePolygon(top);
-    this.cellShapes.push({ id: cell.id, points: top });
-  }
-
-  private colorFor(cell: Cell): number {
-    if (cell.kind === 'water-source') return WATER;
-    if (cell.kind === 'seed') return SEED;
-    if (cell.kind === 'bloom') return BLOOM;
-    return GROUND[(cell.row * 3 + cell.col * 5) % GROUND.length];
-  }
-
-  private drawAgent(agent: Agent, time: number): void {
-    const p = this.agentPositions.get(agent.id);
-    if (!p) return;
-    const bob = Math.sin(time / 230 + (agent.id === 'mote-b' ? 1.8 : agent.id === 'mote-c' ? 3.4 : 0)) * 1.4;
-    const y = p.y + bob;
-    this.actors.fillStyle(0x173f49, 0.18); this.actors.fillEllipse(p.x + 1, y + 10, 20, 7);
-    if (agent.carrying === 'water') { this.actors.lineStyle(3, 0x59c8f3, 0.95); this.actors.strokeCircle(p.x, y, 10.5); }
-    this.actors.fillStyle(AGENT_COLORS[agent.id], 1); this.actors.fillCircle(p.x, y, 8.2);
-    this.actors.fillStyle(0x173f49, 0.75); this.actors.fillCircle(p.x - 2.5, y - 1.5, 1.1); this.actors.fillCircle(p.x + 2.5, y - 1.5, 1.1);
-  }
-
-  private positionForCell(cell: Cell): Point {
-    const height = this.visualHeights.get(cell.id) ?? cell.height;
-    return { x: ORIGIN_X + cell.col * CELL + CELL / 2, y: ORIGIN_Y + cell.row * CELL + CELL / 2 - height * HEIGHT_PX };
-  }
-
-  private strokePolygon(points: Point[]): void {
-    this.board.beginPath(); this.board.moveTo(points[0].x, points[0].y);
-    for (const point of points.slice(1)) this.board.lineTo(point.x, point.y);
-    this.board.closePath(); this.board.strokePath();
-  }
+ private world:WorldState=createInitialWorld(); private visualHeights=new Map<CellId,number>(); private cellShapes:CellShape[]=[]; private agentPositions=new Map<Agent['id'],Point>(); private board!:Phaser.GameObjects.Graphics; private actors!:Phaser.GameObjects.Graphics; private selected:CellId|null=null;
+ constructor(){super('world');}
+ create():void{this.board=this.add.graphics();this.actors=this.add.graphics();for(const c of Object.values(this.world.cells))this.visualHeights.set(c.id,c.height);for(const a of this.world.agents)this.agentPositions.set(a.id,this.positionForCell(this.world.cells[a.cellId]));this.input.on('pointerdown',(p:Phaser.Input.Pointer)=>{const hit=[...this.cellShapes].reverse().find(s=>pointInPolygon(p.x,p.y,s.points));if(!hit)return;this.selected=hit.id;this.world=simulate(this.world,{type:'RAISE_CELL',cellId:hit.id}).state;});this.redraw(0);}
+ update(time:number,delta:number):void{const ts=1-Math.exp(-delta/110),as=1-Math.exp(-delta/125);for(const c of Object.values(this.world.cells)){const v=this.visualHeights.get(c.id)??c.height;this.visualHeights.set(c.id,v+(c.height-v)*ts);}for(const a of this.world.agents){const cur=this.agentPositions.get(a.id)??this.positionForCell(this.world.cells[a.cellId]),tar=this.positionForCell(this.world.cells[a.cellId]);this.agentPositions.set(a.id,{x:cur.x+(tar.x-cur.x)*as,y:cur.y+(tar.y-cur.y)*as});}this.redraw(time);}
+ private redraw(time:number):void{this.board.clear();this.actors.clear();this.cellShapes=[];this.board.fillStyle(0x173f49,1);this.board.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);const bottom=ORIGIN_Y+this.world.rows*CELL;this.board.fillStyle(0x356f5f,1);this.board.fillRect(0,Math.min(bottom,GAME_HEIGHT-WORLD_LIP),GAME_WIDTH,WORLD_LIP);this.board.fillStyle(0x183f3d,1);this.board.fillRect(0,Math.min(bottom+WORLD_LIP,GAME_HEIGHT-4),GAME_WIDTH,4);for(const c of Object.values(this.world.cells).sort((a,b)=>a.row-b.row||a.col-b.col))this.drawCell(c);for(const a of this.world.agents)this.drawHaven(a,time);for(const a of this.world.agents)this.drawAgent(a,time);}
+ private drawCell(c:Cell):void{const vh=this.visualHeights.get(c.id)??c.height,lift=vh*HEIGHT_PX,x=ORIGIN_X+c.col*CELL,baseY=ORIGIN_Y+c.row*CELL,topY=baseY-lift,base=this.colorFor(c),top=[{x,y:topY},{x:x+CELL,y:topY},{x:x+CELL,y:topY+CELL},{x,y:topY+CELL}];const face=Math.max(3,lift*.86);this.board.fillStyle(0x102f34,.13+Math.min(.15,vh*.035));this.board.fillRect(x+3,topY+CELL+face,CELL-1,4+face*.22);this.board.fillStyle(shade(base,.58),1);this.board.fillRect(x,topY+CELL,CELL,face);this.board.fillStyle(shade(base,.74),.95);this.board.fillRect(x+CELL-3,topY+2,3,CELL+face-2);this.board.fillStyle(base,1);this.board.fillRect(x+.7,topY+.7,CELL-1.4,CELL-1.4);this.board.fillStyle(0xffffff,.055);this.board.fillRect(x+2,topY+2,CELL-4,2);
+ if(c.kind==='water-source'){this.board.fillStyle(0xbceeff,.82);this.board.fillCircle(x+CELL*.38,topY+CELL*.36,CELL*.11);this.board.fillStyle(0xffffff,.38);this.board.fillCircle(x+CELL*.31,topY+CELL*.29,CELL*.045);}if(c.kind==='seed'){this.board.fillStyle(0x7f6631,.88);this.board.fillCircle(x+CELL*.5,topY+CELL*.51,CELL*.11);this.board.fillStyle(0xf3dc88,.92);this.board.fillCircle(x+CELL*.46,topY+CELL*.46,CELL*.045);}if(c.kind==='bloom'){const cx=x+CELL*.5,cy=topY+CELL*.47;this.board.lineStyle(2.2,0x25754b,.9);this.board.beginPath();this.board.moveTo(cx,cy+7);this.board.lineTo(cx,cy-4);this.board.strokePath();this.board.fillStyle(0xf6ef8a,1);this.board.fillCircle(cx,cy-5,3.3);}
+ this.board.lineStyle(this.selected===c.id?2.2:.7,this.selected===c.id?0xffffff:0x245e55,this.selected===c.id?.92:.18);this.strokePolygon(top);this.cellShapes.push({id:c.id,points:top});}
+ private drawHaven(a:Agent,time:number):void{const c=this.world.cells[a.targetId],p=this.positionForCell(c),pulse=1+Math.sin(time/300+(a.id==='mote-b'?2:a.id==='mote-c'?4:0))*.08,color=HAVEN_COLORS[a.id];this.actors.lineStyle(a.arrived?4:3,color,a.arrived?.95:.72);this.actors.strokeCircle(p.x,p.y,12*pulse);this.actors.lineStyle(1.5,0xffffff,a.arrived?.7:.28);this.actors.strokeCircle(p.x,p.y,7*pulse);if(a.arrived){this.actors.fillStyle(color,.28);this.actors.fillCircle(p.x,p.y,11);}}
+ private colorFor(c:Cell):number{if(c.kind==='water-source')return WATER;if(c.kind==='seed')return SEED;if(c.kind==='bloom')return BLOOM;return GROUND[(c.row*3+c.col*5)%GROUND.length];}
+ private drawAgent(a:Agent,time:number):void{const p=this.agentPositions.get(a.id);if(!p)return;const bob=Math.sin(time/230+(a.id==='mote-b'?1.8:a.id==='mote-c'?3.4:0))*1.4,y=p.y+bob;this.actors.fillStyle(0x173f49,.18);this.actors.fillEllipse(p.x+1,y+10,20,7);if(a.carrying==='water'){this.actors.lineStyle(3,0x59c8f3,.95);this.actors.strokeCircle(p.x,y,10.5);}this.actors.fillStyle(AGENT_COLORS[a.id],1);this.actors.fillCircle(p.x,y,a.arrived?9.2:8.2);this.actors.fillStyle(0x173f49,.75);this.actors.fillCircle(p.x-2.5,y-1.5,1.1);this.actors.fillCircle(p.x+2.5,y-1.5,1.1);}
+ private positionForCell(c:Cell):Point{const h=this.visualHeights.get(c.id)??c.height;return{x:ORIGIN_X+c.col*CELL+CELL/2,y:ORIGIN_Y+c.row*CELL+CELL/2-h*HEIGHT_PX};}
+ private strokePolygon(points:Point[]):void{this.board.beginPath();this.board.moveTo(points[0].x,points[0].y);for(const p of points.slice(1))this.board.lineTo(p.x,p.y);this.board.closePath();this.board.strokePath();}
 }
-
-function shade(color: number, factor: number): number {
-  const r = Math.round(((color >> 16) & 0xff) * factor);
-  const g = Math.round(((color >> 8) & 0xff) * factor);
-  const b = Math.round((color & 0xff) * factor);
-  return (r << 16) | (g << 8) | b;
-}
-
-function pointInPolygon(x: number, y: number, points: Point[]): boolean {
-  let inside = false;
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const a = points[i]; const b = points[j];
-    const crosses = (a.y > y) !== (b.y > y) && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x;
-    if (crosses) inside = !inside;
-  }
-  return inside;
-}
+function shade(color:number,factor:number):number{const r=Math.round(((color>>16)&255)*factor),g=Math.round(((color>>8)&255)*factor),b=Math.round((color&255)*factor);return(r<<16)|(g<<8)|b;}
+function pointInPolygon(x:number,y:number,points:Point[]):boolean{let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j],crosses=(a.y>y)!==(b.y>y)&&x<((b.x-a.x)*(y-a.y))/(b.y-a.y)+a.x;if(crosses)inside=!inside;}return inside;}
