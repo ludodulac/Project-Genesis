@@ -24,7 +24,16 @@ Pour isoler la causalité, le geste jouable est temporairement inversé :
 - si les meilleures descentes sont exactement à égalité, elle ne choisit pas arbitrairement et reste sur place ;
 - aucune mémoire, destination, inertie ou pathfinding n'intervient.
 
-Ce n'est pas encore le choix définitif du verbe du jeu. C'est l'expérience la plus petite trouvée pour tester `je creuse là → elle roule là`.
+Le premier test humain a produit une compréhension spontanée prometteuse : **« je creuse quelque part et la bille tend à aller vers le creux »**. Cette causalité est `PROMOTE-PARTIAL`.
+
+## Frontière isolée — toucher la case occupée
+Le joueur s'attend spontanément à ce qu'une bille ronde touchée directement parte quelque part autour. Le comportement actuel la laisse sur la case creusée, ce qui donne une impression de bille collée.
+
+La recherche a cependant montré qu'un simple tap centré ne contient aucune direction latérale. Avec les règles actuelles, creuser la case occupée enfonce encore la bille dans un minimum local ; une sortie gravitaire est pratiquement impossible. Une direction fixe, aléatoire, mémorisée ou choisie par un tie-break invisible est interdite.
+
+Un prototype **non branché sur la version jouable** étudie le seul candidat encore cohérent : le contact fournirait l'impulsion, tandis que le relief visible choisirait l'unique bord voisin nettement le plus bas. Il refuse de bouger lorsque l'écart visuel entre les deux meilleurs bords est inférieur à environ 2 px. Les sentinelles vérifient qu'aucune direction n'est inventée sur terrain ambigu.
+
+Ce candidat n'est pas promu : il peut faire sortir la bille d'un bassin en montant vers son bord, donc il introduit implicitement une impulsion. Tant que ce coût conceptuel n'est pas justifié, la production reste EXP-022b inchangée.
 
 ## Critère humain
 Avant le toucher, le joueur doit indiquer où il pense que la boule va aller. Plusieurs prédictions correctes dans des directions différentes sont nécessaires avant de réintroduire du caractère ou de la profondeur.
