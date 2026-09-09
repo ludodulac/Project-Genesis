@@ -24,60 +24,59 @@ Une source traversée charge une mote en eau sans nouvelle commande joueur. L'op
 `relief → détour → source → transport → graine → croissance → nouveau relief`. La causalité est testable, mais le fun et la lisibilité restent à prouver humainement. `TEST`.
 
 ## EXP-013 — Faux compromis
-Le premier scénario censé aider A et gêner B était faux : B gardait exactement sa route. `DROP` pour ce scénario précis.
-
-**À conserver**  
-Un test qui contredit l'histoire souhaitée vaut mieux qu'une mécanique déclarée intéressante trop tôt.
+Le premier scénario censé aider A et gêner B était faux : B gardait exactement sa route. `DROP`.
 
 ## EXP-013b — Ouverture / fermeture simultanée
-Une même sculpture abaisse la voisine nécessaire à A tout en relevant la case directe de B. Le scénario déterministe confirme que la route directe d'A s'ouvre pendant que celle de B se ferme. `PROMOTE-PARTIAL`.
+Une même sculpture abaisse la voisine nécessaire à A tout en relevant la case directe de B. `PROMOTE-PARTIAL`.
 
 ## EXP-014 — Opportunité qui prépare le futur
-Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant. `PROMOTE-PARTIAL` — conserver la chaîne comme matière de design, pas comme objectif final.
+Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant. `PROMOTE-PARTIAL`.
 
 ## EXP-015 — Le bénéfice devient coût
 La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin. `PROMOTE-PARTIAL`.
 
-**Pourquoi c'est intéressant**  
-Une conséquence positive locale n'est plus globalement positive : elle reconfigure le problème spatial d'une autre entité.
-
 ## EXP-016 — Réciprocité automatique
-**Hypothèse**  
-La croissance provoquée par A devait forcer B vers une source voisine, créant automatiquement une nouvelle opportunité.
-
-**Observation contrôlée**  
-Faux. B trouve une autre route qui évite la source. La réciprocité imaginée n'émerge pas de ces règles dans ce scénario.
-
-**Décision** `DROP`.
-
-**À conserver**  
-Ne pas forcer un détour vers une opportunité juste pour obtenir une jolie chaîne. Une opportunité n'a de valeur que si la géographie la rend naturellement compétitive.
+La croissance provoquée par A ne force pas naturellement B vers une source voisine : B trouve une autre route. `DROP`. Ne pas forcer une jolie chaîne.
 
 ## EXP-017 — Deux gestes, deux intérêts incompatibles
-**Hypothèse**  
-Une vraie décision apparaît si deux gestes valides sur le même état optimisent des intérêts différents et qu'aucun geste ne domine simplement l'autre.
+Sur un même état : sculpter la zone critique ouvre la route directe d'A mais empêche B de prendre la source ; ne pas la sculpter favorise B et prive A de sa route directe. `PROMOTE-PARTIAL`.
 
-**Résultat contrôlé**  
-Le scénario tient :
-- sculpter la zone critique ouvre la route directe d'A mais empêche B de traverser la source ;
-- laisser cette zone intacte permet à B de prendre la source tandis qu'A perd sa route directe.
+## EXP-018 — Robustesse géométrique
+**Hypothèse**  
+Le compromis d'EXP-017 est une propriété locale de la sculpture, pas un accident d'une seule coordonnée.
+
+**Test**  
+Le même motif ouverture/fermeture est déplacé à plusieurs endroits du plateau et réfléchi horizontalement.
+
+**Résultat**  
+Les variantes déterministes passent : le compromis survit à la translation et au miroir sans modifier les règles de simulation.
 
 **Décision** `PROMOTE-PARTIAL`.
 
-**Pourquoi c'est le signal le plus fort à ce stade**  
-Le système produit enfin un choix entre deux bénéfices incompatibles avec le même verbe et sans nouvelle commande. C'est une preuve de structure décisionnelle, pas encore une preuve de fun.
+**Limite**  
+Cela prouve une petite famille de situations, pas encore que le monde initial les rend perceptibles ou désirables.
+
+## EXP-019 — Porter le compromis dans le monde jouable
+**Hypothèse**  
+La meilleure étape suivante n'est pas une règle supplémentaire mais une géographie initiale qui expose le dilemme robuste au joueur.
+
+**Prototype**  
+Sur le plateau canonique 20×12, une porte légèrement trop haute devant A est placée à côté d'une source sur la route directe de B. Toucher cette source la relève et draine la porte voisine : A gagne son passage direct pendant que B perd sa collecte directe.
+
+**Décision** `TEST-HUMAN`.
+
+**Question humaine précise**  
+Sans texte ni flèche, le joueur peut-il voir qu'un même geste a aidé un être et changé l'opportunité de l'autre ?
 
 ## EXP-VIS-005 — Relief lisible
-Le relief visuel utilise davantage de déplacement vertical, faces sombres et ombres tout en conservant une grille orthogonale. `TEST`.
+Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
 
-## Prochaine recherche — robustesse du dilemme
+## Direction actuelle
 
-Ne rien ajouter. Construire plusieurs variantes spatiales d'EXP-017 afin de vérifier que le compromis n'existe pas seulement dans un placement artificiel unique.
+Le signal le plus fort n'est ni l'eau ni la croissance prises séparément. C'est **la redistribution locale de terrain comme échange spatial** : relever ici signifie abaisser ailleurs, donc un geste peut naturellement transférer une possibilité d'une trajectoire vers une autre.
 
-Questions :
-- le dilemme survit-il quand la source est déplacée ?
-- survit-il avec une autre orientation du relief ?
-- peut-il se prolonger sur deux ou trois décisions sans devenir calcul trivial ?
-- une conséquence secondaire peut-elle devenir exploitable plutôt qu'être seulement évitée ?
-
-Si le dilemme disparaît dès qu'on change légèrement la géographie, `EXP-017` redescend à `ITERATE`.
+Ne pas ajouter de nouvelle ressource. La prochaine recherche doit approfondir cette propriété :
+- vérifier la lisibilité d'EXP-019 sur téléphone ;
+- si lisible, construire une séquence courte de 2–3 compromis où le résultat du premier geste change le second ;
+- si illisible, améliorer uniquement la lecture du relief/trajectoire ou simplifier les êtres ;
+- si le compromis reste artificiel malgré la mise en scène, rétrograder la branche plutôt que l'enrichir.
