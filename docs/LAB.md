@@ -45,73 +45,61 @@ Deux gestes sur un même état peuvent favoriser des intérêts incompatibles. `
 Le motif ouverture/fermeture survit à plusieurs translations et au miroir horizontal. Tests et build passent. `PROMOTE-PARTIAL`.
 
 ## EXP-019 — Porter le compromis dans le monde jouable
-Le motif a été placé dans le monde canonique sans nouvelle règle.
+Le test humain ne perçoit ni compromis ni chaîne ressource/croissance ; les agents qui arrivent semblent simplement cesser de fonctionner. `DROP`.
 
-### Observation humaine réelle
-Le joueur comprend seulement :
-- il peut faire monter des cases ;
-- chaque toucher fait bouger les petites boules au début ;
-- après un moment elles ne bougent plus ;
-- il voit des petits lacs/cases spéciales qu'il peut également relever ;
-- il ne sait pas ce que sont les autres objets ni pourquoi ils importent.
+**Apprentissage** : trop d'inférences avant le verbe fondamental. Ne pas masquer avec tutoriel, texte ou flèches.
 
-Le compromis A/B n'est donc pas perceptible. La chaîne source/eau/graine/croissance n'est pas comprise. Le fait que les agents atteignent leur destination et deviennent ensuite immobiles donne surtout l'impression que le contrôle s'est cassé.
-
-**Décision** `DROP` pour EXP-019 comme mise en scène jouable.
-
-**Apprentissage majeur**  
-Les tests ont trouvé une structure décisionnelle réelle mais le joueur ne possède pas le modèle mental minimal permettant de la voir. Ajouter des flèches, textes ou tutoriels masquerait le problème. Trois agents + havens + sources + graines + état porté demandent trop d'inférences avant que le verbe de sculpture puisse être compris.
-
-## EXP-020 — Retour au jouet : une chose qui ne s'arrête pas
-**Hypothèse**  
-Revenir au canon Genesis-01 : un monde, un geste, **une seule chose mobile**, dont le comportement reste observable indéfiniment. Avant de tester un compromis multi-agent, vérifier que le joueur comprend spontanément « je change le relief → sa trajectoire change ».
-
-**Prototype**  
-La version jouable utilise maintenant un monde dédié sans haven, source, graine ni eau visibles, avec une seule mote jaune. À chaque sculpture, elle choisit localement le voisin accessible le plus bas. Elle n'a pas d'état terminal.
-
-**Sentinelles**
-- la mote choisit le voisin bas sans objectif caché ;
-- relever une case peut la détourner vers la vallée créée par redistribution ;
-- elle ne passe jamais en état `arrived` ;
-- l'ancien moteur multi-agent reste intact et testé séparément.
-
-**Observation CI**  
-La première sentinelle de « mouvement continu » exigeait arbitrairement plus de deux cellules visitées. Elle a échoué alors que les propriétés fondamentales passaient. Cette exigence a été supprimée plutôt que de tordre le moteur pour satisfaire le test. Le run corrigé est vert et déployé.
-
-**Décision** `TEST-HUMAN`, sous réserve d'un dernier problème de mouvement découvert ci-dessous.
+## EXP-020 — Retour au jouet
+Une seule mote, aucun objectif ni ressource visible, sculpture par redistribution, mouvement local. Les sentinelles techniques passent, mais la lisibilité humaine reste le vrai verrou. `ITERATE`.
 
 ## EXP-021 — Mémoire minimale contre le ping-pong
 **Hypothèse**  
-Le choix purement « voisin le plus bas » peut produire une oscillation A↔B qui ressemble à une animation mécanique plutôt qu'à une chose qui circule dans le relief.
+Une mémoire d'une case pourrait supprimer le rebond A↔B sans devenir perceptible comme règle distincte du relief.
+
+**Test humain**  
+Le joueur rapporte : il n'a pas l'impression de pouvoir influencer la boule ; même en cliquant au même endroit, elle semble partir dans beaucoup de directions différentes ; il ne sait pas comment la déplacer.
+
+**Observation**  
+Le logiciel est déterministe, mais le comportement n'est pas humainement prédictible. La mémoire anti-retour et le déplacement automatique à chaque geste font que la mote paraît prendre des décisions propres. Le terrain n'est pas lu comme la cause suffisante de la direction.
+
+**Décision** `DROP` comme règle de la branche jouable.
+
+**Conservation**  
+L'expérience a établi une distinction essentielle : **déterminisme logiciel ≠ prédictibilité humaine**. Une règle invisible n'est acceptable que si elle renforce une causalité déjà lisible ; elle ne doit pas fabriquer artificiellement une impression de vie.
+
+## EXP-022 — J'observe → je prédis → je sculpte → je constate
+**Hypothèse**  
+Avant de rendre la mote vivante, rendre sa causalité visible. Son prochain mouvement doit pouvoir être prédit en regardant uniquement sa case et le relief orthogonal voisin.
 
 **Prototype minimal**  
-La mote conserve seulement la case précédente. Si plusieurs sorties sont accessibles, elle préfère une autre case au retour immédiat ; elle peut revenir en arrière si c'est réellement la seule sortie.
+La mémoire anti-ping-pong est retirée de la décision expérimentale. Après la sculpture, la mote regarde uniquement ses quatre voisines visibles : si au moins une est strictement plus basse que sa case, elle va vers la plus basse ; sinon elle reste sur place. Aucune destination, aucun pathfinding, aucune inertie cachée, aucune préférence historique.
 
-**Pourquoi cette mémoire est acceptable**  
-Ce n'est ni une destination ni un pathfinding caché. C'est une inertie minimale et lisible : continuer plutôt que rebondir instantanément.
+La règle expérimentale est donc volontairement austère : **la boule descend vers le voisin visible le plus bas, ou ne bouge pas**.
 
-**Sentinelle**  
-Si l'ancienne case est la plus basse mais qu'une autre sortie est accessible, la mote ne revient pas immédiatement en arrière.
+**Sentinelles**
+- elle choisit le voisin strictement plus bas le plus bas ;
+- elle reste immobile si aucune descente n'existe ;
+- deux états visuellement identiques produisent le même mouvement même si leur ancienne mémoire interne diffère ;
+- la sculpture reste la redistribution existante.
 
-**Garde-fou de supervision**  
-Cette mémoire est une règle invisible et doit donc rester sous suspicion. Elle est conservée uniquement si elle supprime le ping-pong mécanique sans devenir perceptible comme une logique séparée du relief. Le terrain doit rester la cause principale et anticipable du mouvement.
+**Ce que les tests automatiques peuvent prouver**  
+Déterminisme, absence de dépendance à la mémoire, relation exacte entre hauteurs et destination.
 
-Au prochain test humain, deux observations sont requises :
-1. le joueur a-t-il l'impression de pouvoir influencer la trajectoire en sculptant ?
-2. le mouvement semble-t-il découler naturellement du relief, ou la mote prend-elle parfois une décision qui paraît arbitraire ?
+**Ce qu'ils ne peuvent pas prouver**  
+Que le joueur voit assez bien les différences de hauteur pour prédire le résultat.
 
-Si l'anti-retour produit un choix que le relief ne permet pas d'anticiper, **ne pas ajouter davantage de mémoire**. Modifier ou simplifier la règle de mouvement elle-même. Si l'anti-retour ne fait qu'effacer le ping-pong et reste invisible, le conserver.
+**Test humain décisif**  
+Avant chaque toucher, demander au joueur de montrer/dire où il pense que la boule va aller. Puis seulement toucher et comparer prédiction/résultat. Répéter plusieurs fois sans expliquer la règle. Le signal recherché est une proportion croissante de prédictions correctes, pas simplement l'impression vague d'avoir influencé la boule.
 
-**Statut** `TEST-HUMAN`.
+**Statut** `TEST-CI`, puis `TEST-HUMAN` si la build est valide.
 
 ## EXP-VIS-005 — Relief lisible
 Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
 
 ## Direction actuelle
+Le verrou prioritaire n'est ni le caractère de la mote ni la profondeur du système : c'est la **causalité lisible**.
 
-Le signal abstrait de compromis d'EXP-017/018 reste conservé comme connaissance, mais il est **trop tôt pour le mettre au premier plan**. Le verrou réel est plus fondamental : la causalité entre le doigt, le relief et le mouvement doit devenir évidente et plaisante avant toute réintroduction d'une deuxième entité.
+Branche active :
+`j'observe le relief → je prédis → je sculpte → je constate`
 
-La branche active est donc :
-`sculpture locale → vallée/bosse lisible → une mote continue → trajectoire locale compréhensible`
-
-Aucune nouvelle ressource, aucun tutoriel et aucune nouvelle commande tant que cette boucle n'est pas validée humainement. Toute règle invisible ajoutée au mouvement doit être justifiée par une meilleure lecture du relief, jamais par le besoin de masquer une faiblesse de simulation.
+Aucune nouvelle ressource, aucun tutoriel, aucune nouvelle commande, aucune inertie supplémentaire tant que le joueur ne peut pas régulièrement anticiper le prochain déplacement à partir de ce qu'il voit.
