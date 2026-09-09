@@ -36,47 +36,55 @@ Une trajectoire peut traverser une source, transporter l'eau, puis transformer u
 La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin. `PROMOTE-PARTIAL`.
 
 ## EXP-016 — Réciprocité automatique
-La croissance provoquée par A ne force pas naturellement B vers une source voisine : B trouve une autre route. `DROP`. Ne pas forcer une jolie chaîne.
+La croissance provoquée par A ne force pas naturellement B vers une source voisine : B trouve une autre route. `DROP`.
 
 ## EXP-017 — Deux gestes, deux intérêts incompatibles
-Sur un même état : sculpter la zone critique ouvre la route directe d'A mais empêche B de prendre la source ; ne pas la sculpter favorise B et prive A de sa route directe. `PROMOTE-PARTIAL`.
+Deux gestes sur un même état peuvent favoriser des intérêts incompatibles. `PROMOTE-PARTIAL`.
 
 ## EXP-018 — Robustesse géométrique
-**Hypothèse**  
-Le compromis d'EXP-017 est une propriété locale de la sculpture, pas un accident d'une seule coordonnée.
-
-**Test**  
-Le même motif ouverture/fermeture est déplacé à plusieurs endroits du plateau et réfléchi horizontalement.
-
-**Résultat**  
-Les variantes déterministes passent : le compromis survit à la translation et au miroir sans modifier les règles de simulation.
-
-**Décision** `PROMOTE-PARTIAL`.
-
-**Limite**  
-Cela prouve une petite famille de situations, pas encore que le monde initial les rend perceptibles ou désirables.
+Le motif ouverture/fermeture survit à plusieurs translations et au miroir horizontal. Tests et build passent. `PROMOTE-PARTIAL`.
 
 ## EXP-019 — Porter le compromis dans le monde jouable
+Le motif a été placé dans le monde canonique sans nouvelle règle.
+
+### Observation humaine réelle
+Le joueur comprend seulement :
+- il peut faire monter des cases ;
+- chaque toucher fait bouger les petites boules au début ;
+- après un moment elles ne bougent plus ;
+- il voit des petits lacs/cases spéciales qu'il peut également relever ;
+- il ne sait pas ce que sont les autres objets ni pourquoi ils importent.
+
+Le compromis A/B n'est donc pas perceptible. La chaîne source/eau/graine/croissance n'est pas comprise. Le fait que les agents atteignent leur destination et deviennent ensuite immobiles donne surtout l'impression que le contrôle s'est cassé.
+
+**Décision** `DROP` pour EXP-019 comme mise en scène jouable.
+
+**Apprentissage majeur**  
+Les tests ont trouvé une structure décisionnelle réelle mais le joueur ne possède pas le modèle mental minimal permettant de la voir. Ajouter des flèches, textes ou tutoriels masquerait le problème. Trois agents + havens + sources + graines + état porté demandent trop d'inférences avant que le verbe de sculpture puisse être compris.
+
+## EXP-020 — Retour au jouet : une chose qui ne s'arrête pas
 **Hypothèse**  
-La meilleure étape suivante n'est pas une règle supplémentaire mais une géographie initiale qui expose le dilemme robuste au joueur.
+Revenir au canon Genesis-01 : un monde, un geste, **une seule chose mobile**, dont le comportement reste observable indéfiniment. Avant de tester un compromis multi-agent, vérifier que le joueur comprend spontanément « je change le relief → sa trajectoire change ».
 
-**Prototype**  
-Sur le plateau canonique 20×12, une porte légèrement trop haute devant A est placée à côté d'une source sur la route directe de B. Toucher cette source la relève et draine la porte voisine : A gagne son passage direct pendant que B perd sa collecte directe.
+**Contraintes**
+- pas de tutoriel ;
+- pas de destination/haven ;
+- pas de source, graine ou eau dans la première lecture ;
+- pas de nouvel input ;
+- l'objet ne devient jamais définitivement inerte ;
+- conserver la redistribution de terrain ;
+- mouvement simple, local et prévisible plutôt que pathfinding orienté vers un but invisible.
 
-**Décision** `TEST-HUMAN`.
+**Question**  
+Peut-on obtenir un jouet plaisant où une seule chose cherche continuellement le relief bas et où sculpter devant elle produit immédiatement un changement visible de direction ?
 
-**Question humaine précise**  
-Sans texte ni flèche, le joueur peut-il voir qu'un même geste a aidé un être et changé l'opportunité de l'autre ?
+**Statut** `NEXT`.
 
 ## EXP-VIS-005 — Relief lisible
 Relief par déplacement vertical, faces sombres et ombres, grille orthogonale conservée. `TEST`.
 
 ## Direction actuelle
 
-Le signal le plus fort n'est ni l'eau ni la croissance prises séparément. C'est **la redistribution locale de terrain comme échange spatial** : relever ici signifie abaisser ailleurs, donc un geste peut naturellement transférer une possibilité d'une trajectoire vers une autre.
+Le signal abstrait de compromis d'EXP-017/018 reste conservé comme connaissance, mais il est **trop tôt pour le mettre au premier plan**. Le verrou réel est plus fondamental : la causalité entre le doigt, le relief et le mouvement n'est pas encore lisible.
 
-Ne pas ajouter de nouvelle ressource. La prochaine recherche doit approfondir cette propriété :
-- vérifier la lisibilité d'EXP-019 sur téléphone ;
-- si lisible, construire une séquence courte de 2–3 compromis où le résultat du premier geste change le second ;
-- si illisible, améliorer uniquement la lecture du relief/trajectoire ou simplifier les êtres ;
-- si le compromis reste artificiel malgré la mise en scène, rétrograder la branche plutôt que l'enrichir.
+Priorité : simplifier jusqu'à ce que cette causalité soit évidente sans explication. Ensuite seulement réintroduire une deuxième chose et chercher si la redistribution crée naturellement un compromis perceptible.
