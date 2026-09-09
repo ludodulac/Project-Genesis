@@ -8,14 +8,14 @@ interface CellShape { id: CellId; points: Point[] }
 const GAME_WIDTH = 390;
 const GAME_HEIGHT = 760;
 
-// EXP-004: balanced near-top-down projection.
-// More top-down than the original, but with enough tilt to keep the relief readable.
-// Presentation only: simulation and world topology stay unchanged.
-const TILE_W = 68;
-const TILE_H = 57;
-const HEIGHT_PX = 13;
+// EXP-005: dense full-screen terrain.
+// Keep the balanced near-top-down angle, but increase terrain density and let
+// the board extend beyond the viewport edges so the screen feels like the world.
+const TILE_W = 54;
+const TILE_H = 45;
+const HEIGHT_PX = 12;
 const ORIGIN_X = GAME_WIDTH / 2;
-const ORIGIN_Y = 190;
+const ORIGIN_Y = 118;
 
 const PALETTE = [0x6edb8f, 0x81e19c, 0x65d7a0, 0x98df88, 0x74d7b2];
 
@@ -39,16 +39,6 @@ export class WorldScene extends Phaser.Scene {
     const initialOrb = this.positionForCell(this.world.cells[this.world.orb.cellId], true);
     this.orbX = initialOrb.x;
     this.orbY = initialOrb.y;
-
-    this.add.text(GAME_WIDTH / 2, 64, 'TOUCHE LE MONDE', {
-      fontFamily: 'system-ui, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#173a46',
-    }).setOrigin(0.5);
-    this.add.text(GAME_WIDTH / 2, 98, 'Une case monte. Le relief répond.', {
-      fontFamily: 'system-ui, sans-serif', fontSize: '14px', color: '#426a73',
-    }).setOrigin(0.5);
-    this.add.text(GAME_WIDTH / 2, 690, 'EXP-004 · VUE ÉQUILIBRÉE', {
-      fontFamily: 'system-ui, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#56717a',
-    }).setOrigin(0.5);
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       const hit = [...this.cellShapes].reverse().find((shape) => pointInPolygon(pointer.x, pointer.y, shape.points));
@@ -77,25 +67,26 @@ export class WorldScene extends Phaser.Scene {
     this.board.clear();
     this.orbLayer.clear();
     this.cellShapes = [];
-    this.board.fillStyle(0xdff7ff, 1);
+
+    this.board.fillStyle(0xcff4e4, 1);
     this.board.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     const cells = Object.values(this.world.cells).sort((a, b) => (a.row + a.col) - (b.row + b.col) || a.row - b.row);
     for (const cell of cells) this.drawCell(cell);
 
-    const bob = Math.sin(time / 260) * 1.7;
+    const bob = Math.sin(time / 260) * 1.5;
     this.orbLayer.fillStyle(0x183d55, 0.11);
-    this.orbLayer.fillEllipse(this.orbX, this.orbY + 9, 25, 7.5);
+    this.orbLayer.fillEllipse(this.orbX, this.orbY + 8, 22, 7);
     this.orbLayer.fillStyle(0xffd84f, 1);
-    this.orbLayer.fillCircle(this.orbX, this.orbY - 1 + bob, 11.5);
+    this.orbLayer.fillCircle(this.orbX, this.orbY - 1 + bob, 10.5);
     this.orbLayer.fillStyle(0xfff2a6, 0.95);
-    this.orbLayer.fillCircle(this.orbX - 3.7, this.orbY - 6 + bob, 3.3);
+    this.orbLayer.fillCircle(this.orbX - 3.5, this.orbY - 5.5 + bob, 3.1);
   }
 
   private drawCell(cell: Cell): void {
     const visualHeight = this.visualHeights.get(cell.id) ?? cell.height;
     const center = this.positionFor(cell.row, cell.col, visualHeight);
-    const lift = 4 + visualHeight * 6;
+    const lift = 3 + visualHeight * 5;
     const top: Point[] = [
       { x: center.x, y: center.y - TILE_H / 2 },
       { x: center.x + TILE_W / 2, y: center.y },
@@ -109,7 +100,7 @@ export class WorldScene extends Phaser.Scene {
     this.fillPolygon(rightSide, shade(baseColor, 0.84));
     this.fillPolygon(leftSide, shade(baseColor, 0.76));
     this.fillPolygon(top, baseColor);
-    this.board.lineStyle(this.selected === cell.id ? 3 : 1.1, this.selected === cell.id ? 0xffffff : 0x2e816e, this.selected === cell.id ? 0.95 : 0.2);
+    this.board.lineStyle(this.selected === cell.id ? 2.4 : 0.85, this.selected === cell.id ? 0xffffff : 0x2e816e, this.selected === cell.id ? 0.95 : 0.18);
     this.strokePolygon(top);
     this.cellShapes.push({ id: cell.id, points: top });
   }
@@ -117,7 +108,7 @@ export class WorldScene extends Phaser.Scene {
   private positionForCell(cell: Cell, orb = false): Point {
     const height = this.visualHeights.get(cell.id) ?? cell.height;
     const point = this.positionFor(cell.row, cell.col, height);
-    return orb ? { x: point.x, y: point.y - TILE_H / 2 - 6 } : point;
+    return orb ? { x: point.x, y: point.y - TILE_H / 2 - 5 } : point;
   }
 
   private positionFor(row: number, col: number, height: number): Point {
