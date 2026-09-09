@@ -1,38 +1,33 @@
 # Current State
 
 ## État réel
-Genesis travaille actuellement sur le noyau le plus petit possible : **un monde, un geste, une seule chose mobile, une causalité à comprendre**.
+Genesis travaille sur une seule question : **le joueur peut-il prédire le prochain déplacement avant d'agir ?**
 
-Le laboratoire multi-agent EXP-010 à EXP-018 reste conservé comme connaissance. Il n'est pas la version jouable principale.
+Le laboratoire multi-agent reste conservé mais hors de la version jouable.
 
-## Dernier résultat humain — EXP-021 échoue
-Le joueur n'a pas l'impression de pouvoir influencer la boule. Même en répétant un toucher au même endroit, il la voit partir dans des directions différentes et ne sait pas comment la déplacer.
+## EXP-021 — échec humain
+Le joueur ne savait pas influencer la boule et la voyait changer de direction de manière apparemment arbitraire. La mémoire anti-ping-pong est abandonnée dans la branche jouable.
 
-Conclusion : le moteur pouvait être déterministe tout en restant imprédictible pour un humain. La mémoire anti-ping-pong n'a pas rendu la causalité plus lisible ; elle est donc retirée de la règle expérimentale active.
+Principe canonique : **déterminisme logiciel ≠ prédictibilité humaine**.
 
-## Version expérimentale active — EXP-022
-- plateau orthogonal et relief visible ;
-- une seule mote jaune ;
-- aucune destination, ressource ou objectif caché ;
-- une seule commande : sculpter une cellule par redistribution ;
-- après la sculpture, la mote observe uniquement ses quatre voisines ;
-- si une voisine est strictement plus basse, elle va vers la plus basse ;
-- sinon elle reste sur place ;
-- aucune mémoire de trajectoire n'intervient dans cette décision.
+## EXP-022a — résultat automatique utile
+La première version sans mémoire faisait descendre la boule vers le voisin le plus bas, mais la CI a révélé que notre propre intuition sur le geste de sculpture était fausse : relever une case voisine drainait la case sous la boule et pouvait la laisser dans un bassin. La logique était déterministe mais le geste restait indirect.
 
-Règle recherchée : **ce que le joueur voit doit suffire à prédire ce qui va arriver**.
+Nous ne corrigeons pas le test pour faire semblant que cette interaction est intuitive.
 
-## Distinction désormais canonique
-**Déterminisme logiciel ≠ prédictibilité humaine.**
+## Version expérimentale active — EXP-022b
+Pour isoler la causalité, le geste jouable est temporairement inversé :
+- toucher une case l'enfonce directement ;
+- la matière retirée est redistribuée vers ses voisines ;
+- si la case touchée est adjacente à la boule, elle devient une vallée directement visible ;
+- la boule descend vers l'unique voisin le plus bas ;
+- si les meilleures descentes sont exactement à égalité, elle ne choisit pas arbitrairement et reste sur place ;
+- aucune mémoire, destination, inertie ou pathfinding n'intervient.
 
-Un test automatisé peut prouver que deux états identiques donnent le même résultat. Il ne peut pas prouver que le joueur sait lire l'état, comprendre la cause et anticiper ce résultat.
+Ce n'est pas encore le choix définitif du verbe du jeu. C'est l'expérience la plus petite trouvée pour tester `je creuse là → elle roule là`.
 
-## Ce qui doit être prouvé avant toute profondeur supplémentaire
-Le joueur doit pouvoir suivre la boucle :
+## Critère humain
+Avant le toucher, le joueur doit indiquer où il pense que la boule va aller. Plusieurs prédictions correctes dans des directions différentes sont nécessaires avant de réintroduire du caractère ou de la profondeur.
 
-`j'observe → je prédis → je sculpte → je constate`
-
-Le prochain test humain ne demandera donc pas « peux-tu influencer la boule ? ». Avant de toucher, le joueur devra indiquer où il pense qu'elle va aller. Plusieurs prédictions régulièrement correctes seront le premier signal que le relief devient réellement un langage de contrôle.
-
-## Interdits temporaires
-Pas de nouvelle ressource, deuxième entité, destination, pathfinding, inertie supplémentaire, mémoire de mouvement, tutoriel permanent, score, combat ou progression tant que cette prédictibilité élémentaire n'est pas acquise.
+## Toujours absent
+Deuxième entité, ressources, objectif, tutoriel permanent, score, combat, progression, backend et toute nouvelle règle invisible.
