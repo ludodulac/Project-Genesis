@@ -91,9 +91,10 @@ describe('terrain simulation', () => {
   });
 
   it('does not let agent array order change movement decisions', () => {
+    const seed = cellId(2, 3);
+
     const makeScenario = () => {
       const world = createInitialWorld(6, 6);
-      const seed = cellId(2, 3);
       const waterApproach = cellId(2, 2);
       const observer = cellId(1, 3);
       const alternate = cellId(1, 4);
