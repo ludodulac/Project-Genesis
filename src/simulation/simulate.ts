@@ -14,8 +14,10 @@ export interface SimulationResult {
 }
 
 const MAX_HEIGHT = 2.4;
+const MIN_HEIGHT = 0.08;
 const MOVE_THRESHOLD = 0.045;
 const BLOOM_LIFT = 0.24;
+const SCULPT_LIFT = 0.40;
 
 export function simulate(world: WorldState, action: WorldAction): SimulationResult {
   if (action.type !== 'RAISE_CELL' || !world.cells[action.cellId]) {
@@ -28,12 +30,33 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
 
   const changed = new Set<CellId>();
   const target = cells[action.cellId];
-  target.height = Math.min(MAX_HEIGHT, target.height + 0.46);
-  changed.add(target.id);
+  const neighbours = neighboursOf(world, action.cellId);
 
-  for (const neighbour of neighboursOf(world, action.cellId)) {
-    cells[neighbour.id].height = Math.min(MAX_HEIGHT, cells[neighbour.id].height + 0.09);
-    changed.add(neighbour.id);
+  // EXP-008 — sculpt rather than accumulate.
+  // The touched cell gains only the matter its direct neighbours can give up.
+  // This keeps the gesture single-purpose while creating both peaks and basins.
+  const availableRoom = MAX_HEIGHT - target.height;
+  const requestedLift = Math.min(SCULPT_LIFT, availableRoom);
+
+  if (neighbours.length > 0 && requestedLift > 0) {
+    const requestedDrainPerNeighbour = requestedLift / neighbours.length;
+    const drains = neighbours.map((neighbour) => Math.max(
+      0,
+      Math.min(requestedDrainPerNeighbour, cells[neighbour.id].height - MIN_HEIGHT),
+    ));
+    const totalDrain = drains.reduce((sum, amount) => sum + amount, 0);
+
+    if (totalDrain > 0) {
+      target.height += totalDrain;
+      changed.add(target.id);
+
+      neighbours.forEach((neighbour, index) => {
+        const drain = drains[index];
+        if (drain <= 0) return;
+        cells[neighbour.id].height -= drain;
+        changed.add(neighbour.id);
+      });
+    }
   }
 
   const next: WorldState = {
@@ -45,7 +68,6 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
   const events: WorldEvent[] = [];
 
   // Phase 1: every agent reads the same post-terrain state and chooses a move.
-  // No interaction caused by another agent can alter a decision in this phase.
   const moveIntents = new Map<Agent['id'], CellId>();
   for (const agent of next.agents) {
     const current = next.cells[agent.cellId];
@@ -66,7 +88,6 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
   }
 
   // Phase 3: resolve cell interactions in a stable, explicit order.
-  // Agent array order must never be a hidden gameplay variable.
   const interactionOrder = [...next.agents].sort((a, b) => a.id.localeCompare(b.id));
   for (const agent of interactionOrder) {
     const standingCell = next.cells[agent.cellId];
