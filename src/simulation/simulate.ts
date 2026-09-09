@@ -5,7 +5,8 @@ export type WorldAction = { type: 'RAISE_CELL'; cellId: CellId };
 export type WorldEvent =
   | { type: 'TERRAIN_CHANGED'; cellIds: CellId[] }
   | { type: 'AGENT_MOVED'; agentId: Agent['id']; from: CellId; to: CellId }
-  | { type: 'AGENT_CHARGED'; agentId: Agent['id']; element: 'water'; cellId: CellId };
+  | { type: 'AGENT_CHARGED'; agentId: Agent['id']; element: 'water'; cellId: CellId }
+  | { type: 'CELL_BLOOMED'; agentId: Agent['id']; cellId: CellId };
 
 export interface SimulationResult {
   state: WorldState;
@@ -14,6 +15,7 @@ export interface SimulationResult {
 
 const MAX_HEIGHT = 2.4;
 const MOVE_THRESHOLD = 0.045;
+const BLOOM_LIFT = 0.24;
 
 export function simulate(world: WorldState, action: WorldAction): SimulationResult {
   if (action.type !== 'RAISE_CELL' || !world.cells[action.cellId]) {
@@ -40,12 +42,8 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
     agents: world.agents.map((agent) => ({ ...agent })),
   };
 
-  const events: WorldEvent[] = [
-    { type: 'TERRAIN_CHANGED', cellIds: [...changed] },
-  ];
+  const events: WorldEvent[] = [];
 
-  // One deterministic step per player action. The agents do not choose a goal:
-  // they simply follow the lowest readable neighbouring slope.
   for (const agent of next.agents) {
     const current = next.cells[agent.cellId];
     const destination = neighboursOf(next, current.id)
@@ -62,8 +60,18 @@ export function simulate(world: WorldState, action: WorldAction): SimulationResu
     if (standingCell.kind === 'water-source' && agent.carrying !== 'water') {
       agent.carrying = 'water';
       events.push({ type: 'AGENT_CHARGED', agentId: agent.id, element: 'water', cellId: standingCell.id });
+      continue;
+    }
+
+    if (standingCell.kind === 'seed' && agent.carrying === 'water') {
+      standingCell.kind = 'bloom';
+      standingCell.height = Math.min(MAX_HEIGHT, standingCell.height + BLOOM_LIFT);
+      agent.carrying = null;
+      changed.add(standingCell.id);
+      events.push({ type: 'CELL_BLOOMED', agentId: agent.id, cellId: standingCell.id });
     }
   }
 
+  events.unshift({ type: 'TERRAIN_CHANGED', cellIds: [...changed] });
   return { state: next, events };
 }
