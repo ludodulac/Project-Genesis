@@ -6,10 +6,7 @@ Ce document conserve les expériences de game design afin que les essais ratés 
 `hypothèse → prototype minimal → test → observation → décision → conservation/abandon → expérience suivante`
 
 ## EXP-006 — Diriger le vivant
-**Observation humaine**  
-Le relief était trop plat et le rôle des petits êtres incompréhensible. Ne pas masquer cela avec du tutoriel.
-
-**Décision** `ITERATE` — les êtres ne sont pas promus.
+Le relief était trop plat et le rôle des petits êtres incompréhensible. Ne pas masquer cela avec du tutoriel. `ITERATE`.
 
 ## EXP-007 — Faire pousser le monde
 Eau collectée → graine traversée → bloom → relief augmenté. La simulation en phases évite qu'un ordre interne invisible décide du résultat. `ITERATE`.
@@ -27,68 +24,60 @@ Une source traversée charge une mote en eau sans nouvelle commande joueur. L'op
 `relief → détour → source → transport → graine → croissance → nouveau relief`. La causalité est testable, mais le fun et la lisibilité restent à prouver humainement. `TEST`.
 
 ## EXP-013 — Faux compromis
-**Hypothèse**  
-Une même sculpture devait aider A tout en forçant B à se détourner.
-
-**Observation contrôlée**  
-Le premier scénario était mal construit : B conservait exactement sa route directe. Le test a échoué alors que les autres scénarios passaient.
-
-**Décision** `DROP` pour ce scénario précis.
+Le premier scénario censé aider A et gêner B était faux : B gardait exactement sa route. `DROP` pour ce scénario précis.
 
 **À conserver**  
 Un test qui contredit l'histoire souhaitée vaut mieux qu'une mécanique déclarée intéressante trop tôt.
 
 ## EXP-013b — Ouverture / fermeture simultanée
-**Hypothèse**  
-La redistribution locale peut ouvrir la case voisine utile à A en l'abaissant tout en fermant à B la case touchée en la relevant.
-
-**Prototype**  
-A dépend d'une voisine initialement juste trop haute. B dépend directement de la case sculptée. Un seul toucher doit rendre la route directe d'A praticable et celle de B impraticable.
-
-**Décision** `TEST` — sentinelle en validation.
+Une même sculpture abaisse la voisine nécessaire à A tout en relevant la case directe de B. Le scénario déterministe confirme que la route directe d'A s'ouvre pendant que celle de B se ferme. `PROMOTE-PARTIAL`.
 
 ## EXP-014 — Opportunité qui prépare le futur
-**Observation contrôlée**  
-Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant.
-
-**Décision** `PROMOTE-PARTIAL` — conserver la chaîne comme matière de design, pas comme objectif final.
+Une trajectoire peut traverser une source, transporter l'eau, puis transformer une graine au pas suivant. `PROMOTE-PARTIAL` — conserver la chaîne comme matière de design, pas comme objectif final.
 
 ## EXP-015 — Le bénéfice devient coût
-**Observation contrôlée**  
-La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin.
-
-**Décision** `PROMOTE-PARTIAL`.
+La croissance créée par A peut relever une cellule qui était sur la route directe de B. B doit alors changer de chemin. `PROMOTE-PARTIAL`.
 
 **Pourquoi c'est intéressant**  
 Une conséquence positive locale n'est plus globalement positive : elle reconfigure le problème spatial d'une autre entité.
 
-## EXP-016 — Conséquence réciproque
+## EXP-016 — Réciprocité automatique
 **Hypothèse**  
-Le coût créé pour B peut devenir une nouvelle opportunité : la croissance provoquée par A force B vers une source, ce qui le charge à son tour en eau.
+La croissance provoquée par A devait forcer B vers une source voisine, créant automatiquement une nouvelle opportunité.
 
-**Prototype**  
-A fait pousser une graine sur la route de B ; le détour de B passe par une source.
+**Observation contrôlée**  
+Faux. B trouve une autre route qui évite la source. La réciprocité imaginée n'émerge pas de ces règles dans ce scénario.
 
-**Décision** `TEST` — scénario déterministe en validation.
+**Décision** `DROP`.
+
+**À conserver**  
+Ne pas forcer un détour vers une opportunité juste pour obtenir une jolie chaîne. Une opportunité n'a de valeur que si la géographie la rend naturellement compétitive.
 
 ## EXP-017 — Deux gestes, deux intérêts incompatibles
 **Hypothèse**  
 Une vraie décision apparaît si deux gestes valides sur le même état optimisent des intérêts différents et qu'aucun geste ne domine simplement l'autre.
 
-**Prototype**  
-- geste A : sculpter une case qui abaisse la route d'A mais relève la source/route de B ;
-- geste B : ne pas toucher cette zone, laissant B prendre la source mais A perdre son chemin direct.
+**Résultat contrôlé**  
+Le scénario tient :
+- sculpter la zone critique ouvre la route directe d'A mais empêche B de traverser la source ;
+- laisser cette zone intacte permet à B de prendre la source tandis qu'A perd sa route directe.
 
-**Critère**  
-Le scénario n'est intéressant que si le choix `favoriser A` empêche réellement le bénéfice de B, tandis que `favoriser B` empêche réellement le bénéfice direct d'A.
+**Décision** `PROMOTE-PARTIAL`.
 
-**Décision** `TEST` — c'est actuellement l'hypothèse la plus proche d'une vraie décision de jeu.
+**Pourquoi c'est le signal le plus fort à ce stade**  
+Le système produit enfin un choix entre deux bénéfices incompatibles avec le même verbe et sans nouvelle commande. C'est une preuve de structure décisionnelle, pas encore une preuve de fun.
 
 ## EXP-VIS-005 — Relief lisible
 Le relief visuel utilise davantage de déplacement vertical, faces sombres et ombres tout en conservant une grille orthogonale. `TEST`.
 
-## Prochaine recherche
+## Prochaine recherche — robustesse du dilemme
 
-Si EXP-017 tient, ne pas ajouter de système. Construire plusieurs variantes spatiales du même dilemme pour vérifier qu'il ne dépend pas d'un placement artificiel unique. Chercher surtout si la conséquence secondaire peut être exploitée plutôt qu'évitée.
+Ne rien ajouter. Construire plusieurs variantes spatiales d'EXP-017 afin de vérifier que le compromis n'existe pas seulement dans un placement artificiel unique.
 
-Si EXP-017 ne tient pas, modifier ou simplifier la logique de mouvement plutôt que d'empiler une nouvelle mécanique.
+Questions :
+- le dilemme survit-il quand la source est déplacée ?
+- survit-il avec une autre orientation du relief ?
+- peut-il se prolonger sur deux ou trois décisions sans devenir calcul trivial ?
+- une conséquence secondaire peut-elle devenir exploitable plutôt qu'être seulement évitée ?
+
+Si le dilemme disparaît dès qu'on change légèrement la géographie, `EXP-017` redescend à `ITERATE`.
