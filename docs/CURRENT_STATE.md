@@ -2,7 +2,7 @@
 
 ## État réel
 
-Le dépôt contient maintenant un prototype vivant basé sur EXP-006/007, tandis qu'EXP-008 compare expérimentalement deux verbes de sculpture sans encore modifier la version jouable.
+Le dépôt contient maintenant un prototype vivant basé sur EXP-006/007, avec **EXP-008 — Sculpter plutôt qu'empiler** rendu jouable et déployé.
 
 ### Présent dans la version jouable
 - runtime Phaser 4 + TypeScript + Vite ;
@@ -23,8 +23,48 @@ Le dépôt contient maintenant un prototype vivant basé sur EXP-006/007, tandis
 - un être porteur d'eau qui atteint une graine consomme l'eau, transforme la graine en pousse et augmente légèrement la hauteur de cette cellule ;
 - retour visuel distinct pour eau, graines, pousses et agents chargés ;
 - interaction tactile plein écran ;
-- tests de simulation couvrant déformation, déplacement, collecte d'eau, floraison et indépendance vis-à-vis de l'ordre des agents ;
 - workflow CI + GitHub Pages.
+
+### Verbe de sculpture actuellement testé
+
+EXP-008 remplace temporairement l'ancienne accumulation par une redistribution de matière :
+
+- la case touchée monte ;
+- ses quatre voisines directes descendent légèrement ;
+- la case touchée ne gagne que la quantité réellement prélevée aux voisines ;
+- la hauteur moyenne du terrain reste approximativement conservée ;
+- aucune nouvelle commande n'a été ajoutée.
+
+Le but n'est pas de déclarer cette variante meilleure, mais de vérifier si un toucher produit davantage l'impression de **sculpter une décision** que d'ajouter une bosse.
+
+### Résultat contrôlé EXP-008
+
+Sur une séquence identique de huit touches appliquée à un monde 14 × 10 :
+
+- terrain initial : amplitude ≈ `0.416`, minima locaux `8` ;
+- ancienne accumulation : amplitude ≈ `0.888`, minima locaux `8`, hauteur moyenne en hausse ;
+- redistribution : amplitude ≈ `0.712`, minima locaux `13`, hauteur moyenne conservée.
+
+Observation : la redistribution ne crée pas les pics les plus extrêmes, mais crée davantage de bassins locaux. C'est une différence de géographie, pas une preuve de fun.
+
+### Robustesse de la simulation
+
+Un premier comportement de réaction en chaîne d'EXP-007 a été rejeté parce qu'il dépendait de l'ordre des agents dans le tableau. La simulation est maintenant phasée :
+
+1. modification du terrain ;
+2. calcul simultané des intentions de déplacement ;
+3. application des déplacements ;
+4. résolution stable des interactions eau/graine.
+
+Une sentinelle vérifie que réordonner le tableau des agents ne change pas leurs décisions de mouvement.
+
+### Vérifié
+
+Le run CI associé à la version jouable EXP-008 a réussi :
+- tests de simulation : succès ;
+- tests comparatifs EXP-008 : succès ;
+- build Vite : succès ;
+- déploiement GitHub Pages : succès.
 
 ### Gouvernance du laboratoire
 
@@ -36,44 +76,27 @@ Une expérience n'est jamais automatiquement le jeu. Les mécaniques ne sont pro
 
 ### Expérience jouable active
 
-**EXP-007 — Faire pousser le monde**
-
-Boucle actuelle :
-
-`terrain → déplacement → eau → croissance → nouveau terrain`
-
-Le scénario contrôlé confirme que la croissance laisse bien une trace spatiale. Un premier reroutage dans la même étape a été rejeté parce qu'il dépendait d'un ordre interne invisible des agents. La simulation a été corrigée pour rendre cette priorité explicite et indépendante de l'ordre du tableau.
-
-### Expérience de comparaison active
-
 **EXP-008 — Sculpter plutôt qu'empiler**
 
-La version jouable conserve encore `RAISE_CELL` tel qu'il existe aujourd'hui.
+La boucle complète encore présente est :
 
-Dans `src/experiments/exp008Terrain.ts`, deux variantes sont comparées sans contaminer le moteur retenu :
+`sculpture du terrain → déplacement → eau → croissance → nouveau terrain`
 
-- `accumulate` : la cible et ses voisins gagnent de la hauteur ;
-- `redistribute` : la cible monte en prélevant approximativement la même quantité de matière à ses voisins.
-
-Les scénarios automatisés comparent conservation de hauteur moyenne, amplitude du relief et création de minima locaux. Ces mesures servent à caractériser les variantes, pas à décider laquelle est amusante.
-
-### Vérifié
-- EXP-006 et la première version jouable de la boucle eau/graines ont déjà passé CI et déploiement ;
-- la séparation des mouvements et interactions est couverte par une sentinelle d'indépendance à l'ordre des agents ;
-- les derniers changements doivent toujours être considérés vérifiés uniquement si leur run CI associé est vert.
+EXP-006 et EXP-007 restent des sources d'apprentissage, pas des fondations intouchables.
 
 ### À vérifier humainement sur téléphone
-Le prochain test humain devra rester court. Observer principalement :
 
-1. est-ce que l'on commence spontanément à anticiper les trajectoires avant de toucher ?
-2. est-ce que le cycle eau → graine → pousse crée une conséquence suffisamment lisible et satisfaisante pour donner envie de la provoquer volontairement ?
+Le prochain test humain devra rester très court. Observer principalement :
+
+1. un toucher donne-t-il davantage l'impression de créer **une montagne et une vallée en même temps** ?
+2. cette redistribution rend-elle les trajectoires plus intéressantes à anticiper, ou simplement plus chaotiques ?
 
 ### Non promu / encore incertain
 - déplacement autonome comme mécanique définitive ;
 - eau ;
 - graines / croissance ;
-- `RAISE_CELL` dans sa forme actuelle ;
-- redistribution de matière d'EXP-008.
+- redistribution de matière ;
+- importance réelle des minima locaux pour le plaisir de jeu.
 
 ### Absent volontairement
 - feu ;
@@ -91,10 +114,8 @@ Le prochain test humain devra rester court. Observer principalement :
 - grosse infrastructure ;
 - assets définitifs.
 
-## Ordre de recherche
+## Prochaine hypothèse
 
-La chaîne `terrain → mouvement → transport → interaction → objectif → adversité` reste une heuristique, pas une roadmap obligatoire.
+Avant d'ajouter un nouvel élément, chercher si le nouveau verbe de sculpture peut produire une première **situation de compromis** uniquement avec terrain + plusieurs êtres : une modification utile à un être doit pouvoir créer simultanément une opportunité ou un danger pour un autre.
 
-La prochaine hypothèse active est EXP-008 : **le verbe de sculpture devient-il plus profond si soulever une zone crée automatiquement un creux ou un coût spatial ailleurs ?**
-
-Si la réponse contrôlée est prometteuse, la variante sera rendue jouable pour comparaison tactile. Sinon elle sera parkée ou abandonnée sans toucher à la fondation.
+Si cette profondeur n'apparaît pas, simplifier ou changer le mouvement avant d'ajouter de nouvelles couches.
