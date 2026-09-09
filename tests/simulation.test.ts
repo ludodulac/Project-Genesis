@@ -3,17 +3,21 @@ import { simulate } from '../src/simulation/simulate';
 import { cellId, createInitialWorld } from '../src/world/model';
 
 describe('terrain simulation', () => {
-  it('raises the target more than its neighbours without mutating the input', () => {
+  it('raises the target by draining direct neighbours without mutating the input', () => {
     const world = createInitialWorld(3, 3);
     const targetId = cellId(1, 1);
+    const neighbourId = cellId(1, 0);
     const beforeTarget = world.cells[targetId].height;
-    const beforeNeighbour = world.cells[cellId(1, 0)].height;
+    const beforeNeighbour = world.cells[neighbourId].height;
+    const beforeMean = Object.values(world.cells).reduce((sum, cell) => sum + cell.height, 0) / 9;
 
     const result = simulate(world, { type: 'RAISE_CELL', cellId: targetId });
+    const afterMean = Object.values(result.state.cells).reduce((sum, cell) => sum + cell.height, 0) / 9;
 
     expect(world.cells[targetId].height).toBe(beforeTarget);
-    expect(result.state.cells[targetId].height).toBeCloseTo(beforeTarget + 0.46);
-    expect(result.state.cells[cellId(1, 0)].height).toBeCloseTo(beforeNeighbour + 0.09);
+    expect(result.state.cells[targetId].height).toBeCloseTo(beforeTarget + 0.40);
+    expect(result.state.cells[neighbourId].height).toBeCloseTo(beforeNeighbour - 0.10);
+    expect(afterMean).toBeCloseTo(beforeMean, 10);
   });
 
   it('moves agents deterministically toward a clearly lower neighbouring cell', () => {
