@@ -73,13 +73,13 @@ describe('EXP-031 global pressure', () => {
     expect(result.turn).toBe(1);
   });
 
-  it('ends the run only when the telegraphed entry cell is still occupied', () => {
+  it('ends the run only when the telegraphed entry cell remains occupied after movement', () => {
     const state: PressureState = {
       board: [
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
+        [0, 0, 1, 1],
+        [1, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
       ],
       turn: 0,
       alive: true,
@@ -87,6 +87,7 @@ describe('EXP-031 global pressure', () => {
     };
     const result = stepPressure(state, 'right');
     expect(result.advanced).toBe(true);
+    expect(result.board[0][2]).toBe(1);
     expect(result.alive).toBe(false);
   });
 
