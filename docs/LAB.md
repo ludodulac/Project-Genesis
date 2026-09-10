@@ -105,11 +105,10 @@ Boucle recherchée : `J'OBSERVE → JE PRÉDIS → JE GESTE → JE VOIS L'ÉCART
 ### Prototype minimal
 - une arène portrait ;
 - une bille à lancer ;
-- trois surfaces fixes ;
 - un anneau cible unique, sans score ;
 - tirer la bille en arrière puis relâcher ;
 - angle + force encodés dans le même geste ;
-- gravité + rebonds simples ;
+- gravité simple ;
 - reset automatique rapide ;
 - aucun niveau, par, progression, génération procédurale, relief ou deuxième mécanique.
 
@@ -119,7 +118,7 @@ La ligne élastique pendant la traction sert uniquement à rendre le geste compr
 - tirer vers un côté lance dans la direction opposée ;
 - une traction plus longue donne proportionnellement plus de vitesse ;
 - la traction est plafonnée sans changer sa direction ;
-- une collision verticale produit un rebond miroir lisible.
+- la réflexion physique reste testée comme primitive technique, même si les obstacles intérieurs sont retirés du probe humain final.
 
 Ces tests garantissent la cohérence du contrôle, jamais le plaisir.
 
@@ -127,22 +126,24 @@ Ces tests garantissent la cohérence du contrôle, jamais le plaisir.
 Observer une courte série libre d'essais. Ne pas transformer « dix tirs » en seuil mécanique.
 
 Deux preuves séparées sont nécessaires :
-1. **maîtrise naissante** — le geste suivant incorpore explicitement ou visiblement l'écart précédent (`moins fort`, `plus à gauche`, usage intentionnel d'un rebond, etc.) ;
+1. **maîtrise naissante** — le geste suivant incorpore explicitement ou visiblement l'écart précédent (`moins fort`, `plus à gauche`, etc.) ;
 2. **retry intrinsèque** — le joueur veut recommencer parce qu'il pense pouvoir faire mieux, et non simplement parce qu'on lui demande de poursuivre.
 
-Si le geste lui-même est illisible ou désagréable, corriger seulement le minimum permettant de tester l'adresse. Si le geste est lisible mais que la boucle ou le retry n'apparaissent pas, `DROP/PARK` sans contenu de sauvetage.
+Si le geste lui-même est illisible ou désagréable, corriger seulement le minimum permettant de tester l'adresse. Si le geste est lisible mais que la boucle ou le retry n'apparaissent pas, `PARK` sans contenu de sauvetage.
 
-### Test humain — calibration invalide
+### Tests humains — calibration invalide
 Premier essai : le joueur identifie immédiatement que la bille ne peut pas atteindre le cerceau, que le vol continue puis reset, et que la puissance disponible est insuffisante. Ce n'est pas une preuve contre l'adresse analogique : le probe ne permet pas encore de tester honnêtement l'hypothèse.
 
-Une correction minimale a augmenté amplitude/puissance et accéléré le reset. Au second essai, le joueur rapporte encore : « ce n'est pas possible, ça ne peut pas aller assez haut ». La calibration reste donc invalide. **Ne pas demander davantage de tirs dans cette configuration et ne pas interpréter l'absence de retry comme un échec de la famille.**
+Une correction minimale a augmenté amplitude/puissance et accéléré le reset. Au second essai, le joueur rapporte encore : « ce n'est pas possible, ça ne peut pas aller assez haut ». L'analyse du dispositif montre que les trois surfaces avaient transformé le probe en problème de chemin : elles pouvaient bloquer l'exploration directe de l'espace utile malgré une puissance théoriquement suffisante.
 
-Signal conceptuel spontané malgré l'échec du probe : le joueur imagine « une énigme de par quel chemin on doit passer », puis se demande immédiatement si ce type de jeu n'est pas déjà vu et revu.
+### Signal de design séparé — puzzle de trajectoire connu
+Avant même que la primitive soit correctement testée, le joueur imagine spontanément « une énigme de par quel chemin on doit passer », puis se demande immédiatement si ce type de jeu n'est pas déjà vu et revu.
 
-Recherche externe de contrôle : cette intuition correspond effectivement à une famille déjà très occupée. Des jeux actuels comme RicoShot et Sink Shot se présentent explicitement comme des puzzles de trajectoire où l'on vise, rebondit sur les murs et cherche le chemin vers une cible ; des précédents anciens comme Angry Birds, Peggle, Fragger et Trick Shot occupent également largement le territoire lancement/angle/rebond.
+Ce signal est conservé séparément : il ne réfute pas `geste analogique → trajectoire → correction`, mais indique que l'habillage évident `trouver un chemin de rebonds vers une cible` active rapidement une catégorie de jeu déjà connue plutôt qu'une possibilité Genesis nouvelle. Ne pas effacer ce signal si la primitive d'adresse réussit.
 
-**Apprentissage provisoire** : distinguer deux questions :
-- la primitive `geste analogique → trajectoire → correction` reste non testée proprement à cause d'un probe mal calibré ;
-- la proposition de jeu évidente `trouver le chemin de rebonds vers un cerceau` est déjà fortement conventionnelle et ne mérite pas d'être protégée comme direction Genesis.
+### Dernière porte de calibration
+La dernière correction retire les trois obstacles intérieurs au lieu d'inventer un meilleur chemin. La cible est replacée dans un espace directement atteignable. Aucun rebond nécessaire, aucun puzzle, aucune nouvelle mécanique. Le probe final mesure donc seulement : `viser/doser → observer l'écart → ajuster → vouloir réessayer`.
 
-**Statut** : `ITERATE-CALIBRATION`, mais avec faible valeur à poursuivre sous forme de puzzle de ricochets. Si une dernière calibration minimale ne permet pas de tester l'adresse nue sans glisser vers le puzzle de chemin, PARK la famille et passer au challenger B/C plutôt que d'ajouter contenu ou mécanique.
+**Règle de décision** : cette correction est une porte, pas une itération de design. Si le contrôle est désormais physiquement valide mais que maîtrise naissante et retry intrinsèque n'apparaissent pas sans enrichissement, **`PARK` EXP-024 / famille A pour maintenant**. Ne pas ajouter de contenu pour la sauver.
+
+**Statut** : `FINAL-CALIBRATION-GATE`.
