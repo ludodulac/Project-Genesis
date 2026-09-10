@@ -52,7 +52,7 @@ export function tap030(input: Board, row: number, col: number): Result {
 }
 
 // First situation makes the exception observable without requiring it.
-// Second situation only clears if the observation changes how the player acts.
+// Second situation reuses the same relation in a different geometry.
 export const EXP030_SCENARIOS: Board[] = [
   [
     [0, 0, 3, 0],
@@ -62,8 +62,8 @@ export const EXP030_SCENARIOS: Board[] = [
   ],
   [
     [0, 3, 0, 0],
-    [0, 2, 1, 0],
     [0, 1, 2, 0],
+    [0, 2, 1, 0],
     [0, 0, 1, 0],
   ],
 ];
