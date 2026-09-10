@@ -132,4 +132,17 @@ Deux preuves séparées sont nécessaires :
 
 Si le geste lui-même est illisible ou désagréable, corriger seulement le minimum permettant de tester l'adresse. Si le geste est lisible mais que la boucle ou le retry n'apparaissent pas, `DROP/PARK` sans contenu de sauvetage.
 
-**Statut** : `TEST-READY` une fois CI et déploiement verts.
+### Test humain — calibration invalide
+Premier essai : le joueur identifie immédiatement que la bille ne peut pas atteindre le cerceau, que le vol continue puis reset, et que la puissance disponible est insuffisante. Ce n'est pas une preuve contre l'adresse analogique : le probe ne permet pas encore de tester honnêtement l'hypothèse.
+
+Une correction minimale a augmenté amplitude/puissance et accéléré le reset. Au second essai, le joueur rapporte encore : « ce n'est pas possible, ça ne peut pas aller assez haut ». La calibration reste donc invalide. **Ne pas demander davantage de tirs dans cette configuration et ne pas interpréter l'absence de retry comme un échec de la famille.**
+
+Signal conceptuel spontané malgré l'échec du probe : le joueur imagine « une énigme de par quel chemin on doit passer », puis se demande immédiatement si ce type de jeu n'est pas déjà vu et revu.
+
+Recherche externe de contrôle : cette intuition correspond effectivement à une famille déjà très occupée. Des jeux actuels comme RicoShot et Sink Shot se présentent explicitement comme des puzzles de trajectoire où l'on vise, rebondit sur les murs et cherche le chemin vers une cible ; des précédents anciens comme Angry Birds, Peggle, Fragger et Trick Shot occupent également largement le territoire lancement/angle/rebond.
+
+**Apprentissage provisoire** : distinguer deux questions :
+- la primitive `geste analogique → trajectoire → correction` reste non testée proprement à cause d'un probe mal calibré ;
+- la proposition de jeu évidente `trouver le chemin de rebonds vers un cerceau` est déjà fortement conventionnelle et ne mérite pas d'être protégée comme direction Genesis.
+
+**Statut** : `ITERATE-CALIBRATION`, mais avec faible valeur à poursuivre sous forme de puzzle de ricochets. Si une dernière calibration minimale ne permet pas de tester l'adresse nue sans glisser vers le puzzle de chemin, PARK la famille et passer au challenger B/C plutôt que d'ajouter contenu ou mécanique.
