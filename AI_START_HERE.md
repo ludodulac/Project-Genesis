@@ -32,6 +32,24 @@ L'IA peut enchaîner des expériences réversibles sans demander après chaque �
 
 EXP-XXX n'est jamais le jeu. Une expérience peut être promue, partiellement conservée, parkée ou abandonnée.
 
+## Deux mouvements complémentaires
+
+Genesis ne cherche pas encore à finir un jeu ; il cherche le jeu qui donnera une bonne raison d'être fini.
+
+Le laboratoire alterne deux mouvements :
+
+`EXPLORER LARGEMENT → sélectionner un pari → PROTOTYPER TRÈS PETIT → tester humainement → apprendre → KEEP/PROMOTE-PARTIAL/PARK/DROP → rouvrir l'espace → éventuellement combiner les meilleures primitives`.
+
+Une primitive validée reste disponible sans devenir automatiquement « le jeu Genesis ». Après une séquence d'approfondissement, et particulièrement lorsqu'un langage fondamental vient d'être validé, faire explicitement un point avant l'expérience suivante :
+- qu'avons-nous réellement appris ?
+- quelle primitive mérite d'être conservée ?
+- l'incertitude la plus importante est-elle encore dans cette famille ?
+- ou faut-il rouvrir une exploration externe vers une famille de plaisir très différente ?
+
+L'exploration externe peut regarder jeux mobiles/web, petits indés, game jams, prototypes, postmortems et retours de joueurs. Chercher des **sources élémentaires de plaisir**, pas seulement des genres : envie de toucher, retry, surprise compréhensible, maîtrise, profondeur à peu de règles, adéquation tactile, génération de situations sans gros volume d'assets/contenu.
+
+Préférer vingt jouets minuscules bien choisis à la construction progressive d'un jeu moyen parce que la première mécanique fonctionnait. Inversement, ne pas jeter une primitive comprise : elle peut être recombinée plus tard.
+
 ## Tests : vérité ≠ fun
 
 Les tests automatisés vérifient déterminisme, transitions, règles et invariants. Ils ne prouvent pas qu'une mécanique est intéressante. Une question de compréhension/plaisir peut exiger une observation humaine ciblée.
