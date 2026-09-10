@@ -5,38 +5,41 @@ Genesis travaille sur une seule question : **le joueur peut-il prédire le proch
 
 Le laboratoire multi-agent reste conservé mais hors de la version jouable.
 
-## EXP-021 — échec humain
-Le joueur ne savait pas influencer la boule et la voyait changer de direction de manière apparemment arbitraire. La mémoire anti-ping-pong est abandonnée dans la branche jouable.
+## Connaissance acquise avant EXP-023
+EXP-021 a échoué humainement : déterminisme logiciel ≠ prédictibilité humaine.
 
-Principe canonique : **déterminisme logiciel ≠ prédictibilité humaine**.
+EXP-022b a ensuite produit la première formulation spontanée utile : **« je creuse quelque part et la bille tend à aller vers le creux »**. Cette causalité reste `PROMOTE-PARTIAL`.
 
-## EXP-022a — résultat automatique utile
-La première version sans mémoire faisait descendre la boule vers le voisin le plus bas, mais la CI a révélé que notre propre intuition sur le geste de sculpture était fausse : relever une case voisine drainait la case sous la boule et pouvait la laisser dans un bassin. La logique était déterministe mais le geste restait indirect.
+Le cas de la cellule occupée a montré qu'un tap centré ne contient aucune direction latérale exploitable sans hasard, mémoire ou tie-break caché. Ces solutions sont interdites.
 
-Nous ne corrigeons pas le test pour faire semblant que cette interaction est intuitive.
+Une tentative de remplacer la bille par un acteur carré a également échoué humainement : le joueur a attendu des boutons pour le déplacer. Cette branche est `DROP` et son apprentissage est conservé.
 
-## Version expérimentale active — EXP-022b
-Pour isoler la causalité, le geste jouable est temporairement inversé :
-- toucher une case l'enfonce directement ;
-- la matière retirée est redistribuée vers ses voisines ;
-- si la case touchée est adjacente à la boule, elle devient une vallée directement visible ;
-- la boule descend vers l'unique voisin le plus bas ;
-- si les meilleures descentes sont exactement à égalité, elle ne choisit pas arbitrairement et reste sur place ;
-- aucune mémoire, destination, inertie ou pathfinding n'intervient.
+## Signifiant actif figé — EXP-022e
+Le cercle est maintenant creux : circularité conservée, terrain visible au centre. La simulation et le geste restent ceux d'EXP-022b.
 
-Le premier test humain a produit une compréhension spontanée prometteuse : **« je creuse quelque part et la bille tend à aller vers le creux »**. Cette causalité est `PROMOTE-PARTIAL`.
+Le test humain a produit une chaîne causale spontanée : le joueur dit qu'il baisse le terrain, que l'acteur « coule » dans ce relief et qu'il pense pouvoir ensuite modifier le terrain pour l'envoyer ailleurs.
 
-## Frontière isolée — toucher la case occupée
-Le joueur s'attend spontanément à ce qu'une bille ronde touchée directement parte quelque part autour. Le comportement actuel la laisse sur la case creusée, ce qui donne une impression de bille collée.
+Statut : `PROMOTE-PARTIAL`, **pas encore langage acquis**.
 
-La recherche a cependant montré qu'un simple tap centré ne contient aucune direction latérale. Avec les règles actuelles, creuser la case occupée enfonce encore la bille dans un minimum local ; une sortie gravitaire est pratiquement impossible. Une direction fixe, aléatoire, mémorisée ou choisie par un tie-break invisible est interdite.
+Le cercle creux est figé pendant les tests de prédiction. Aucun changement simultané de présentation, physique ou geste n'est autorisé.
 
-Un prototype **non branché sur la version jouable** étudie le seul candidat encore cohérent : le contact fournirait l'impulsion, tandis que le relief visible choisirait l'unique bord voisin nettement le plus bas. Il refuse de bouger lorsque l'écart visuel entre les deux meilleurs bords est inférieur à environ 2 px. Les sentinelles vérifient qu'aucune direction n'est inventée sur terrain ambigu.
+## EXP-023 — expérience active
+Objectif : essayer de **réfuter** la compréhension terrain → conséquence sur l'acteur.
 
-Ce candidat n'est pas promu : il peut faire sortir la bille d'un bassin en montant vers son bord, donc il introduit implicitement une impulsion. Tant que ce coût conceptuel n'est pas justifié, la production reste EXP-022b inchangée.
+Quatre scénarios déterministes sont disponibles via le harness de prédiction. Ils utilisent exactement le même moteur et le même signifiant ; seule la géométrie initiale varie. Une cellule est marquée avant l'action et une seule pression y est acceptée.
 
-## Critère humain
-Avant le toucher, le joueur doit indiquer où il pense que la boule va aller. Plusieurs prédictions correctes dans des directions différentes sont nécessaires avant de réintroduire du caractère ou de la profondeur.
+Les cas couvrent :
+- déplacement vers une cellule adjacente touchée ;
+- toucher adjacent sans déplacement ;
+- déplacement à l'opposé du côté touché ;
+- toucher de la cellule occupée sans direction latérale inventée.
+
+Les tests automatiques vérifient les conséquences, mais ne valident pas la compréhension humaine.
+
+## Critère humain de promotion
+Avant chaque interaction, recueillir la prédiction du joueur sans expliquer la règle.
+
+Le langage `terrain → conséquence sur l'acteur` ne sera considéré acquis que si le joueur prédit correctement plusieurs conséquences nouvelles, notamment au moins un cas qui contredit une heuristique superficielle comme « je touche près donc ça bouge » ou « l'objet va vers l'endroit touché ».
 
 ## Toujours absent
-Deuxième entité, ressources, objectif, tutoriel permanent, score, combat, progression, backend et toute nouvelle règle invisible.
+Deuxième entité, ressources, objectif, tutoriel permanent, boutons de mouvement, joystick, score, combat, progression, backend, mémoire de déplacement et toute nouvelle règle invisible.
