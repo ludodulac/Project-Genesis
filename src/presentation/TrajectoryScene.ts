@@ -6,15 +6,7 @@ const H = 760;
 const R = 11;
 const GRAVITY = 430;
 const START = { x: 92, y: 650 };
-const TARGET = { x: 308, y: 116, r: 24 };
-
-interface Surface { x: number; y: number; w: number; h: number }
-
-const SURFACES: Surface[] = [
-  { x: 34, y: 478, w: 196, h: 18 },
-  { x: 202, y: 304, w: 154, h: 18 },
-  { x: 42, y: 188, w: 126, h: 18 },
-];
+const TARGET = { x: 292, y: 210, r: 30 };
 
 export class TrajectoryScene extends Phaser.Scene {
   private gfx!: Phaser.GameObjects.Graphics;
@@ -70,14 +62,13 @@ export class TrajectoryScene extends Phaser.Scene {
       this.ball.x += this.velocity.x * dt;
       this.ball.y += this.velocity.y * dt;
       this.collideBounds();
-      for (const surface of SURFACES) this.collideSurface(surface);
 
       const targetDistance = Phaser.Math.Distance.Between(this.ball.x, this.ball.y, TARGET.x, TARGET.y);
-      if (targetDistance <= TARGET.r - 2) {
+      if (targetDistance <= TARGET.r - R * 0.25) {
         this.targetPulse = 1;
         this.flying = false;
         this.resetMs = 380;
-      } else if (this.ball.y > H + 40 || this.flightMs > 6500) {
+      } else if (this.ball.y > H + 40 || this.flightMs > 5000) {
         this.flying = false;
         this.resetMs = 140;
       }
@@ -100,40 +91,6 @@ export class TrajectoryScene extends Phaser.Scene {
     }
   }
 
-  private collideSurface(s: Surface): void {
-    const closestX = Phaser.Math.Clamp(this.ball.x, s.x, s.x + s.w);
-    const closestY = Phaser.Math.Clamp(this.ball.y, s.y, s.y + s.h);
-    const dx = this.ball.x - closestX;
-    const dy = this.ball.y - closestY;
-    const distSq = dx * dx + dy * dy;
-    if (distSq >= R * R) return;
-
-    let nx = 0;
-    let ny = 0;
-    const dist = Math.sqrt(distSq);
-    if (dist > 0.0001) {
-      nx = dx / dist;
-      ny = dy / dist;
-    } else {
-      const left = Math.abs(this.ball.x - s.x);
-      const right = Math.abs(this.ball.x - (s.x + s.w));
-      const top = Math.abs(this.ball.y - s.y);
-      const bottom = Math.abs(this.ball.y - (s.y + s.h));
-      const m = Math.min(left, right, top, bottom);
-      if (m === left) nx = -1;
-      else if (m === right) nx = 1;
-      else if (m === top) ny = -1;
-      else ny = 1;
-    }
-
-    const inward = this.velocity.x * nx + this.velocity.y * ny;
-    if (inward >= 0) return;
-    const penetration = R - dist;
-    this.ball.x += nx * (penetration + 0.5);
-    this.ball.y += ny * (penetration + 0.5);
-    this.velocity = reflectVelocity(this.velocity, { x: nx, y: ny });
-  }
-
   private resetBall(): void {
     this.ball = { ...START };
     this.pullPoint = { ...START };
@@ -153,11 +110,6 @@ export class TrajectoryScene extends Phaser.Scene {
     g.strokeCircle(TARGET.x, TARGET.y, TARGET.r + this.targetPulse * 8);
     g.lineStyle(7, 0x74e7cf, 0.9);
     g.strokeCircle(TARGET.x, TARGET.y, TARGET.r);
-
-    for (const s of SURFACES) {
-      g.fillStyle(0xdde7ef, 1);
-      g.fillRoundedRect(s.x, s.y, s.w, s.h, 9);
-    }
 
     if (this.pulling) {
       g.lineStyle(4, 0xffd760, 0.72);
