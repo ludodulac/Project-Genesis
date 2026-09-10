@@ -76,10 +76,10 @@ export class TrajectoryScene extends Phaser.Scene {
       if (targetDistance <= TARGET.r - 2) {
         this.targetPulse = 1;
         this.flying = false;
-        this.resetMs = 520;
-      } else if (this.ball.y > H + 40 || this.flightMs > 4200) {
+        this.resetMs = 380;
+      } else if (this.ball.y > H + 40 || this.flightMs > 6500) {
         this.flying = false;
-        this.resetMs = 260;
+        this.resetMs = 140;
       }
     }
 
