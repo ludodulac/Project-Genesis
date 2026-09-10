@@ -95,4 +95,41 @@ La cellule proposée est à droite, mais le relief local offre une sortie claire
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
 
 ## Direction de recherche après EXP-023
-EXP-023 clôt une question, pas la recherche du jeu. Avant toute EXP-024 de continuité, rouvrir l'exploration externe et comparer plusieurs familles de plaisir radicalement différentes. Le prochain prototype doit être choisi pour son potentiel et sa valeur d'information, pas parce qu'il prolonge le relief.
+EXP-023 clôt une question, pas la recherche du jeu. Le radar comparatif a rouvert l'espace et sélectionné la famille A non pour son score heuristique, mais parce qu'elle est éloignée du relief, très peu coûteuse à tester et adresse une inconnue fondamentale : l'adresse tactile analogique produit-elle spontanément anticipation, correction et retry ?
+
+## EXP-024 — Adresse physique / trajectoire
+**Hypothèse** : un geste analogique direct peut suffire à créer une boucle de maîtrise sans contenu supplémentaire.
+
+Boucle recherchée : `J'OBSERVE → JE PRÉDIS → JE GESTE → JE VOIS L'ÉCART → J'AJUSTE`.
+
+### Prototype minimal
+- une arène portrait ;
+- une bille à lancer ;
+- trois surfaces fixes ;
+- un anneau cible unique, sans score ;
+- tirer la bille en arrière puis relâcher ;
+- angle + force encodés dans le même geste ;
+- gravité + rebonds simples ;
+- reset automatique rapide ;
+- aucun niveau, par, progression, génération procédurale, relief ou deuxième mécanique.
+
+La ligne élastique pendant la traction sert uniquement à rendre le geste compréhensible. Elle n'affiche pas la trajectoire future.
+
+### Sentinelles automatiques
+- tirer vers un côté lance dans la direction opposée ;
+- une traction plus longue donne proportionnellement plus de vitesse ;
+- la traction est plafonnée sans changer sa direction ;
+- une collision verticale produit un rebond miroir lisible.
+
+Ces tests garantissent la cohérence du contrôle, jamais le plaisir.
+
+### Protocole humain
+Observer une courte série libre d'essais. Ne pas transformer « dix tirs » en seuil mécanique.
+
+Deux preuves séparées sont nécessaires :
+1. **maîtrise naissante** — le geste suivant incorpore explicitement ou visiblement l'écart précédent (`moins fort`, `plus à gauche`, usage intentionnel d'un rebond, etc.) ;
+2. **retry intrinsèque** — le joueur veut recommencer parce qu'il pense pouvoir faire mieux, et non simplement parce qu'on lui demande de poursuivre.
+
+Si le geste lui-même est illisible ou désagréable, corriger seulement le minimum permettant de tester l'adresse. Si le geste est lisible mais que la boucle ou le retry n'apparaissent pas, `DROP/PARK` sans contenu de sauvetage.
+
+**Statut** : `TEST-READY` une fois CI et déploiement verts.
