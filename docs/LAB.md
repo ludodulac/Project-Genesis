@@ -144,6 +144,21 @@ Ce signal est conservé séparément : il ne réfute pas `geste analogique → t
 ### Dernière porte de calibration
 La dernière correction retire les trois obstacles intérieurs au lieu d'inventer un meilleur chemin. La cible est replacée dans un espace directement atteignable. Aucun rebond nécessaire, aucun puzzle, aucune nouvelle mécanique. Le probe final mesure donc seulement : `viser/doser → observer l'écart → ajuster → vouloir réessayer`.
 
-**Règle de décision** : cette correction est une porte, pas une itération de design. Si le contrôle est désormais physiquement valide mais que maîtrise naissante et retry intrinsèque n'apparaissent pas sans enrichissement, **`PARK` EXP-024 / famille A pour maintenant**. Ne pas ajouter de contenu pour la sauver.
+### Test humain final — probe physiquement valide
+**Observation spontanée** : « Ça fonctionne. C'est amusant deux fois ».
 
-**Statut** : `FINAL-CALIBRATION-GATE`.
+La correction a donc franchi la porte de calibration : le geste et l'espace de trajectoire sont suffisamment fonctionnels pour être jugés. Le plaisir immédiat existe, mais il s'épuise presque aussitôt. Surtout, le retour humain ne fournit pas la seconde preuve exigée : pas de retry intrinsèque durable ni de désir spontané de poursuivre pour mieux maîtriser le geste.
+
+Il serait désormais possible de fabriquer davantage d'intérêt avec obstacles, chemins, niveaux, objectifs ou autres contraintes, mais cela testerait un jeu enrichi plutôt que la source élémentaire recherchée. Cette voie est explicitement interdite par le protocole de l'expérience.
+
+**Décision** : **`PARK` EXP-024 / famille A pour maintenant.**
+
+**Conservation** :
+- le geste analogique de lancer est immédiatement compréhensible et procure un petit plaisir initial ;
+- ce plaisir nu n'a pas montré assez de persistance pour mériter une place particulière dans Genesis à ce stade ;
+- le signal antérieur « puzzle de trajectoire déjà connu » reste séparément valable ;
+- ne pas sauver cette famille avec du contenu. Elle pourra être reconsidérée seulement si une future primitive forte lui donne une fonction nouvelle.
+
+**Expérience suivante** : rouvrir le radar et confronter une source de plaisir réellement différente, plutôt que raffiner la trajectoire.
+
+**Statut** : `PARK`.
