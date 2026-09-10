@@ -8,6 +8,7 @@ import { ThresholdScene } from './presentation/ThresholdScene';
 import { TransferScene } from './presentation/TransferScene';
 import { DiscoveryScene } from './presentation/DiscoveryScene';
 import { GlobalPressureScene } from './presentation/GlobalPressureScene';
+import { VoluntaryRiskScene } from './presentation/VoluntaryRiskScene';
 
 const probe = new URLSearchParams(window.location.search).get('probe');
 const scene = probe === 'trajectory'
@@ -24,7 +25,9 @@ const scene = probe === 'trajectory'
             ? DiscoveryScene
             : probe === 'global-pressure'
               ? GlobalPressureScene
-              : WorldScene;
+              : probe === 'voluntary-risk'
+                ? VoluntaryRiskScene
+                : WorldScene;
 
 new Phaser.Game({
   type: Phaser.AUTO,
