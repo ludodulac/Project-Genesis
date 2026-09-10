@@ -92,7 +92,7 @@ export class PersistentJourneyScene extends Phaser.Scene {
     const gate = this.add.rectangle(300, 380, 24, 100, 0x3d4f66).setStrokeStyle(3, 0x7191ba);
     const glow = this.add.rectangle(195, 380, 76, 44, 0xf4cf66, 0.25).setStrokeStyle(2, 0xf4cf66);
     this.pulse = this.add.circle(88, 380, 13, 0x78a8ff).setStrokeStyle(3, 0xffffff);
-    this.input.once('pointerdown', () => {
+    this.input.on('pointerdown', () => {
       if (this.state.phase !== 2 || this.busy) return;
       const aligned = Math.abs(this.pulse.x - 195) <= 38;
       this.state = alignJourneyPulse(this.state, aligned);
