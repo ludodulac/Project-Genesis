@@ -1,42 +1,46 @@
 # Current State
 
 ## État réel
-EXP-023 est **conclu humainement**. Genesis a obtenu sa première primitive tactile suffisamment prédictible pour être conservée :
+EXP-023 est clos en `KEEP-PRIMITIVE` pour :
 
 **action sur le terrain → modification du relief → conséquence sur l'acteur**.
 
-Ce résultat n'est **pas** « le jeu Genesis ». Il constitue une primitive disponible et une connaissance sur la causalité tactile.
+Cette primitive reste disponible mais ne définit pas le jeu Genesis.
 
-## EXP-023 — résultat humain
-Le cercle creux, le moteur et le geste sont restés figés pendant quatre situations nouvelles.
+## EXP-024 — probe actif : adresse physique / trajectoire
+Question : **un contrôle tactile analogique très simple peut-il produire spontanément anticipation, correction personnelle et désir de retry ?**
 
-1. Cas `toward` : le joueur prédit « la bille ira dedans » ; observation conforme.
-2. Cas `near-but-stay` : le joueur prédit un départ à gauche, en raisonnant déjà sur la redistribution et le trou visible ; l'acteur reste finalement immobile. Cette erreur révèle que le cas d'égalité exacte n'est pas naturellement anticipé.
-3. Cas `away` : alors que la cellule proposée est à droite, le joueur prédit avant action que « la bille va tomber à gauche là où c'est plus bas » ; observation conforme. C'est le résultat discriminant principal : il réfute l'heuristique « l'acteur suit le toucher ».
-4. Cas `occupied` : le joueur prédit que la bille restera parce que la case va baisser ; observation conforme. Il signale cependant une affordance physique résiduelle : intuitivement, un appui localisé sur une bille ronde pourrait aussi suggérer un roulement opposé au point de contact.
+Boucle recherchée :
 
-## Décision
-`PROMOTE-PARTIAL` → **KEEP-PRIMITIVE** pour le langage général terrain→conséquence.
+`J'OBSERVE → JE PRÉDIS → JE GESTE → JE VOIS L'ÉCART → J'AJUSTE`
 
-Le critère de plusieurs prédictions nouvelles correctes est atteint, y compris un cas où la conséquence va à l'opposé du côté touché et est prédite à partir du relief visible.
+### Jouet minimal
+Accessible par `?probe=trajectory`.
 
-Ne pas promouvoir comme vérité générale la sous-règle « égalité des meilleures descentes = rester immobile » : elle a échoué au test de prédiction et demeure une convention moteur peu naturelle.
+- espace portrait unique ;
+- une bille ;
+- trois surfaces fixes ;
+- un anneau cible sans score ;
+- geste élastique direct : attraper la bille, tirer en arrière, relâcher ;
+- angle et force viennent du même geste analogique ;
+- gravité et rebonds simples ;
+- reset automatique rapide après réussite, sortie ou durée maximale ;
+- aucune autre mécanique, aucun niveau, aucune progression, aucun relief Genesis.
 
-Ne pas considérer résolue l'affordance du contact direct sur l'acteur rond. Elle n'empêche plus la compréhension générale du terrain, mais reste une tension de représentation à conserver.
+Une courte ligne élastique rend seulement le mapping du geste lisible pendant la traction. Elle ne montre pas la trajectoire future ni les rebonds.
 
-## Ce que Genesis conserve
-- déterminisme logiciel ≠ prédictibilité humaine ;
-- le cercle creux soutient mieux la lecture terrain que le carré ;
-- creuser directement est causalement plus lisible que la redistribution indirecte de l'ancien geste ;
-- le joueur peut utiliser le relief visible pour prédire une conséquence qui contredit la direction du toucher ;
-- une primitive comprise doit être conservée sans devenir automatiquement le jeu.
+### Preuves humaines distinctes requises
+1. **Maîtrise naissante** : les gestes suivants incorporent l'écart observé — par exemple moins fort, plus à gauche/droite, ou usage intentionnel d'un rebond.
+2. **Retry intrinsèque** : le joueur souhaite refaire parce qu'il pense pouvoir améliorer son résultat, et pas seulement parce que le protocole lui demande un essai supplémentaire.
 
-## Mouvement suivant — rouvrir l'espace
-Ne pas enchaîner automatiquement avec EXP-024 dans la famille relief.
+Le nombre d'essais n'est pas un seuil de réussite. Une dizaine constitue seulement une fenêtre d'observation possible.
 
-Faire maintenant un point d'exploration externe : chercher des sources élémentaires de plaisir adaptées au tactile, au web et à un prototype très peu coûteux. Formuler plusieurs familles de paris réellement différentes, puis choisir le prochain jouet par valeur d'information et potentiel de plaisir, pas par continuité historique.
+### Discipline de décision
+Si le geste est incompréhensible ou désagréable, corriger uniquement ce qui empêche de mesurer l'adresse analogique.
 
-Boucle : `EXPLORER LARGEMENT → sélectionner une hypothèse → PROTOTYPER TRÈS PETIT → test humain → KEEP/PROMOTE-PARTIAL/PARK/DROP → rouvrir l'espace → éventuellement combiner les primitives fortes`.
+Si le geste est lisible mais que `anticipation → écart → ajustement` ou le désir de retry n'apparaît pas, ne pas sauver la famille avec objectif supplémentaire, contenu, progression ou polish : `DROP` ou `PARK`.
+
+Si le probe réussit, conserver seulement la primitive démontrée. Ne pas conclure que Genesis devient un jeu de trajectoire.
 
 ## Toujours absent
-Backend, comptes, boutique, progression, économie, multijoueur, infrastructure prématurée et accumulation de contenu artisanal.
+Niveaux, par, score, progression, génération procédurale, relief Genesis, seconde mécanique, backend, comptes, économie, multijoueur et contenu destiné à sauver le probe.
