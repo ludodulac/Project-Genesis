@@ -172,9 +172,19 @@ Le joueur ne formule pas encore la stratégie précise `préparer → déclenche
 
 Ne pas transformer immédiatement Genesis en puzzle abstrait. Le signal nouveau est plus général : **comprendre le monde peut être une récompense de jeu en soi**.
 
-La recherche externe confirme qu'il existe une famille viable centrée explicitement sur l'inférence des règles (par exemple *Understand*, dont les niveaux demandent de déduire les règles par essai-erreur), mais Genesis doit vérifier si son propre plaisir vient de l'aha puis s'éteint, ou si la règle apprise devient ensuite un outil de maîtrise.
+La recherche externe confirme qu'il existe une famille viable centrée explicitement sur l'inférence des règles, mais Genesis doit vérifier si son propre plaisir vient de l'aha puis s'éteint, ou si la règle apprise devient ensuite un outil de maîtrise.
 
 ## EXP-029 — Transfert après découverte
 **Question discriminante** : une fois le mécanisme partiellement compris, le joueur utilise-t-il cette compréhension sur une nouvelle situation, ou l'intérêt venait-il seulement du mystère initial ?
 
-**Décision : `BUILD` un probe de transfert, sans nouvelle mécanique.** Même règle qu'EXP-028, nouvelles topologies, aucun texte de règle, aucun score. Le changement d'expérience doit venir uniquement des états initiaux. Si la compréhension se transfère en décisions intentionnelles, `rule discovery → mastery` devient une piste sérieuse. Si l'intérêt s'effondre une fois le mécanisme deviné, conserver seulement la curiosité initiale comme effet et rouvrir l'exploration.
+### Observation humaine
+Retour immédiat : « tu m'as donné le même principe et ça ne m'amuse plus », avec une réserve spontanée très précise : « sauf s'il y avait quelque chose à découvrir, une sorte de clé à comprendre pour passer un niveau ».
+
+Le transfert pur de la même règle vers de nouvelles topologies ne suffit donc pas. Une fois la curiosité initiale consommée, la répétition du mécanisme s'éteint. En revanche le joueur nomme lui-même la condition susceptible de maintenir l'intérêt : **chaque situation doit cacher une compréhension à acquérir, et cette compréhension doit permettre un franchissement visible**.
+
+### Décision
+**`DROP` pour l'hypothèse `rule discovery → mastery par répétition de topologies`.** Ne pas sauver EXP-029 en ajoutant seulement plus de plateaux, score ou difficulté numérique.
+
+**`PROMOTE-PARTIAL` pour une nouvelle piste distincte : `discovery → key insight → passage`.** La récompense recherchée n'est peut-être pas l'optimisation d'une règle déjà connue mais une suite d'aha honnêtes : problème visible, informations suffisantes, découverte d'une propriété ou relation, puis ouverture/franchissement qui prouve la compréhension.
+
+**Critère de suite** : ne pas fabriquer un niveau avant d'avoir identifié une « vérité intéressante » réellement découvrable. Une clé arbitrairement cachée ou une règle secrète sans indices serait du devinage, pas un aha. La prochaine expérience doit tester une seule clé conceptuelle, avec toutes ses pièces visibles avant le déclic et sans explication textuelle.
