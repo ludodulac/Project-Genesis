@@ -84,81 +84,57 @@ La cellule proposée est à droite, mais le relief local offre une sortie claire
 ### Décision EXP-023
 **`KEEP-PRIMITIVE`** : le langage général `action sur terrain → relief → conséquence sur acteur` passe le seuil humain. Plusieurs conséquences nouvelles ont été correctement prédites, dont le contre-exemple fort `away`.
 
-**Ne pas promouvoir** :
-- l'égalité exacte→immobilité comme règle intuitive ;
-- la cellule occupée comme interaction physiquement satisfaisante ;
-- le relief comme « jeu Genesis ».
+**Ne pas promouvoir** : l'égalité exacte→immobilité comme règle intuitive ; la cellule occupée comme interaction physiquement satisfaisante ; le relief comme « jeu Genesis ».
 
 **Conservation** : une primitive tactile humainement prédictible est maintenant disponible pour de futures combinaisons.
 
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
 
-## Direction de recherche après EXP-023
-EXP-023 clôt une question, pas la recherche du jeu. Le radar comparatif a rouvert l'espace et sélectionné la famille A non pour son score heuristique, mais parce qu'elle est éloignée du relief, très peu coûteuse à tester et adresse une inconnue fondamentale : l'adresse tactile analogique produit-elle spontanément anticipation, correction et retry ?
-
 ## EXP-024 — Adresse physique / trajectoire
 **Hypothèse** : un geste analogique direct peut suffire à créer une boucle de maîtrise sans contenu supplémentaire.
 
-Boucle recherchée : `J'OBSERVE → JE PRÉDIS → JE GESTE → JE VOIS L'ÉCART → J'AJUSTE`.
+Après deux calibrations invalides, le probe final a retiré les obstacles qui transformaient accidentellement le test en puzzle de chemin. Le geste et la cible sont alors devenus physiquement valides.
+
+**Test humain final** : « Ça fonctionne. C'est amusant deux fois ».
+
+Le plaisir immédiat existe mais s'épuise presque aussitôt ; pas de retry intrinsèque durable observé. Ajouter obstacles, niveaux ou objectifs aurait sauvé un jeu enrichi plutôt que l'hypothèse nue.
+
+**Décision** : `PARK` famille A. Conserver le geste analogique comme primitive possible, ainsi que le signal séparé que l'habillage ricochet/path-puzzle paraît déjà connu.
+
+## EXP-025 — Tension tactile / croissance sous danger
+**Hypothèse** : maintenir directement un objet qui grossit tandis que des menaces mobiles s'approchent peut créer le dilemme intrinsèque `encore un peu → relâcher avant la catastrophe`.
 
 ### Prototype minimal
-- une arène portrait ;
-- une bille à lancer ;
-- un anneau cible unique, sans score ;
-- tirer la bille en arrière puis relâcher ;
-- angle + force encodés dans le même geste ;
-- gravité simple ;
-- reset automatique rapide ;
-- aucun niveau, par, progression, génération procédurale, relief ou deuxième mécanique.
+Un objet central grossit uniquement pendant l'appui. Quatre menaces circulaires se déplacent et rebondissent sur l'arène. Si une menace touche l'objet pendant l'appui, reset rapide. Aucun score, niveau, objectif secondaire, pouvoir, texte ou progression.
 
-La ligne élastique pendant la traction sert uniquement à rendre le geste compréhensible. Elle n'affiche pas la trajectoire future.
+### Observation humaine
+Retour immédiat : « Je ressens de la frustration de ne pouvoir rien faire ».
 
-### Sentinelles automatiques
-- tirer vers un côté lance dans la direction opposée ;
-- une traction plus longue donne proportionnellement plus de vitesse ;
-- la traction est plafonnée sans changer sa direction ;
-- la réflexion physique reste testée comme primitive technique, même si les obstacles intérieurs sont retirés du probe humain final.
+Ce n'est pas la tension recherchée. Le joueur ne décrit ni envie de tenir plus longtemps, ni décision de relâcher au bon moment, ni maîtrise du risque. Le système produit une menace visible mais l'action disponible est vécue comme absence d'agence.
 
-Ces tests garantissent la cohérence du contrôle, jamais le plaisir.
+### Décision
+**`DROP` EXP-025 / famille B dans cette forme.** Ne pas ajouter esquive, pouvoirs, jauges, cibles ou boutons pour la sauver : cela changerait l'hypothèse testée.
 
-### Protocole humain
-Observer une courte série libre d'essais. Ne pas transformer « dix tirs » en seuil mécanique.
+**Conservation** : `danger sans moyen perçu d'influencer la situation = frustration d'agence, pas tension intéressante`. Pour Genesis, une contrainte ne devient intéressante que si le geste du joueur modifie réellement un futur qu'il peut anticiper.
 
-Deux preuves séparées sont nécessaires :
-1. **maîtrise naissante** — le geste suivant incorpore explicitement ou visiblement l'écart précédent (`moins fort`, `plus à gauche`, etc.) ;
-2. **retry intrinsèque** — le joueur veut recommencer parce qu'il pense pouvoir faire mieux, et non simplement parce qu'on lui demande de poursuivre.
+## Expérience suivante — famille C : cascade préparée
+Le prochain challenger teste une temporalité différente de A et B : **petite décision → conséquence amplifiée → observation → nouvelle compréhension**.
 
-Si le geste lui-même est illisible ou désagréable, corriger seulement le minimum permettant de tester l'adresse. Si le geste est lisible mais que la boucle ou le retry n'apparaissent pas, `PARK` sans contenu de sauvetage.
+La question n'est pas « les explosions sont-elles satisfaisantes ? », mais : **avant d'agir, le joueur commence-t-il à anticiper quelle petite intervention produira une meilleure chaîne, puis comprend-il suffisamment le résultat pour changer sa décision suivante ?**
 
-### Tests humains — calibration invalide
-Premier essai : le joueur identifie immédiatement que la bille ne peut pas atteindre le cerceau, que le vol continue puis reset, et que la puissance disponible est insuffisante. Ce n'est pas une preuve contre l'adresse analogique : le probe ne permet pas encore de tester honnêtement l'hypothèse.
+Le précédent Drop7 confirme qu'une règle locale visible + gravité peut engendrer des vagues successives sans décision pendant la résolution ; c'est précisément cette amplification que le probe doit isoler, sans reprendre son scoring, ses pièces numérotées ou son contenu.
 
-Une correction minimale a augmenté amplitude/puissance et accéléré le reset. Au second essai, le joueur rapporte encore : « ce n'est pas possible, ça ne peut pas aller assez haut ». L'analyse du dispositif montre que les trois surfaces avaient transformé le probe en problème de chemin : elles pouvaient bloquer l'exploration directe de l'espace utile malgré une puissance théoriquement suffisante.
+### Porte expérimentale EXP-026
+Construire le plus petit système déterministe avec :
+- une petite grille ;
+- trois états visuels maximum ;
+- un seul tap de déclenchement ;
+- propagation locale entièrement visible ;
+- résolution automatique courte ;
+- reset immédiat vers une autre situation lisible ;
+- aucun score, combo textuel, niveau, progression ou hasard caché.
 
-### Signal de design séparé — puzzle de trajectoire connu
-Avant même que la primitive soit correctement testée, le joueur imagine spontanément « une énigme de par quel chemin on doit passer », puis se demande immédiatement si ce type de jeu n'est pas déjà vu et revu.
+Critère : si le spectacle existe mais que le joueur ne commence pas à **choisir** en fonction d'une chaîne anticipée, la cascade seule n'est pas une primitive forte : `PARK/DROP` sans contenu de sauvetage.
 
-Ce signal est conservé séparément : il ne réfute pas `geste analogique → trajectoire → correction`, mais indique que l'habillage évident `trouver un chemin de rebonds vers une cible` active rapidement une catégorie de jeu déjà connue plutôt qu'une possibilité Genesis nouvelle. Ne pas effacer ce signal si la primitive d'adresse réussit.
-
-### Dernière porte de calibration
-La dernière correction retire les trois obstacles intérieurs au lieu d'inventer un meilleur chemin. La cible est replacée dans un espace directement atteignable. Aucun rebond nécessaire, aucun puzzle, aucune nouvelle mécanique. Le probe final mesure donc seulement : `viser/doser → observer l'écart → ajuster → vouloir réessayer`.
-
-### Test humain final — probe physiquement valide
-**Observation spontanée** : « Ça fonctionne. C'est amusant deux fois ».
-
-La correction a donc franchi la porte de calibration : le geste et l'espace de trajectoire sont suffisamment fonctionnels pour être jugés. Le plaisir immédiat existe, mais il s'épuise presque aussitôt. Surtout, le retour humain ne fournit pas la seconde preuve exigée : pas de retry intrinsèque durable ni de désir spontané de poursuivre pour mieux maîtriser le geste.
-
-Il serait désormais possible de fabriquer davantage d'intérêt avec obstacles, chemins, niveaux, objectifs ou autres contraintes, mais cela testerait un jeu enrichi plutôt que la source élémentaire recherchée. Cette voie est explicitement interdite par le protocole de l'expérience.
-
-**Décision** : **`PARK` EXP-024 / famille A pour maintenant.**
-
-**Conservation** :
-- le geste analogique de lancer est immédiatement compréhensible et procure un petit plaisir initial ;
-- ce plaisir nu n'a pas montré assez de persistance pour mériter une place particulière dans Genesis à ce stade ;
-- le signal antérieur « puzzle de trajectoire déjà connu » reste séparément valable ;
-- ne pas sauver cette famille avec du contenu. Elle pourra être reconsidérée seulement si une future primitive forte lui donne une fonction nouvelle.
-
-**Expérience suivante** : rouvrir le radar et confronter une source de plaisir réellement différente, plutôt que raffiner la trajectoire.
-
-**Statut** : `PARK`.
+**Statut suivant** : `EXP-026 — BUILD MINIMAL PROBE`.
