@@ -81,6 +81,19 @@ Une variante reste structurellement testable sans direction cachée : **un conta
 
 **Statut frontière** : `ITERATE-RESEARCH`.
 
+## EXP-022d — Retirer la promesse de bille roulante
+**Hypothèse** : le problème de la case occupée vient peut-être surtout du signifiant visuel rond. Remplacer temporairement la bille par un petit acteur carré, sans changer aucune règle de terrain ni de simulation, pourrait retirer l'attente « si je tape directement dessus, il devrait rouler quelque part » tout en préservant `je creuse là → l'objet va vers le creux`.
+
+**Prototype** : changement de présentation uniquement. La simulation, le geste et les sentinelles d'EXP-022b restent identiques.
+
+**Test humain spontané** : sans toucher, le joueur dit « Je ne sais pas le déplacer et j'attends peut-être de voir des boutons pour le déplacer ».
+
+**Observation** : la suppression du signifiant de bille n'améliore pas le langage terrain→objet. Elle détruit au contraire l'affordance physique qui avait permis au joueur de formuler spontanément `je creuse → la bille tend à aller vers le creux`, et fait apparaître une attente de contrôles UI externes.
+
+**Décision** `DROP` immédiat. Le changement visuel est reverté ; la bille ronde est restaurée. Ne pas compenser avec boutons, joystick ou tutoriel.
+
+**Apprentissage** : l'aspect bille est à la fois une source d'une ambiguïté locale et un support majeur de la causalité globale. Il faut résoudre la frontière du contact direct **sans sacrifier la métaphore physique qui rend le terrain intelligible**.
+
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
 
