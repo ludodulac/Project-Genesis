@@ -188,3 +188,21 @@ Le transfert pur de la même règle vers de nouvelles topologies ne suffit donc 
 **`PROMOTE-PARTIAL` pour une nouvelle piste distincte : `discovery → key insight → passage`.** La récompense recherchée n'est peut-être pas l'optimisation d'une règle déjà connue mais une suite d'aha honnêtes : problème visible, informations suffisantes, découverte d'une propriété ou relation, puis ouverture/franchissement qui prouve la compréhension.
 
 **Critère de suite** : ne pas fabriquer un niveau avant d'avoir identifié une « vérité intéressante » réellement découvrable. Une clé arbitrairement cachée ou une règle secrète sans indices serait du devinage, pas un aha. La prochaine expérience doit tester une seule clé conceptuelle, avec toutes ses pièces visibles avant le déclic et sans explication textuelle.
+
+## EXP-030 — Découverte qui change l'action
+**Hypothèse** : le plus petit renouvellement d'intérêt possible consiste à observer une propriété nouvelle, puis à pouvoir agir différemment grâce à cette observation dans une seconde situation. Cette hypothèse est testée sans score, progression, tutoriel ni ajout d'un véritable « niveau ».
+
+### Prototype minimal
+Même famille visuelle et même propagation qu'EXP-028/029, avec un seul type d'élément supplémentaire au comportement distinct. La première situation permet d'observer cette différence ; la seconde permet théoriquement d'exploiter la relation. Aucun texte n'explique la règle.
+
+### Observation humaine
+Retour : « quand on touche les Bleus ça fait disparaître tout enfin pas tout le temps mais parfois » puis surtout « ça n'a pas super évolué depuis tout à l'heure ».
+
+Le joueur perçoit donc encore des différences de conséquence, mais la présence d'une propriété supplémentaire et la possibilité de l'exploiter ensuite **ne renouvellent pas sensiblement l'intérêt**. Le prototype reste vécu comme une variation proche du même système de boutons/cascades.
+
+### Décision
+**`DROP` pour l'hypothèse minimale `découvrir une propriété → agir autrement suffit à renouveler l'intérêt`.** Ne pas la sauver avec tutoriel, récompense, score ou davantage de plateaux.
+
+**Conservation** : le problème n'est pas seulement l'absence de nouvelle information. Une découverte n'a de valeur de jeu que si elle transforme suffisamment la nature de la situation, la représentation mentale ou le pouvoir d'agir. Ici, la règle nouvelle reste enchâssée dans une interaction déjà épuisée.
+
+**Conséquence pour la suite** : ne pas considérer « une clé à comprendre » comme solution générale. Revenir à une exploration plus large de formes où l'insight, s'il existe, change qualitativement ce que le joueur croit possible plutôt que d'ajouter une exception à une cascade connue.
