@@ -1,7 +1,9 @@
 export interface Vec2 { x: number; y: number }
 
-export const MAX_PULL = 118;
-export const LAUNCH_SCALE = 5.2;
+// EXP-024 calibration: the full pull must comfortably span the portrait arena.
+// The human probe measures analogue correction, not whether the launcher is artificially underpowered.
+export const MAX_PULL = 148;
+export const LAUNCH_SCALE = 8.4;
 
 export function clampPull(anchor: Vec2, pointer: Vec2, maxPull = MAX_PULL): Vec2 {
   const dx = pointer.x - anchor.x;
