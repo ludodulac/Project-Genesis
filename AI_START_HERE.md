@@ -4,7 +4,7 @@ Ce fichier est le routeur de reprise du projet. Il n'est pas une nouvelle source
 
 ## Contexte transversal
 
-Genesis appartient à l'écosystème **`ludodulac/Grand-p-re-`** ; le slug GitHub de « Grand Père » utilise des tirets à la place des caractères accentués. En nouvelle conversation, lire d'abord Grand Père `AI_START_HERE.md`, la fiche Genesis via `projects/_INDEX.md` et `LOOP_ENGINEERING.md`, puis revenir ici. **Genesis reste la source de vérité de son moteur, de ses expériences, tests et état déployé.**
+Genesis appartient à l'écosystème **`ludodulac/Grand-pere`**. Grand Père est documenté dans le dépôt `ludodulac/Grand-pere`. En nouvelle conversation, lire d'abord Grand Père `AI_START_HERE.md`, la fiche Genesis via `projects/_INDEX.md` et `LOOP_ENGINEERING.md`, puis revenir ici. **Genesis reste la source de vérité de son moteur, de ses expériences, tests et état déployé.**
 
 ## Avant de modifier
 
