@@ -68,7 +68,7 @@ Calcul sur le monde jouable initial : la bille démarre vers `(10,6)` à une hau
 
 Simulation de 500 états obtenus après 1 à 12 pressions locales : avec la règle actuelle de creux, la bille se retrouve presque toujours dans un minimum local. Après un tap sur sa propre case, la pression l'enfonce encore et **0 %** des états simulés offrent ensuite une descente vers un voisin. Une variante « relâcher la bille et laisser la gravité choisir » ne résout donc pas la frontière : sans modifier le terrain, seulement ~3 % de ces états possèdent même un voisin strictement plus bas, et quasiment aucun avec un écart visuellement fort.
 
-La variante « utiliser le point exact du doigt sur le côté de la petite bille comme direction de poussée » est également fragile : le diamètre visuel actuel est d'environ `19 px`, sensiblement inférieur aux tailles de cible tactile confortables usuelles. Encoder gauche/droite/haut/bas dans quelques pixels à l'intérieur de la bille demanderait une précision que le doigt ne fournit pas de manière fiable. `DROP` comme candidat principal.
+La variante « utiliser le point exact du doigt sur le côté de la petite bille comme direction de poussée » est également fragile : le diamètre visuel actuel est d'environ `19 px`. Encoder gauche/droite/haut/bas dans quelques pixels à l'intérieur de la bille demanderait une précision que le doigt ne fournit pas de manière fiable. `DROP` comme candidat principal.
 
 Une variante reste structurellement testable sans direction cachée : **un contact direct fournit l'énergie, mais le terrain fournit la direction**. Le candidat le moins arbitraire serait alors de sortir vers l'unique bord voisin le plus bas, même si ce bord est plus haut que le fond du creux actuel. Sur 1000 états simulés issus de déplacements par creusement adjacent, l'écart entre le bord le plus bas et le deuxième plus bas est ≥ `1 px` dans ~82 % des états et ≥ `2 px` dans ~66 %. Cela rend la direction parfois visible, contrairement au relief initial. Mais cette règle ferait ponctuellement « monter » la bille hors d'un bassin : elle doit donc être considérée comme une **impulsion externe** et non comme de la gravité. Elle reste un candidat, pas une règle promue.
 
@@ -77,22 +77,46 @@ Une variante reste structurellement testable sans direction cachée : **un conta
 - `DROP` direction basée sur un sous-ciblage fin à l'intérieur de la petite bille ;
 - `DROP` simple « release + gravité », car la bille est presque toujours déjà dans le creux ;
 - `KEEP-CANDIDATE` impulsion directe dont la direction est entièrement choisie par le relief visible ;
-- ne rien déployer tant qu'une variante n'a pas une causalité formulable sans règle cachée.
+- ne rien promouvoir tant qu'une variante n'a pas une causalité formulable sans règle cachée.
 
 **Statut frontière** : `ITERATE-RESEARCH`.
 
 ## EXP-022d — Retirer la promesse de bille roulante
-**Hypothèse** : le problème de la case occupée vient peut-être surtout du signifiant visuel rond. Remplacer temporairement la bille par un petit acteur carré, sans changer aucune règle de terrain ni de simulation, pourrait retirer l'attente « si je tape directement dessus, il devrait rouler quelque part » tout en préservant `je creuse là → l'objet va vers le creux`.
+**Hypothèse** : remplacer temporairement la bille par un petit acteur carré pourrait retirer l'attente de poussée directe sans casser `je creuse → l'objet va vers le creux`.
 
-**Prototype** : changement de présentation uniquement. La simulation, le geste et les sentinelles d'EXP-022b restent identiques.
+**Test humain spontané** : « Je ne sais pas le déplacer et j'attends peut-être de voir des boutons pour le déplacer ».
 
-**Test humain spontané** : sans toucher, le joueur dit « Je ne sais pas le déplacer et j'attends peut-être de voir des boutons pour le déplacer ».
+**Décision** `DROP` immédiat et revert.
 
-**Observation** : la suppression du signifiant de bille n'améliore pas le langage terrain→objet. Elle détruit au contraire l'affordance physique qui avait permis au joueur de formuler spontanément `je creuse → la bille tend à aller vers le creux`, et fait apparaître une attente de contrôles UI externes.
+**Apprentissage** : l'aspect bille soutenait la lecture physique globale. Supprimer cette affordance a fait apparaître une attente de contrôles UI externes.
 
-**Décision** `DROP` immédiat. Le changement visuel est reverté ; la bille ronde est restaurée. Ne pas compenser avec boutons, joystick ou tutoriel.
+## EXP-022e — Cercle creux, terrain visible à travers l'acteur
+**Hypothèse** : conserver la circularité qui soutient la métaphore physique, mais rendre le centre transparent pour que le sol reste perceptible sous l'acteur. Aucun changement de simulation, de geste ou de terrain.
 
-**Apprentissage** : l'aspect bille est à la fois une source d'une ambiguïté locale et un support majeur de la causalité globale. Il faut résoudre la frontière du contact direct **sans sacrifier la métaphore physique qui rend le terrain intelligible**.
+**Test humain spontané** : le joueur dit qu'il arrive à le déplacer parce qu'il comprend qu'il « baisse le terrain », que l'objet « coule dans le terrain » et qu'il pense pouvoir ensuite modifier le terrain pour l'envoyer ailleurs.
+
+**Observation** : pour la première fois depuis EXP-021, le joueur ne décrit pas seulement une corrélation touche→animation ni n'attend des contrôles externes. Il construit spontanément une chaîne causale `action sur le terrain → relief → conséquence sur l'acteur`.
+
+**Décision** `PROMOTE-PARTIAL`. Le cercle creux est **figé** pendant la prochaine série de tests. Ne pas modifier simultanément le signifiant, la physique et les situations expérimentales.
+
+**Important** : le langage n'est pas encore déclaré acquis. La formulation humaine contient encore des approximations et peut reposer sur une heuristique superficielle. La prochaine expérience doit chercher à réfuter la compréhension, pas à la confirmer.
+
+## EXP-023 — Tests discriminants de prédiction
+**Question** : le joueur comprend-il réellement la géométrie locale, ou utilise-t-il une heuristique plus pauvre telle que « je touche près du cercle donc il bouge » ?
+
+**Harness** : quatre mondes minimaux utilisent exactement le même cercle creux, le même moteur et le même geste. Une seule cellule à tester est marquée avant l'action. Le harness accepte une seule pression sur cette cellule afin de préserver `prédiction → action → observation`.
+
+Scénarios :
+1. `toward` — une pression adjacente crée l'unique voisin le plus bas : déplacement vers la cellule touchée.
+2. `near-but-stay` — la pression est adjacente mais crée deux meilleures descentes exactement égales : aucun déplacement. Ce cas réfute directement « toucher près suffit ».
+3. `away` — la cellule proposée est à droite, mais la géométrie locale possède une sortie clairement plus basse à gauche : après l'action, l'acteur part à gauche. Ce cas réfute « l'acteur suit l'endroit touché ».
+4. `occupied` — la cellule proposée est celle sous l'acteur : elle s'enfonce, aucune direction latérale n'est inventée, l'acteur reste.
+
+**Sentinelles automatiques** : chaque scénario produit exactement sa conséquence attendue ; la suite contient des cas mouvement/non-mouvement ; au moins un déplacement est opposé au côté touché ; au moins un toucher adjacent ne produit aucun déplacement.
+
+**Critère humain de promotion** : plusieurs prédictions nouvelles et correctes, recueillies **avant** action, dont au moins un contre-exemple aux heuristiques de proximité/direction du toucher. Aucune explication de la règle avant les réponses.
+
+**Statut** `TEST-READY`.
 
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
