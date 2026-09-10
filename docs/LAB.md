@@ -160,10 +160,21 @@ L'exploration exhaustive des petits états 3×3 montre une diversité immédiate
 
 L'exploration d'états 4×4 fait apparaître des plateaux compacts où le même vocabulaire de deux états produit : petite récompense immédiate, préparation silencieuse et grosse conséquence différée. Le plateau retenu n'utilise que 7 cellules occupées ; ses actions prêtes produisent des cascades de tailles 1 ou 2, tandis qu'une préparation peut ouvrir au coup suivant une chaîne d'au moins 5 cellules.
 
-### Décision technique
-**`BUILD`.** Contrairement à EXP-027, l'espace d'états produit maintenant une vraie différence entre `prendre maintenant` et `préparer après`, avec un seul verbe et aucune information cachée.
+### Observation humaine
+Retour spontané : « C'est assez marrant », puis lecture inattendue mais forte : cela ressemble à « un jeu d'énigme » où l'on se demande comment ça fonctionne et où « le jeu ce serait découvre le mécanisme de comment ça marche ».
 
-### Question humaine
-Sans explication, le joueur découvre-t-il que certaines actions préparent les suivantes et commence-t-il à choisir avec anticipation ?
+Le joueur ne formule pas encore la stratégie précise `préparer → déclencher`, donc l'hypothèse tactique initiale n'est pas démontrée. En revanche il formule spontanément une **boucle de découverte de règle** : agir → observer → émettre une hypothèse sur le mécanisme → retester.
 
-Si les taps restent arbitraires et que seul le spectacle plaît : `PARK/DROP`. Si la préparation est comprise et utilisée volontairement : `PROMOTE-PARTIAL` pour `préparation visible → conséquence différée`.
+### Décision
+**`PROMOTE-PARTIAL`**, mais pour une raison différente de celle prévue. Conserver deux signaux séparés :
+1. le système à seuil produit suffisamment de structure pour provoquer une curiosité causale ;
+2. la préparation tactique consciente reste non prouvée.
+
+Ne pas transformer immédiatement Genesis en puzzle abstrait. Le signal nouveau est plus général : **comprendre le monde peut être une récompense de jeu en soi**.
+
+La recherche externe confirme qu'il existe une famille viable centrée explicitement sur l'inférence des règles (par exemple *Understand*, dont les niveaux demandent de déduire les règles par essai-erreur), mais Genesis doit vérifier si son propre plaisir vient de l'aha puis s'éteint, ou si la règle apprise devient ensuite un outil de maîtrise.
+
+## EXP-029 — Transfert après découverte
+**Question discriminante** : une fois le mécanisme partiellement compris, le joueur utilise-t-il cette compréhension sur une nouvelle situation, ou l'intérêt venait-il seulement du mystère initial ?
+
+**Décision : `BUILD` un probe de transfert, sans nouvelle mécanique.** Même règle qu'EXP-028, nouvelles topologies, aucun texte de règle, aucun score. Le changement d'expérience doit venir uniquement des états initiaux. Si la compréhension se transfère en décisions intentionnelles, `rule discovery → mastery` devient une piste sérieuse. Si l'intérêt s'effondre une fois le mécanisme deviné, conserver seulement la curiosité initiale comme effet et rouvrir l'exploration.
