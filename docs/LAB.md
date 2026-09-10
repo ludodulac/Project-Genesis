@@ -118,23 +118,52 @@ Ce n'est pas la tension recherchée. Le joueur ne décrit ni envie de tenir plus
 
 **Conservation** : `danger sans moyen perçu d'influencer la situation = frustration d'agence, pas tension intéressante`. Pour Genesis, une contrainte ne devient intéressante que si le geste du joueur modifie réellement un futur qu'il peut anticiper.
 
-## Expérience suivante — famille C : cascade préparée
-Le prochain challenger teste une temporalité différente de A et B : **petite décision → conséquence amplifiée → observation → nouvelle compréhension**.
+## EXP-026 — Cascade immédiate
+**Hypothèse** : une seule décision visible peut produire une conséquence amplifiée suffisamment intéressante pour susciter anticipation et envie de recommencer.
 
-La question n'est pas « les explosions sont-elles satisfaisantes ? », mais : **avant d'agir, le joueur commence-t-il à anticiper quelle petite intervention produira une meilleure chaîne, puis comprend-il suffisamment le résultat pour changer sa décision suivante ?**
+### Observation humaine
+Le joueur comprend l'interaction au niveau le plus simple : il clique sur les éléments et cela les fait bouger. Il décrit le résultat comme « sympa », puis demande spontanément : « qu'est-ce que tu veux faire avec ça ? ».
 
-Le précédent Drop7 confirme qu'une règle locale visible + gravité peut engendrer des vagues successives sans décision pendant la résolution ; c'est précisément cette amplification que le probe doit isoler, sans reprendre son scoring, ses pièces numérotées ou son contenu.
+### Décision
+**`PARK`.** Le spectacle de propagation possède un petit agrément visuel, mais aucune intention n'émerge spontanément. Ne pas ajouter score, niveaux ou progression pour fabriquer artificiellement une raison d'agir.
 
-### Porte expérimentale EXP-026
-Construire le plus petit système déterministe avec :
-- une petite grille ;
-- trois états visuels maximum ;
-- un seul tap de déclenchement ;
-- propagation locale entièrement visible ;
-- résolution automatique courte ;
-- reset immédiat vers une autre situation lisible ;
-- aucun score, combo textuel, niveau, progression ou hasard caché.
+**Conservation** : l'amplification visuelle peut être une récompense secondaire, pas encore un verbe de jeu.
 
-Critère : si le spectacle existe mais que le joueur ne commence pas à **choisir** en fonction d'une chaîne anticipée, la cascade seule n'est pas une primitive forte : `PARK/DROP` sans contenu de sauvetage.
+## EXP-027 — Persistance seule
+**Hypothèse** : si les conséquences d'un tap restent sur le plateau et modifient le coup suivant, l'intention apparaîtra peut-être sans objectif externe.
 
-**Statut suivant** : `EXP-026 — BUILD MINIMAL PROBE`.
+### Prototype et test technique
+Un tap consomme la cellule touchée et transforme les voisines chargées en cellules prêtes. Les changements persistent.
+
+### Observation
+Le système possède bien de la mémoire, mais sa dynamique est monotone : transformer puis consommer. Il modifie le futur sans créer assez de futurs qualitativement distincts. La persistance n'est donc pas, à elle seule, le composant manquant d'EXP-026.
+
+### Décision
+**`DROP` comme candidat de jeu.** Conserver le noyau comme contrôle expérimental montrant que `persistance ≠ décision intéressante`.
+
+## EXP-028 — Seuil, préparation et propagation
+**Hypothèse** : un même tap peut devenir intéressant si le joueur doit choisir entre conséquence immédiate et préparation d'une conséquence future plus grande.
+
+### Règle minimale
+Chaque cellule a 1 ou 2 charges visibles. Un tap retire une charge. Une cellule atteignant zéro éclate, retire une charge à chaque voisine orthogonale, et les voisines qui atteignent zéro éclatent simultanément à la vague suivante. Tous les changements persistent.
+
+### Sentinelles
+- un tap sur une cellule à 2 charges prépare sans déclencher de cascade ;
+- une cellule à 1 charge éclate ;
+- propagation orthogonale seulement ;
+- les impacts simultanés sont additionnés avant de décider la vague suivante ;
+- le plateau de test contient des choix donnant des conséquences immédiates différentes ;
+- une préparation silencieuse peut rendre possible au tour suivant une cascade nettement plus grande.
+
+### Recherche d'états
+L'exploration exhaustive des petits états 3×3 montre une diversité immédiate trop pauvre pour être un bon test : les cellules déjà prêtes ne donnent au plus que deux magnitudes de cascade distinctes dans cet espace.
+
+L'exploration d'états 4×4 fait apparaître des plateaux compacts où le même vocabulaire de deux états produit : petite récompense immédiate, préparation silencieuse et grosse conséquence différée. Le plateau retenu n'utilise que 7 cellules occupées ; ses actions prêtes produisent des cascades de tailles 1 ou 2, tandis qu'une préparation peut ouvrir au coup suivant une chaîne d'au moins 5 cellules.
+
+### Décision technique
+**`BUILD`.** Contrairement à EXP-027, l'espace d'états produit maintenant une vraie différence entre `prendre maintenant` et `préparer après`, avec un seul verbe et aucune information cachée.
+
+### Question humaine
+Sans explication, le joueur découvre-t-il que certaines actions préparent les suivantes et commence-t-il à choisir avec anticipation ?
+
+Si les taps restent arbitraires et que seul le spectacle plaît : `PARK/DROP`. Si la préparation est comprise et utilisée volontairement : `PROMOTE-PARTIAL` pour `préparation visible → conséquence différée`.
