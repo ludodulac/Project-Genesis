@@ -4,6 +4,7 @@ import { WorldScene } from './presentation/WorldScene';
 import { TrajectoryScene } from './presentation/TrajectoryScene';
 import { TensionScene } from './presentation/TensionScene';
 import { CascadeScene } from './presentation/CascadeScene';
+import { ThresholdScene } from './presentation/ThresholdScene';
 
 const probe = new URLSearchParams(window.location.search).get('probe');
 const scene = probe === 'trajectory'
@@ -12,7 +13,9 @@ const scene = probe === 'trajectory'
     ? TensionScene
     : probe === 'cascade'
       ? CascadeScene
-      : WorldScene;
+      : probe === 'threshold'
+        ? ThresholdScene
+        : WorldScene;
 
 new Phaser.Game({
   type: Phaser.AUTO,
