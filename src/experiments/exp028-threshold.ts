@@ -4,6 +4,13 @@ export interface Pos { row: number; col: number }
 export interface Wave { bursts: Pos[]; board: Board }
 export interface TurnResult { board: Board; waves: Wave[] }
 
+export const EXP028_START: Board = [
+  [0, 1, 1, 0],
+  [1, 2, 2, 0],
+  [0, 1, 2, 0],
+  [0, 0, 0, 0],
+];
+
 const ORTHO = [[-1,0],[1,0],[0,-1],[0,1]] as const;
 export const cloneBoard = (board: Board): Board => board.map(row => [...row]);
 
