@@ -24,104 +24,75 @@ Une seule mote, aucun objectif ni ressource visible, sculpture et mouvement loca
 **Conservation** : **déterminisme logiciel ≠ prédictibilité humaine**. Une règle invisible n'est acceptable que si elle renforce une causalité déjà lisible.
 
 ## EXP-022a — Descendre vers le voisin visible le plus bas
-**Hypothèse** : retirer toute mémoire et faire descendre la mote vers son voisin strictement le plus bas.
+**Observation CI importante** : relever une case voisine drainait en réalité la case sous la mote, qui devenait elle-même un bassin. La sentinelle avait encodé une intuition humaine fausse.
 
-**Observation CI importante** : une sentinelle supposait qu'en relevant une case voisine de la mote, la redistribution créerait une destination évidente ailleurs. Elle a échoué : relever la voisine drainait en réalité la case sous la mote, qui devenait elle-même un bassin et la mote restait immobile.
-
-Ce n'est pas un bug moteur. C'est une faiblesse de la relation geste→relief→mouvement : même avec une règle de mouvement simple, la sculpture « je relève ici et je creuse autour » demande encore de prévoir une conséquence indirecte. Le test avait encodé une intuition humaine fausse.
-
-**Décision** `ITERATE`, ne pas corriger le test pour préserver artificiellement cette interaction.
+**Décision** `ITERATE`. La relation geste→relief→mouvement était trop indirecte.
 
 ## EXP-022b — Presser pour creuser, puis rouler
-**Hypothèse** : pour isoler la causalité la plus lisible possible, inverser temporairement le geste dans la branche jouet. Le doigt enfonce directement la case touchée ; la matière est redistribuée vers ses voisines. La boule ne possède aucune mémoire et descend uniquement si une direction visible est strictement la plus basse.
+Toucher enfonce directement la case ; la matière est redistribuée aux voisines. L'acteur sans mémoire descend uniquement si une direction visible est strictement la plus basse ; en égalité exacte, il reste.
 
-**Prototype minimal** :
-- toucher = enfoncer la case touchée ;
-- une case adjacente touchée devient directement une vallée ;
-- la boule peut donc rouler vers cette case ;
-- aucune destination, inertie ou historique ;
-- en cas d'égalité exacte entre les deux meilleures descentes, la boule ne choisit pas arbitrairement : elle reste en place.
+**Test humain** : première formulation spontanée utile : « je creuse quelque part et la bille tend à aller vers le creux ». `PROMOTE-PARTIAL`.
 
-**Sentinelles** :
-- presser chacune des quatre cases adjacentes sur terrain plat attire la boule vers cette case ;
-- aucune direction cachée en cas d'égalité ;
-- une ancienne mémoire interne ne change pas le résultat ;
-- l'ancien moteur EXP-008/010-018 reste séparé et inchangé.
+### Frontière — cellule occupée
+Un tap centré ne contient aucune direction latérale. Hasard, direction fixe, mémoire et sous-ciblage fin sont rejetés. Le joueur attend néanmoins intuitivement qu'une bille ronde touchée directement puisse être déplacée : tension d'affordance conservée.
 
-**Test humain — causalité générale** : le joueur formule spontanément, sans explication, « je creuse quelque part et la bille tend à aller vers le creux ». Il arrive un peu à la déplacer ainsi. C'est le premier langage terrain→bille formulé spontanément. La causalité creux→bille est donc `PROMOTE-PARTIAL` et doit être préservée tant qu'un test ultérieur ne la contredit pas.
+## EXP-022d — Acteur carré
+Le joueur ne sait plus le déplacer et attend des boutons. `DROP`. La circularité soutient donc une lecture physique utile.
 
-### Frontière isolée — toucher la case occupée
-Le protocole a été recommencé après une ambiguïté de formulation entre « case sous la bille » et « case où se trouve la bille » ; les réponses contaminées ne sont pas retenues.
+## EXP-022e — Cercle creux
+Le centre transparent laisse le terrain perceptible sous l'acteur. Le joueur décrit spontanément `action sur terrain → relief → objet qui coule/se déplace`. `PROMOTE-PARTIAL`, puis signifiant figé pour EXP-023.
 
-**Prédiction humaine valide, avant toucher** : en touchant exactement la case verte occupée par la bille, le joueur pense qu'elle va « aller quelque part autour », sans savoir où.
+## EXP-023 — Réfuter la compréhension terrain→conséquence
+**Question** : le joueur comprend-il réellement la géométrie locale, ou seulement « je touche près donc ça bouge / ça suit mon doigt » ?
 
-**Observation** : après un toucher unique de cette case, la bille reste au même endroit.
+Quatre situations nouvelles, même moteur, même cercle creux, même geste. Prédiction recueillie avant chaque action.
 
-**Explication spontanée du joueur** : il a l'impression d'avoir appuyé sur la case comme s'il n'avait pas vraiment touché la bille. Puisque la bille est ronde, il s'attend intuitivement à ce qu'un appui directement sur elle la fasse bouger hors de la case ; le résultat actuel lui donne plutôt l'impression d'une bille collée à sa case.
+### 1 — `toward`
+**Prédiction** : « la bille ira dedans ».
 
-**Apprentissage** : cette frontière révèle une attente physique distincte, sans invalider la causalité générale creux→bille. La représentation ronde de la bille suggère qu'un contact direct devrait avoir une conséquence sur elle. Le comportement actuel « je creuse sa case et elle reste dedans » est cohérent avec un bassin, mais incohérent avec l'affordance perçue d'une bille ronde manipulable.
+**Observation** : la bille va dans la case enfoncée.
 
-### Recherche de frontière — résultats utiles
-La direction d'un déplacement latéral après un simple tap centré n'est pas contenue dans l'entrée. Sans asymétrie visible, toute sortie nord/sud/est/ouest demanderait donc hasard, ordre fixe, mémoire ou autre tie-break caché : ces variantes sont rejetées car elles reproduiraient précisément la faiblesse d'EXP-021.
+**Résultat** : correct.
 
-Calcul sur le monde jouable initial : la bille démarre vers `(10,6)` à une hauteur d'environ `0.4572`. Son voisin le plus bas est seulement `0.00515` plus bas, soit environ `0.11 px` avec `HEIGHT_PX=22`. Une règle « tap sur la bille → va vers le voisin naturellement le plus bas » serait donc déterministe mais pratiquement invisible au départ.
+### 2 — `near-but-stay`
+La pression adjacente crée deux meilleures descentes exactement égales ; le moteur refuse d'inventer une direction.
 
-Simulation de 500 états obtenus après 1 à 12 pressions locales : avec la règle actuelle de creux, la bille se retrouve presque toujours dans un minimum local. Après un tap sur sa propre case, la pression l'enfonce encore et **0 %** des états simulés offrent ensuite une descente vers un voisin. Une variante « relâcher la bille et laisser la gravité choisir » ne résout donc pas la frontière : sans modifier le terrain, seulement ~3 % de ces états possèdent même un voisin strictement plus bas, et quasiment aucun avec un écart visuellement fort.
+**Prédiction** : le joueur pense que la bille sera poussée dans le trou à gauche. Son explication raisonne déjà sur le relief et la redistribution : baisser à droite ferait monter la case de la bille et l'expulser vers le bas visible.
 
-La variante « utiliser le point exact du doigt sur le côté de la petite bille comme direction de poussée » est également fragile : le diamètre visuel actuel est d'environ `19 px`. Encoder gauche/droite/haut/bas dans quelques pixels à l'intérieur de la bille demanderait une précision que le doigt ne fournit pas de manière fiable. `DROP` comme candidat principal.
+**Observation** : aucun mouvement.
 
-Une variante reste structurellement testable sans direction cachée : **un contact direct fournit l'énergie, mais le terrain fournit la direction**. Le candidat le moins arbitraire serait alors de sortir vers l'unique bord voisin le plus bas, même si ce bord est plus haut que le fond du creux actuel. Sur 1000 états simulés issus de déplacements par creusement adjacent, l'écart entre le bord le plus bas et le deuxième plus bas est ≥ `1 px` dans ~82 % des états et ≥ `2 px` dans ~66 %. Cela rend la direction parfois visible, contrairement au relief initial. Mais cette règle ferait ponctuellement « monter » la bille hors d'un bassin : elle doit donc être considérée comme une **impulsion externe** et non comme de la gravité. Elle reste un candidat, pas une règle promue.
+**Résultat** : incorrect. Apprentissage important : la convention « égalité exacte → immobilité » n'est pas naturellement prédictible. Ne pas la confondre avec le langage général acquis.
 
-**Décision de recherche** :
-- `DROP` hasard / direction fixe / mémoire / ancien sens de déplacement ;
-- `DROP` direction basée sur un sous-ciblage fin à l'intérieur de la petite bille ;
-- `DROP` simple « release + gravité », car la bille est presque toujours déjà dans le creux ;
-- `KEEP-CANDIDATE` impulsion directe dont la direction est entièrement choisie par le relief visible ;
-- ne rien promouvoir tant qu'une variante n'a pas une causalité formulable sans règle cachée.
+### 3 — `away`
+La cellule proposée est à droite, mais le relief local offre une sortie clairement plus basse à gauche.
 
-**Statut frontière** : `ITERATE-RESEARCH`.
+**Prédiction** : « la bille va tomber à gauche là où c'est plus bas par rapport à là où elle est maintenant ».
 
-## EXP-022d — Retirer la promesse de bille roulante
-**Hypothèse** : remplacer temporairement la bille par un petit acteur carré pourrait retirer l'attente de poussée directe sans casser `je creuse → l'objet va vers le creux`.
+**Observation** : déplacement à gauche.
 
-**Test humain spontané** : « Je ne sais pas le déplacer et j'attends peut-être de voir des boutons pour le déplacer ».
+**Résultat** : correct et **discriminant**. Le joueur prédit une conséquence opposée au côté touché à partir de la géométrie visible. L'heuristique « l'objet suit l'endroit touché » est réfutée.
 
-**Décision** `DROP` immédiat et revert.
+### 4 — `occupied`
+**Prédiction apprise** : la bille restera parce que la case va baisser.
 
-**Apprentissage** : l'aspect bille soutenait la lecture physique globale. Supprimer cette affordance a fait apparaître une attente de contrôles UI externes.
+**Intuition résiduelle explicitée spontanément** : selon l'endroit précis où l'on clique/appuie sur une bille, elle pourrait intuitivement rouler ou se déplacer vers le côté opposé.
 
-## EXP-022e — Cercle creux, terrain visible à travers l'acteur
-**Hypothèse** : conserver la circularité qui soutient la métaphore physique, mais rendre le centre transparent pour que le sol reste perceptible sous l'acteur. Aucun changement de simulation, de geste ou de terrain.
+**Observation** : elle reste.
 
-**Test humain spontané** : le joueur dit qu'il arrive à le déplacer parce qu'il comprend qu'il « baisse le terrain », que l'objet « coule dans le terrain » et qu'il pense pouvoir ensuite modifier le terrain pour l'envoyer ailleurs.
+**Résultat** : prédiction du moteur correcte, mais tension d'affordance physique toujours réelle.
 
-**Observation** : pour la première fois depuis EXP-021, le joueur ne décrit pas seulement une corrélation touche→animation ni n'attend des contrôles externes. Il construit spontanément une chaîne causale `action sur le terrain → relief → conséquence sur l'acteur`.
+### Décision EXP-023
+**`KEEP-PRIMITIVE`** : le langage général `action sur terrain → relief → conséquence sur acteur` passe le seuil humain. Plusieurs conséquences nouvelles ont été correctement prédites, dont le contre-exemple fort `away`.
 
-**Décision** `PROMOTE-PARTIAL`. Le cercle creux est **figé** pendant la prochaine série de tests. Ne pas modifier simultanément le signifiant, la physique et les situations expérimentales.
+**Ne pas promouvoir** :
+- l'égalité exacte→immobilité comme règle intuitive ;
+- la cellule occupée comme interaction physiquement satisfaisante ;
+- le relief comme « jeu Genesis ».
 
-**Important** : le langage n'est pas encore déclaré acquis. La formulation humaine contient encore des approximations et peut reposer sur une heuristique superficielle. La prochaine expérience doit chercher à réfuter la compréhension, pas à la confirmer.
-
-## EXP-023 — Tests discriminants de prédiction
-**Question** : le joueur comprend-il réellement la géométrie locale, ou utilise-t-il une heuristique plus pauvre telle que « je touche près du cercle donc il bouge » ?
-
-**Harness** : quatre mondes minimaux utilisent exactement le même cercle creux, le même moteur et le même geste. Une seule cellule à tester est marquée avant l'action. Le harness accepte une seule pression sur cette cellule afin de préserver `prédiction → action → observation`.
-
-Scénarios :
-1. `toward` — une pression adjacente crée l'unique voisin le plus bas : déplacement vers la cellule touchée.
-2. `near-but-stay` — la pression est adjacente mais crée deux meilleures descentes exactement égales : aucun déplacement. Ce cas réfute directement « toucher près suffit ».
-3. `away` — la cellule proposée est à droite, mais la géométrie locale possède une sortie clairement plus basse à gauche : après l'action, l'acteur part à gauche. Ce cas réfute « l'acteur suit l'endroit touché ».
-4. `occupied` — la cellule proposée est celle sous l'acteur : elle s'enfonce, aucune direction latérale n'est inventée, l'acteur reste.
-
-**Sentinelles automatiques** : chaque scénario produit exactement sa conséquence attendue ; la suite contient des cas mouvement/non-mouvement ; au moins un déplacement est opposé au côté touché ; au moins un toucher adjacent ne produit aucun déplacement.
-
-**Critère humain de promotion** : plusieurs prédictions nouvelles et correctes, recueillies **avant** action, dont au moins un contre-exemple aux heuristiques de proximité/direction du toucher. Aucune explication de la règle avant les réponses.
-
-**Statut** `TEST-READY`.
+**Conservation** : une primitive tactile humainement prédictible est maintenant disponible pour de futures combinaisons.
 
 ## EXP-VIS-005 — Relief lisible
 Relief orthogonal par déplacement vertical, faces et ombres. `TEST`.
 
-## Direction actuelle
-`j'observe → je prédis → je presse/creuse → je constate`
-
-Pas de nouvelle ressource, deuxième entité, destination, pathfinding, inertie, mémoire, tutoriel, score, combat ou progression tant que cette causalité élémentaire n'est pas prédictible humainement.
+## Direction de recherche après EXP-023
+EXP-023 clôt une question, pas la recherche du jeu. Avant toute EXP-024 de continuité, rouvrir l'exploration externe et comparer plusieurs familles de plaisir radicalement différentes. Le prochain prototype doit être choisi pour son potentiel et sa valeur d'information, pas parce qu'il prolonge le relief.
