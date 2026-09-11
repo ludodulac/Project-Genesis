@@ -9,17 +9,17 @@ import {
 describe('EXP-035 guided flow', () => {
   it('keeps editing active but disables autonomous flow in edit-only ablation', () => {
     const state = createGuidedFlowState('edit-only');
-    const before = getFlowCell(state, 3, 2)!.height;
-    const edited = pressFlowCell(state, 3, 2);
-    expect(getFlowCell(edited, 3, 2)!.height).toBeLessThan(before);
+    const before = getFlowCell(state, 3, 4)!.height;
+    const edited = pressFlowCell(state, 3, 4);
+    expect(getFlowCell(edited, 3, 4)!.height).toBeLessThan(before);
     expect(advanceFlow(edited)).toBe(edited);
   });
 
   it('keeps flow active but disables editing in flow-only ablation', () => {
     const state = createGuidedFlowState('flow-only');
-    expect(pressFlowCell(state, 3, 2)).toBe(state);
+    expect(pressFlowCell(state, 3, 4)).toBe(state);
     const moved = advanceFlow(state);
-    expect(moved.mote).not.toEqual(state.mote);
+    expect(moved.mote).toEqual({ row: 3, col: 2 });
   });
 
   it('lets an edit qualitatively change the next autonomous move in the coupled condition', () => {
@@ -32,15 +32,16 @@ describe('EXP-035 guided flow', () => {
     expect(redirected.mote).toEqual({ row: 2, col: 1 });
   });
 
-  it('can create a descending route all the way to the visible destination', () => {
+  it('lets one local correction turn a stopped flow into arrival', () => {
     let state = createGuidedFlowState('coupled');
-    state = pressFlowCell(state, 3, 2);
     state = advanceFlow(state);
-    state = pressFlowCell(state, 3, 3);
     state = advanceFlow(state);
+    expect(state.mote).toEqual({ row: 3, col: 3 });
+    expect(advanceFlow(state)).toBe(state);
+
     state = pressFlowCell(state, 3, 4);
     state = advanceFlow(state);
-    state = pressFlowCell(state, 3, 5);
+    expect(state.mote).toEqual({ row: 3, col: 4 });
     state = advanceFlow(state);
     expect(state.arrived).toBe(true);
   });
