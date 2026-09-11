@@ -17,38 +17,59 @@ Le grand monde en cases et relief n'a pas été supprimé. Il reste disponible c
 - **EXP-025 tension sous danger** : `DROP` — menace sans agence perçue = frustration.
 - **EXP-026 cascade immédiate** : `PARK` — spectacle agréable, pas d'intention spontanée.
 - **EXP-027 persistance simple** : `DROP` — changer le futur ne suffit pas si les futurs restent monotones.
-- **EXP-028 seuil/cascade** : `PROMOTE-PARTIAL` uniquement pour la curiosité causale déclenchée.
+- **EXP-028 seuil/cascade** : `PROMOTE-PARTIAL` pour curiosité causale spontanée ; maîtrise tactique non prouvée.
 - **EXP-029 transfert de la même règle** : `DROP` — répéter une règle comprise ne maintient pas l'intérêt.
 - **EXP-030 découverte d'une relation supplémentaire** : `DROP` — une nouvelle relation dans le même système n'a pas renouvelé suffisamment l'intérêt.
 - **EXP-031 pression spatiale globale** : `DROP` — swipes arbitraires, cause de la défaite non comprise, ennui très rapide.
 - **EXP-032 risque volontaire / encaissement** : `DROP` — vrai jeu d'adresse reconnu mais jugé « un peu bof » ; le dilemme de risque ne devient pas le moteur.
 - **EXP-033 continuité à travers micro-systèmes** : `DROP` — la promesse d'une suite ne crée pas l'élan initial.
-- **probe growing-reach / augmentation du pouvoir d'agir** : `DROP` — immédiatement reconnu comme une version inférieure d'un jeu de trou / bulles qui mangent les plus petites. La croissance de capacité est lisible mais ne produit ni identité ni attraction propre.
+- **growing-reach / augmentation du pouvoir d'agir** : `DROP` — immédiatement reconnu comme une version inférieure d'une famille déjà connue ; lisibilité et croissance ne créent pas une identité.
+- **EXP-034 artifact auto-modifiable** : `DROP` pour l'hypothèse `artifact seul → ambition auto-générée`. Retour humain : « rigolo à manipuler mais ce n'est pas encore un jeu ». Le plaisir de manipulation est confirmé, mais aucune intention propre n'émerge spontanément.
 
-## Réouverture active
-La question reste : **qu'est-ce qui déclenche spontanément un premier geste puis un deuxième ?** Elle n'est pas une doctrine.
+## Distinction désormais explicite
+Ne pas confondre :
+- plaisir de manipulation ;
+- compréhension prédictive ;
+- curiosité causale ;
+- intention / décision ;
+- désir de rejouer.
 
-Après le DROP de growing-reach, la comparaison a été rouverte dans `docs/REOPEN_AFTER_GROWING_REACH_2026-09.md`.
+Un probe peut démontrer l'une de ces propriétés sans être lui-même un jeu complet.
 
-Les familles comparées restent concurrentes : but/obstacle lisible, feedback sensoriel, curiosité perceptive, métamorphose, construction persistante, auto-défi, narratif/social. Les précédents externes sont utilisés comme justification de tests, jamais comme preuve de plaisir.
+## Synthèse méthodologique — septembre 2026
+Le document `docs/SYNTHESIS_INTERACTION_LEVEL_2026-09.md` réanalyse transversalement la trajectoire et la recherche externe.
 
-## Pari actuellement sélectionné pour un futur probe minimal
-**Artifact persistant → ambition auto-générée.**
+Décision : **ITERATE THE METHOD**.
 
-Question discriminante : **un premier geste provoque-t-il spontanément le deuxième lorsque le premier laisse un artifact lisible, imparfait et modifiable, au point que le joueur se donne lui-même le prochain objectif ?**
+La discipline expérimentale reste valide (`hypothèse → probe → sentinelles → humain → décision`), mais l'unité de pari change. Genesis a probablement imposé trop souvent l'exigence qu'une propriété nue produise seule plaisir, intention, profondeur et replay.
 
-Ce n'est pas « un jeu de construction » choisi. Le signal recherché est plus strict : après quelques gestes, le joueur doit commencer à parler de sa propre intention ou de sa propre performance plutôt que demander ce que le prototype attend de lui.
+Les prochains paris peuvent donc porter sur des **micro-systèmes couplés de 2–3 propriétés maximum**, seulement lorsque l'interaction est l'hypothèse testée :
+`A rend B intéressant` et `B modifie la valeur de A`.
 
-Le précédent externe le plus informatif est Tower of Goo : les joueurs ont spontanément demandé à construire plus haut que la limite du prototype. Les contre-exemples Poly Bridge montrent que cette boucle meurt lorsque la causalité physique paraît arbitraire ou que l'amélioration devient du trial-and-error pixel-perfect.
+Ce changement n'autorise pas l'empilement arbitraire. Un bundle de sauvetage (`mécanique faible + score + progression + ennemis + narration`) reste interdit.
 
-Conditions avant tout test humain :
-- modification persistante et immédiatement intelligible ;
-- chaque geste change réellement les possibilités suivantes ;
-- plusieurs ambitions plausibles sans les nommer dans l'UI ;
-- erreur attribuable et réparable ;
-- aucun score, timer, objectif textuel, progression ou tutoriel stratégique pour fabriquer artificiellement le second geste.
+## Critères avant tout prochain probe
+Un couplage ne mérite un test humain que s'il satisfait conceptuellement :
+1. retirer A change qualitativement B, et retirer B change qualitativement A ;
+2. au moins une action/état possède plusieurs conséquences cohérentes ;
+3. l'interaction crée anticipation, conflit ou futurs distincts plutôt que davantage d'effet ;
+4. la causalité locale reste lisible ;
+5. aucun score/progression/fiction n'est nécessaire pour rendre le premier cycle intéressant ;
+6. une ablation est définie avant construction ;
+7. le signal humain attendu est spécifique (décision, anticipation, hypothèse, intention), pas seulement temps passé ou taps.
 
-Kill test : si le joueur décrit seulement « je pose des trucs » ou demande quoi faire, `DROP`. Signal positif fort seulement s'il formule spontanément « je veux essayer de… » et agit pour poursuivre cette intention.
+## Familles actuellement remises en concurrence au niveau interaction
+1. **causalité prédictible × priorités conflictuelles** — très haute valeur d'information ;
+2. **curiosité causale × objectif local lisible** — très haute valeur d'information ;
+3. **manipulation agréable × contrainte qui rend la forme conséquente** — haute valeur mais risque de retomber dans un puzzle physique familier ;
+4. **action polyvalente × deux fonctions mutuellement dépendantes** — très haute valeur, encore trop abstraite pour un probe ;
+5. **métamorphose** — `PARK` comme profondeur ultérieure ;
+6. **narratif/social/meta-progression** — `PARK` pendant la découverte du cœur.
+
+## Statut de EXP-035
+**Aucun EXP-035 sélectionné.**
+
+La prochaine étape n'est pas de construire une nouvelle primitive, mais de comparer plusieurs couplages concrets et distants, avec précédents, contre-exemples, appuis Genesis, coût solo, ablations et kill tests. Le premier qui montre une interaction plausiblement multiplicative pourra alors mériter le coût d'un nouveau test humain.
 
 ## Toujours absent par défaut
-Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ces éléments pourront revenir uniquement si une hypothèse ultérieure les exige pour être testée, pas comme pansement.
+Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse ultérieure les exige réellement, pas comme pansement.
