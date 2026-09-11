@@ -18,36 +18,37 @@ Le grand monde en cases et relief n'a pas été supprimé. Il reste disponible c
 - **EXP-026 cascade immédiate** : `PARK` — spectacle agréable, pas d'intention spontanée.
 - **EXP-027 persistance simple** : `DROP` — changer le futur ne suffit pas si les futurs restent monotones.
 - **EXP-028 seuil/cascade** : `PROMOTE-PARTIAL` uniquement pour la curiosité causale déclenchée.
-- **EXP-029 transfert de la même règle** : `DROP` — répéter une règle comprise ne maintient pas l'intérêt ; l'idée de « clé pour passer » était une hypothèse humaine, pas une solution choisie.
+- **EXP-029 transfert de la même règle** : `DROP` — répéter une règle comprise ne maintient pas l'intérêt.
 - **EXP-030 découverte d'une relation supplémentaire** : `DROP` — une nouvelle relation dans le même système n'a pas renouvelé suffisamment l'intérêt.
-- **EXP-031 pression spatiale globale** : `DROP` — swipes arbitraires, cause de la défaite non comprise, ennui très rapide. Un mystère de règle sans raison d'agir lisible produit de la confusion improductive.
-- **EXP-032 risque volontaire / encaissement** : `DROP` comme cœur de Genesis — le joueur reconnaît un vrai jeu d'adresse mais le juge « un peu bof » et perçoit la difficulté finale comme pratiquement inévitable. Le dilemme « sécuriser ou tenter encore une » n'a pas émergé comme moteur dominant.
-- **EXP-033 continuité à travers micro-systèmes** : `DROP` — après avoir fait disparaître les premiers éléments, le joueur n'a pas spontanément envie de voir la suite. S'il n'avait pas été informé qu'une suite existait, il se serait arrêté.
+- **EXP-031 pression spatiale globale** : `DROP` — swipes arbitraires, cause de la défaite non comprise, ennui très rapide.
+- **EXP-032 risque volontaire / encaissement** : `DROP` — vrai jeu d'adresse reconnu mais jugé « un peu bof » ; le dilemme de risque ne devient pas le moteur.
+- **EXP-033 continuité à travers micro-systèmes** : `DROP` — la promesse d'une suite ne crée pas l'élan initial.
+- **probe growing-reach / augmentation du pouvoir d'agir** : `DROP` — immédiatement reconnu comme une version inférieure d'un jeu de trou / bulles qui mangent les plus petites. La croissance de capacité est lisible mais ne produit ni identité ni attraction propre.
 
-## Conséquence d'EXP-033
-L'hypothèse « une aventure ou continuité externe peut rendre intéressantes des micro-mécaniques modestes » n'est pas démontrée. Une continuité peut porter des systèmes courts dans des jeux existants, mais elle ne crée pas à elle seule l'élan initial.
+## Réouverture active
+La question reste : **qu'est-ce qui déclenche spontanément un premier geste puis un deuxième ?** Elle n'est pas une doctrine.
 
-La question de recherche a donc été rouverte sans en faire une doctrine : **qu'est-ce qui déclenche spontanément un premier geste puis un deuxième ?**
+Après le DROP de growing-reach, la comparaison a été rouverte dans `docs/REOPEN_AFTER_GROWING_REACH_2026-09.md`.
 
-Le document de travail est `docs/REOPEN_FIRST_SECOND_GESTURE_2026-09.md`.
+Les familles comparées restent concurrentes : but/obstacle lisible, feedback sensoriel, curiosité perceptive, métamorphose, construction persistante, auto-défi, narratif/social. Les précédents externes sont utilisés comme justification de tests, jamais comme preuve de plaisir.
 
-## Explications concurrentes actuellement comparées
-1. réponse expressive / monde qui répond agréablement ;
-2. but ou obstacle immédiatement lisible ;
-3. augmentation visible du pouvoir d'agir ;
-4. construction inachevée / conséquence pendante ;
-5. curiosité causale ;
-6. enjeu narratif, social ou affectif.
+## Pari actuellement sélectionné pour un futur probe minimal
+**Artifact persistant → ambition auto-générée.**
 
-Les familles 1 et 5 ont déjà beaucoup de contre-preuves locales. La famille 6 est coûteuse et peut masquer un cœur faible. La famille 3 est actuellement la plus informative parce qu'elle n'a pas encore été isolée dans Genesis.
+Question discriminante : **un premier geste provoque-t-il spontanément le deuxième lorsque le premier laisse un artifact lisible, imparfait et modifiable, au point que le joueur se donne lui-même le prochain objectif ?**
 
-## Prochain pari sélectionné — augmentation visible du pouvoir d'agir
-Question discriminante : **un premier succès très simple provoque-t-il spontanément un deuxième geste lorsqu'il augmente visiblement le pouvoir d'agir et rapproche une cible auparavant hors de portée ?**
+Ce n'est pas « un jeu de construction » choisi. Le signal recherché est plus strict : après quelques gestes, le joueur doit commencer à parler de sa propre intention ou de sa propre performance plutôt que demander ce que le prototype attend de lui.
 
-Ce n'est pas une sélection de genre et ce n'est pas un clone de Katamari/Hole.io. Le probe doit isoler seulement :
-`petite action réussie → capacité visible augmente → nouvelle cible devient atteignable`.
+Le précédent externe le plus informatif est Tower of Goo : les joueurs ont spontanément demandé à construire plus haut que la limite du prototype. Les contre-exemples Poly Bridge montrent que cette boucle meurt lorsque la causalité physique paraît arbitraire ou que l'amélioration devient du trial-and-error pixel-perfect.
 
-Kill test : si le joueur clique ou se déplace au hasard, décrit seulement « je mange des trucs », ou s'arrête sans chercher spontanément une cible plus grosse, `DROP` sans ajouter score, timer, histoire, ennemis, upgrades ou niveaux.
+Conditions avant tout test humain :
+- modification persistante et immédiatement intelligible ;
+- chaque geste change réellement les possibilités suivantes ;
+- plusieurs ambitions plausibles sans les nommer dans l'UI ;
+- erreur attribuable et réparable ;
+- aucun score, timer, objectif textuel, progression ou tutoriel stratégique pour fabriquer artificiellement le second geste.
+
+Kill test : si le joueur décrit seulement « je pose des trucs » ou demande quoi faire, `DROP`. Signal positif fort seulement s'il formule spontanément « je veux essayer de… » et agit pour poursuivre cette intention.
 
 ## Toujours absent par défaut
 Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ces éléments pourront revenir uniquement si une hypothèse ultérieure les exige pour être testée, pas comme pansement.
