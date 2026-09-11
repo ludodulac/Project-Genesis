@@ -43,33 +43,49 @@ Décision : **ITERATE THE METHOD**.
 
 La discipline expérimentale reste valide (`hypothèse → probe → sentinelles → humain → décision`), mais l'unité de pari change. Genesis a probablement imposé trop souvent l'exigence qu'une propriété nue produise seule plaisir, intention, profondeur et replay.
 
-Les prochains paris peuvent donc porter sur des **micro-systèmes couplés de 2–3 propriétés maximum**, seulement lorsque l'interaction est l'hypothèse testée :
+Les nouveaux paris peuvent donc porter sur des **micro-systèmes couplés de 2–3 propriétés maximum**, seulement lorsque l'interaction est l'hypothèse testée :
 `A rend B intéressant` et `B modifie la valeur de A`.
 
 Ce changement n'autorise pas l'empilement arbitraire. Un bundle de sauvetage (`mécanique faible + score + progression + ennemis + narration`) reste interdit.
 
-## Critères avant tout prochain probe
-Un couplage ne mérite un test humain que s'il satisfait conceptuellement :
-1. retirer A change qualitativement B, et retirer B change qualitativement A ;
-2. au moins une action/état possède plusieurs conséquences cohérentes ;
-3. l'interaction crée anticipation, conflit ou futurs distincts plutôt que davantage d'effet ;
-4. la causalité locale reste lisible ;
-5. aucun score/progression/fiction n'est nécessaire pour rendre le premier cycle intéressant ;
-6. une ablation est définie avant construction ;
-7. le signal humain attendu est spécifique (décision, anticipation, hypothèse, intention), pas seulement temps passé ou taps.
+## Compétition de couplages avant EXP-035
+Document : `docs/COUPLING_COMPETITION_EXP035_2026-09.md`.
 
-## Familles actuellement remises en concurrence au niveau interaction
-1. **causalité prédictible × priorités conflictuelles** — très haute valeur d'information ;
-2. **curiosité causale × objectif local lisible** — très haute valeur d'information ;
-3. **manipulation agréable × contrainte qui rend la forme conséquente** — haute valeur mais risque de retomber dans un puzzle physique familier ;
-4. **action polyvalente × deux fonctions mutuellement dépendantes** — très haute valeur, encore trop abstraite pour un probe ;
-5. **métamorphose** — `PARK` comme profondeur ultérieure ;
-6. **narratif/social/meta-progression** — `PARK` pendant la découverte du cœur.
+Familles comparées :
+1. menace prédictible × priorités conflictuelles ;
+2. une action × deux conséquences mécaniquement utiles ;
+3. choix tactique × deadline rythmique ;
+4. exploration/information × conséquence de ressource partagée ;
+5. structure modifiable × processus autonome.
 
-## Statut de EXP-035
-**Aucun EXP-035 sélectionné.**
+La famille 5 gagne le coût du prochain probe, non parce qu'elle réutilise un acquis Genesis, mais parce que ses ablations sont propres, son coût est faible et son signal humain est fortement discriminant.
 
-La prochaine étape n'est pas de construire une nouvelle primitive, mais de comparer plusieurs couplages concrets et distants, avec précédents, contre-exemples, appuis Genesis, coût solo, ablations et kill tests. Le premier qui montre une interaction plausiblement multiplicative pourra alors mériter le coût d'un nouveau test humain.
+## EXP-035 — guided flow — EN TEST HUMAIN
+Hypothèse interne : une structure modifiable et un processus autonome peuvent produire une boucle qualitativement nouvelle si le joueur commence à éditer en anticipation ou en correction de ce que le processus fera ensuite.
+
+Implementation minimale :
+- un petit champ déformable ;
+- une mote creuse ;
+- une destination visible ;
+- la mote avance automatiquement selon la géométrie locale ;
+- toucher le champ modifie cette géométrie de façon persistante ;
+- aucun texte tutoriel, score, timer de performance, récompense, progression, adversaire ou séquence de contenu.
+
+Ablations définies et implémentées avant test :
+- `edit-only` : structure modifiable, processus autonome désactivé ;
+- `flow-only` : processus autonome actif, structure non modifiable ;
+- `coupled` : les deux propriétés actives.
+
+Sentinelles techniques :
+- chaque ablation retire bien une propriété sans casser l'autre ;
+- dans la condition couplée, une édition peut changer qualitativement le prochain mouvement autonome ;
+- une correction locale suffit à transformer un arrêt en arrivée.
+
+Route humaine (ne pas expliquer l'hypothèse avant retour spontané) : `?probe=guided-flow`.
+
+Signal positif : comportement ou formulation spontanée montrant une prédiction/correction causale entre une partie précise de la structure et le futur mouvement de la mote.
+
+Kill test : si le joueur manipule au hasard, attend, ou regarde seulement la mote sans relation prédictive/corrective, `DROP` du couplage dans cette forme.
 
 ## Toujours absent par défaut
 Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse ultérieure les exige réellement, pas comme pansement.
