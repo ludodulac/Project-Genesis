@@ -34,8 +34,7 @@ export function createGuidedFlowState(variant: GuidedFlowVariant = 'coupled'): G
     [3, 3, 3, 3, 3, 3, 3],
   ];
 
-  // A small pre-existing basin makes the world visibly non-flat without solving it.
-  heights[3][1] = 2.25;
+  // One short visible descent lets the autonomous process reveal itself, then stop.
   heights[3][2] = 2.5;
   heights[2][3] = 2.75;
   heights[4][3] = 2.75;
