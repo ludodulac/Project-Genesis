@@ -17,28 +17,20 @@ export type GuidedFlowState = {
 };
 
 const MIN_HEIGHT = 0;
-const MAX_HEIGHT = 4;
 const PRESS_AMOUNT = 1;
-const NEIGHBOUR_LIFT = 0.25;
 
 export function createGuidedFlowState(variant: GuidedFlowVariant = 'coupled'): GuidedFlowState {
   const rows = 7;
   const cols = 7;
-  const heights = [
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-    [3, 3, 3, 3, 3, 3, 3],
-  ];
+  const heights = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 3));
 
-  // One short visible descent lets the autonomous process reveal itself, then stop.
+  // The process visibly starts by itself, then meets one local obstruction.
+  // A single edit can make that obstruction become a continuation of the slope.
+  heights[3][1] = 3;
   heights[3][2] = 2.5;
-  heights[2][3] = 2.75;
-  heights[4][3] = 2.75;
-  heights[3][5] = 2.5;
+  heights[3][3] = 2;
+  heights[3][4] = 2.5;
+  heights[3][5] = 1;
 
   const cells: FlowCell[] = [];
   for (let row = 0; row < rows; row += 1) {
@@ -71,15 +63,7 @@ export function pressFlowCell(state: GuidedFlowState, row: number, col: number):
   const copy = cells.find((cell) => cell.row === row && cell.col === col)!;
   const amount = Math.min(PRESS_AMOUNT, copy.height - MIN_HEIGHT);
   if (amount <= 0) return state;
-
   copy.height -= amount;
-  const neighbours = orthogonalPositions(state.rows, state.cols, row, col);
-  const share = amount / neighbours.length;
-  for (const neighbour of neighbours) {
-    const cell = cells.find((candidate) => candidate.row === neighbour.row && candidate.col === neighbour.col)!;
-    cell.height = Math.min(MAX_HEIGHT, cell.height + Math.min(NEIGHBOUR_LIFT, share));
-  }
-
   return { ...state, cells };
 }
 
