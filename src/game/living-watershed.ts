@@ -18,28 +18,28 @@ export type WatershedState = {
 
 const EPSILON = 1e-9;
 const LOWER_STEP = 0.5;
-const PULSE_TURNS = new Set([0, 4]);
+const PULSE_TURNS = new Set([4]);
 
 export function createWatershedState(): WatershedState {
   const rows = 7;
   const cols = 7;
-  const heights = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 4));
+  const heights = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 6));
 
-  // A readable high-to-low spine reaches a central junction. Left and right feed
-  // two gardens. The slightly-lower centre branch feeds the village and is the
-  // default danger if the player does not reshape the junction in time.
+  // One shared watershed. Water descends a readable spine into a three-way
+  // junction. Left/right feed the two gardens. The middle route reaches the
+  // village, so doing nothing is a legible failure rather than a neutral wait.
   heights[0][3] = 5;
   heights[1][3] = 4;
   heights[2][3] = 3;
   heights[3][3] = 2;
 
   heights[3][2] = 1.5;
-  heights[4][2] = 0.5;
+  heights[3][1] = 0.75;
   heights[4][1] = 0.25;
   heights[5][1] = 0;
 
   heights[3][4] = 1.5;
-  heights[4][4] = 0.25;
+  heights[3][5] = 0.25;
   heights[4][5] = 0.1;
   heights[5][5] = 0;
 
@@ -98,7 +98,7 @@ export function playWatershedTurn(state: WatershedState, row: number, col: numbe
 
   let pulses = moved;
   let nextPulseId = working.nextPulseId;
-  if (PULSE_TURNS.has(working.turn) && working.turn !== 0) {
+  if (PULSE_TURNS.has(working.turn)) {
     pulses = [...pulses, { id: nextPulseId, row: working.source.row, col: working.source.col, settled: false }];
     nextPulseId += 1;
   }
