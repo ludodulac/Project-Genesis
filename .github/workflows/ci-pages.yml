@@ -33,6 +33,25 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Install browser verifier
+        if: github.ref == 'refs/heads/signal-game' || github.event_name == 'pull_request'
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify SIGNAL in mobile Chromium
+        if: github.ref == 'refs/heads/signal-game' || github.event_name == 'pull_request'
+        run: |
+          mkdir -p artifacts
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/signal-vite.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          node scripts/signal-browser-check.mjs
+      - name: Upload SIGNAL browser evidence
+        if: always() && (github.ref == 'refs/heads/signal-game' || github.event_name == 'pull_request')
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-browser-check
+          path: artifacts
+          if-no-files-found: error
       - name: Configure Pages
         if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
