@@ -60,7 +60,7 @@ Familles comparées :
 
 La famille 5 gagne le coût du prochain probe, non parce qu'elle réutilise un acquis Genesis, mais parce que ses ablations sont propres, son coût est faible et son signal humain est fortement discriminant.
 
-## EXP-035 — guided flow — EN TEST HUMAIN
+## EXP-035 — guided flow — ABLATIONS HUMAINES EN COURS
 Hypothèse interne : une structure modifiable et un processus autonome peuvent produire une boucle qualitativement nouvelle si le joueur commence à éditer en anticipation ou en correction de ce que le processus fera ensuite.
 
 Implementation minimale :
@@ -81,11 +81,23 @@ Sentinelles techniques :
 - dans la condition couplée, une édition peut changer qualitativement le prochain mouvement autonome ;
 - une correction locale suffit à transformer un arrêt en arrivée.
 
-Route humaine (ne pas expliquer l'hypothèse avant retour spontané) : `?probe=guided-flow`.
+### Observation humaine — condition couplée
+Retour spontané : « Oui c'est joli j'ai remarqué que en abaissant les petites touches je pouvais déplacer jusqu'à la cible. »
 
-Signal positif : comportement ou formulation spontanée montrant une prédiction/correction causale entre une partie précise de la structure et le futur mouvement de la mote.
+Lecture provisoire, avant ablations :
+- la relation causale structure → mouvement autonome est comprise ;
+- l'action est reliée à une destination locale, et non décrite comme manipulation aléatoire ;
+- le kill test initial du couplage n'est donc pas déclenché ;
+- cela ne prouve pas encore que le couplage ouvre un espace de jeu.
 
-Kill test : si le joueur manipule au hasard, attend, ou regarde seulement la mote sans relation prédictive/corrective, `DROP` du couplage dans cette forme.
+Le signal global « tout est joli / j'aime souvent cet univers, mais je cherche le game » reste séparé : l'univers visuel est une propriété candidate à préserver, jamais une preuve de gameplay.
+
+### Protocole restant
+Ne pas modifier EXP-035. Faire tester les ablations déjà définies. Le verdict du couplage dépend de la différence qualitative entre `edit-only`, `flow-only` et `coupled`, pas de la simple réussite à atteindre la cible.
+
+Si le couplage survit, appliquer ensuite un second filtre de niveau supérieur : ouvre-t-il un espace de jeu capable de produire décisions, situations différentes, apprentissage, surprises et raisons de revenir sans score/progression/contenu/mécaniques compensatoires ?
+
+Route humaine principale : `?probe=guided-flow`.
 
 ## Toujours absent par défaut
 Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse ultérieure les exige réellement, pas comme pansement.
