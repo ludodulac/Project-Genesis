@@ -1,10 +1,92 @@
-import {describe,expect,it} from 'vitest';
-import {createSignalState,moveOperator,rotateOperator,stepSignal} from '../src/game/signal';
+import { describe, expect, it } from 'vitest';
+import { createSignalState, moveOperator, rotateOperator, stepSignal, type SignalState } from '../src/game/signal';
 
-describe('SIGNAL game',()=>{
- it('is deterministic for a seed',()=>{const a=createSignalState(7),b=createSignalState(7);for(let i=0;i<200;i++){stepSignal(a,.1);stepSignal(b,.1);}expect(a).toEqual(b);});
- it('keeps packets in flight when an operator moves',()=>{const s=createSignalState(2);for(let i=0;i<80;i++)stepSignal(s,.1);const committed=s.packets.map(p=>[p.id,p.next]);moveOperator(s,0,5);expect(s.packets.map(p=>[p.id,p.next])).toEqual(committed);});
- it('allows visible operators to move and rotate',()=>{const s=createSignalState(3),op=s.operators[0],old=op.orientation;expect(moveOperator(s,op.id,5)).toBe(true);rotateOperator(s,op.id);expect(op.node).toBe(5);expect(op.orientation).not.toBe(old);});
- it('reaches a real terminal outcome',()=>{const s=createSignalState(4);for(let i=0;i<4000&&s.outcome==='playing';i++)stepSignal(s,.1);expect(['won','lost']).toContain(s.outcome);});
- it('changes structure between seeds',()=>{const a=createSignalState(1),b=createSignalState(2);expect(a.nodes.map(n=>[n.x,n.sink,n.source])).not.toEqual(b.nodes.map(n=>[n.x,n.sink,n.source]));});
+function run(state: SignalState) {
+  for (let i = 0; i < 1600 && state.outcome === 'playing'; i += 1) stepSignal(state, .1);
+  return state;
+}
+
+function rotateTo(state: SignalState, operatorId: number, orientation: number) {
+  const operator = state.operators.find((entry) => entry.id === operatorId)!;
+  let guard = 0;
+  while (operator.orientation !== orientation && guard++ < 4) rotateOperator(state, operatorId);
+}
+
+function solveRepresentativeSeed(seed: number) {
+  const state = createSignalState(seed);
+  if (seed % 3 === 1) {
+    expect(moveOperator(state, 0, 3)).toBe(true);
+    expect(moveOperator(state, 1, 8)).toBe(true);
+    rotateTo(state, 0, 0);
+    rotateTo(state, 1, 0);
+    rotateTo(state, 2, 0);
+  } else if (seed % 3 === 2) {
+    expect(moveOperator(state, 0, 3)).toBe(true);
+    expect(moveOperator(state, 1, 8)).toBe(true);
+    expect(moveOperator(state, 2, 4)).toBe(true);
+    rotateTo(state, 0, 0);
+    rotateTo(state, 1, 1);
+    rotateTo(state, 2, 0);
+  } else {
+    expect(moveOperator(state, 0, 3)).toBe(true);
+    expect(moveOperator(state, 1, 9)).toBe(true);
+    expect(moveOperator(state, 2, 4)).toBe(true);
+    rotateTo(state, 0, 0);
+    rotateTo(state, 1, 2);
+    rotateTo(state, 2, 0);
+  }
+  return run(state);
+}
+
+describe('SIGNAL game', () => {
+  it('is deterministic for a seed', () => {
+    const a = createSignalState(7);
+    const b = createSignalState(7);
+    for (let i = 0; i < 300; i += 1) { stepSignal(a, .1); stepSignal(b, .1); }
+    expect(a).toEqual(b);
+  });
+
+  it('keeps already committed packets in flight when an operator moves', () => {
+    const state = createSignalState(1);
+    for (let i = 0; i < 80; i += 1) stepSignal(state, .1);
+    const committed = state.packets.map((packet) => [packet.id, packet.next]);
+    expect(moveOperator(state, 0, 3)).toBe(true);
+    expect(state.packets.map((packet) => [packet.id, packet.next])).toEqual(committed);
+  });
+
+  it('moves, swaps and rotates visible operators', () => {
+    const state = createSignalState(1);
+    const switchOperator = state.operators[0];
+    const filterOperator = state.operators[1];
+    const alternator = state.operators[2];
+    expect(moveOperator(state, switchOperator.id, 3)).toBe(true);
+    expect(switchOperator.node).toBe(3);
+    expect(moveOperator(state, filterOperator.id, alternator.node)).toBe(true);
+    expect(filterOperator.node).toBe(8);
+    expect(alternator.node).toBe(4);
+    const old = switchOperator.orientation;
+    expect(rotateOperator(state, switchOperator.id)).toBe(true);
+    expect(switchOperator.orientation).not.toBe(old);
+  });
+
+  it('starts from genuinely different first three situations', () => {
+    const signature = (state: SignalState) => JSON.stringify({
+      x: state.nodes.map((node) => node.x),
+      links: state.nodes.map((node) => node.links),
+      sinks: state.nodes.map((node) => node.sink ?? null),
+      operators: state.operators.map((operator) => [operator.kind, operator.node, operator.orientation]),
+    });
+    const signatures = [1, 2, 3].map((seed) => signature(createSignalState(seed)));
+    expect(new Set(signatures).size).toBe(3);
+  });
+
+  it.each([1, 2, 3])('seed %i has real stakes without intervention', (seed) => {
+    expect(run(createSignalState(seed)).outcome).toBe('lost');
+  });
+
+  it.each([1, 2, 3])('seed %i is machine-proven winnable through player actions', (seed) => {
+    const result = solveRepresentativeSeed(seed);
+    expect(result.outcome).toBe('won');
+    expect(result.lost).toBeLessThanOrEqual(5);
+  });
 });
