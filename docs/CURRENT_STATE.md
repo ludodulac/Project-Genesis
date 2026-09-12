@@ -25,6 +25,7 @@ Le grand monde en cases et relief n'a pas été supprimé. Il reste disponible c
 - **EXP-033 continuité à travers micro-systèmes** : `DROP` — la promesse d'une suite ne crée pas l'élan initial.
 - **growing-reach / augmentation du pouvoir d'agir** : `DROP` — immédiatement reconnu comme une version inférieure d'une famille déjà connue ; lisibilité et croissance ne créent pas une identité.
 - **EXP-034 artifact auto-modifiable** : `DROP` pour l'hypothèse `artifact seul → ambition auto-générée`. Retour humain : « rigolo à manipuler mais ce n'est pas encore un jeu ». Le plaisir de manipulation est confirmé, mais aucune intention propre n'émerge spontanément.
+- **EXP-035 structure modifiable × processus autonome** : `PROMOTE-PARTIAL` pour le couplage causal ; l'instanciation à une mote / une cible n'est pas encore un game.
 
 ## Distinction désormais explicite
 Ne pas confondre :
@@ -32,6 +33,7 @@ Ne pas confondre :
 - compréhension prédictive ;
 - curiosité causale ;
 - intention / décision ;
+- espace de jeu génératif ;
 - désir de rejouer.
 
 Un probe peut démontrer l'une de ces propriétés sans être lui-même un jeu complet.
@@ -48,56 +50,46 @@ Les nouveaux paris peuvent donc porter sur des **micro-systèmes couplés de 2�
 
 Ce changement n'autorise pas l'empilement arbitraire. Un bundle de sauvetage (`mécanique faible + score + progression + ennemis + narration`) reste interdit.
 
-## Compétition de couplages avant EXP-035
-Document : `docs/COUPLING_COMPETITION_EXP035_2026-09.md`.
+## EXP-035 — guided flow — PROMOTE-PARTIAL
+Hypothèse testée : une structure modifiable et un processus autonome peuvent produire une boucle qualitativement nouvelle si le joueur édite en anticipation ou en correction de ce que le processus fera ensuite.
 
-Familles comparées :
-1. menace prédictible × priorités conflictuelles ;
-2. une action × deux conséquences mécaniquement utiles ;
-3. choix tactique × deadline rythmique ;
-4. exploration/information × conséquence de ressource partagée ;
-5. structure modifiable × processus autonome.
-
-La famille 5 gagne le coût du prochain probe, non parce qu'elle réutilise un acquis Genesis, mais parce que ses ablations sont propres, son coût est faible et son signal humain est fortement discriminant.
-
-## EXP-035 — guided flow — ABLATIONS HUMAINES EN COURS
-Hypothèse interne : une structure modifiable et un processus autonome peuvent produire une boucle qualitativement nouvelle si le joueur commence à éditer en anticipation ou en correction de ce que le processus fera ensuite.
-
-Implementation minimale :
-- un petit champ déformable ;
-- une mote creuse ;
-- une destination visible ;
-- la mote avance automatiquement selon la géométrie locale ;
-- toucher le champ modifie cette géométrie de façon persistante ;
-- aucun texte tutoriel, score, timer de performance, récompense, progression, adversaire ou séquence de contenu.
-
-Ablations définies et implémentées avant test :
+Ablations définies avant construction :
 - `edit-only` : structure modifiable, processus autonome désactivé ;
 - `flow-only` : processus autonome actif, structure non modifiable ;
 - `coupled` : les deux propriétés actives.
 
-Sentinelles techniques :
-- chaque ablation retire bien une propriété sans casser l'autre ;
-- dans la condition couplée, une édition peut changer qualitativement le prochain mouvement autonome ;
-- une correction locale suffit à transformer un arrêt en arrivée.
+### Résultats humains
+Condition couplée : « en abaissant les petites touches je pouvais déplacer jusqu'à la cible ». Le joueur relie spontanément une édition précise à la trajectoire et à une destination locale.
 
-### Observation humaine — condition couplée
-Retour spontané : « Oui c'est joli j'ai remarqué que en abaissant les petites touches je pouvais déplacer jusqu'à la cible. »
+`edit-only` : « Je peux pas le déplacer ». Le retrait du processus autonome fait disparaître précisément la capacité que le joueur avait identifiée dans le couplage.
 
-Lecture provisoire, avant ablations :
-- la relation causale structure → mouvement autonome est comprise ;
-- l'action est reliée à une destination locale, et non décrite comme manipulation aléatoire ;
-- le kill test initial du couplage n'est donc pas déclenché ;
-- cela ne prouve pas encore que le couplage ouvre un espace de jeu.
+`flow-only` : « J'arrive pas à cliquer sur tous les boutons ». Le retrait de l'édition est perçu comme perte d'agence sur la structure. Ce retour ne démontre pas à lui seul une préférence, mais confirme que l'édition faisait partie de la relation fonctionnelle perçue.
 
-Le signal global « tout est joli / j'aime souvent cet univers, mais je cherche le game » reste séparé : l'univers visuel est une propriété candidate à préserver, jamais une preuve de gameplay.
+Deux essais intermédiaires ont été invalidés : les liens avaient encodé le séparateur `&`, donc les ablations n'étaient pas réellement activées. Ils ne sont pas utilisés dans le verdict.
 
-### Protocole restant
-Ne pas modifier EXP-035. Faire tester les ablations déjà définies. Le verdict du couplage dépend de la différence qualitative entre `edit-only`, `flow-only` et `coupled`, pas de la simple réussite à atteindre la cible.
+### Verdict d'ablation
+**Le couplage survit.** Les deux propriétés ne sont pas seulement juxtaposées : dans la condition complète, l'édition prend sa valeur parce qu'elle change le processus autonome ; dans chaque ablation, cette relation disparaît qualitativement. Classification : `PROMOTE-PARTIAL`.
 
-Si le couplage survit, appliquer ensuite un second filtre de niveau supérieur : ouvre-t-il un espace de jeu capable de produire décisions, situations différentes, apprentissage, surprises et raisons de revenir sans score/progression/contenu/mécaniques compensatoires ?
+Acquis : **une structure éditable peut devenir conséquente lorsqu'un processus autonome, localement lisible, dépend de cette structure et que le joueur peut découvrir cette causalité sans tutoriel.**
 
-Route humaine principale : `?probe=guided-flow`.
+Non acquis : replay, profondeur, émergence, décisions conflictuelles, variété de situations, apprentissage durable.
+
+### Filtre supérieur — potentiel de game
+L'instanciation actuelle ne passe pas encore ce filtre. Avec une mote, une cible et une correction dominante, elle produit surtout un problème causal lisible : une fois la relation comprise, la meilleure action tend à rester évidente. Il n'existe pas encore de raison interne pour que deux situations demandent des choix réellement différents.
+
+EXP-035 n'est donc pas prolongé par du score, de la progression ou du contenu. Son couplage devient un matériau acquis. La recherche suivante doit tester si une troisième propriété minimale peut transformer cette causalité en **espace de décisions**, ou si une autre famille fait mieux.
+
+## Signal visuel séparé
+Retour récurrent : l'utilisateur trouve souvent cet univers joli et dit aimer cet univers-là. Conserver ce signal comme propriété candidate de Genesis pendant la recherche du cœur du jeu. Ne jamais l'utiliser comme preuve qu'un probe est un game.
+
+## Recherche suivante
+Comparer avant tout nouveau build des familles capables de produire des décisions contextuelles plutôt qu'une action correcte unique. Inclure au minimum :
+- structure éditable × processus autonome × intérêts conflictuels ;
+- une action × deux conséquences mécaniquement utiles ;
+- information incomplète mais inférable × action irréversible/réversible à coût local ;
+- processus autonome × transformation réciproque du monde.
+
+Sélection uniquement si les ablations, le coût solo et le comportement humain discriminant sont propres. Prochain numéro disponible : EXP-036.
 
 ## Toujours absent par défaut
 Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse ultérieure les exige réellement, pas comme pansement.
