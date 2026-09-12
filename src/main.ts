@@ -15,53 +15,7 @@ import { SelfAuthoredArtifactScene } from './presentation/SelfAuthoredArtifactSc
 import { GuidedFlowScene } from './presentation/GuidedFlowScene';
 import { ConflictingFlowScene } from './presentation/ConflictingFlowScene';
 import { LivingWatershedScene } from './presentation/LivingWatershedScene';
-
-const params = new URLSearchParams(window.location.search);
-const game = params.get('game');
-const probe = params.get('probe');
-const scene = game === 'living-watershed'
-  ? LivingWatershedScene
-  : probe === 'trajectory'
-    ? TrajectoryScene
-    : probe === 'tension'
-      ? TensionScene
-      : probe === 'cascade'
-        ? CascadeScene
-        : probe === 'threshold'
-          ? ThresholdScene
-          : probe === 'transfer'
-            ? TransferScene
-            : probe === 'discovery'
-              ? DiscoveryScene
-              : probe === 'global-pressure'
-                ? GlobalPressureScene
-                : probe === 'voluntary-risk'
-                  ? VoluntaryRiskScene
-                  : probe === 'persistent-journey'
-                    ? PersistentJourneyScene
-                    : probe === 'growing-reach'
-                      ? GrowingReachScene
-                      : probe === 'self-authored-artifact'
-                        ? SelfAuthoredArtifactScene
-                        : probe === 'guided-flow'
-                          ? GuidedFlowScene
-                          : probe === 'conflicting-flow'
-                            ? ConflictingFlowScene
-                            : WorldScene;
-
-new Phaser.Game({
-  type: Phaser.AUTO,
-  parent: 'app',
-  width: 390,
-  height: 760,
-  backgroundColor: '#dff7ff',
-  scene: [scene],
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  render: {
-    antialias: true,
-    pixelArt: false,
-  },
-});
+import { SignalScene } from './presentation/SignalScene';
+const params=new URLSearchParams(window.location.search),game=params.get('game'),probe=params.get('probe');
+const scene=game==='signal'?SignalScene:game==='living-watershed'?LivingWatershedScene:probe==='trajectory'?TrajectoryScene:probe==='tension'?TensionScene:probe==='cascade'?CascadeScene:probe==='threshold'?ThresholdScene:probe==='transfer'?TransferScene:probe==='discovery'?DiscoveryScene:probe==='global-pressure'?GlobalPressureScene:probe==='voluntary-risk'?VoluntaryRiskScene:probe==='persistent-journey'?PersistentJourneyScene:probe==='growing-reach'?GrowingReachScene:probe==='self-authored-artifact'?SelfAuthoredArtifactScene:probe==='guided-flow'?GuidedFlowScene:probe==='conflicting-flow'?ConflictingFlowScene:WorldScene;
+new Phaser.Game({type:Phaser.AUTO,parent:'app',width:390,height:760,backgroundColor:'#09151d',scene:[scene],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},render:{antialias:true,pixelArt:false}});
