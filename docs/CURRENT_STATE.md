@@ -77,19 +77,68 @@ Non acquis : replay, profondeur, émergence, décisions conflictuelles, variét�
 ### Filtre supérieur — potentiel de game
 L'instanciation actuelle ne passe pas encore ce filtre. Avec une mote, une cible et une correction dominante, elle produit surtout un problème causal lisible : une fois la relation comprise, la meilleure action tend à rester évidente. Il n'existe pas encore de raison interne pour que deux situations demandent des choix réellement différents.
 
-EXP-035 n'est donc pas prolongé par du score, de la progression ou du contenu. Son couplage devient un matériau acquis. La recherche suivante doit tester si une troisième propriété minimale peut transformer cette causalité en **espace de décisions**, ou si une autre famille fait mieux.
+EXP-035 n'est donc pas prolongé par du score, de la progression ou du contenu. Son couplage devient un matériau acquis.
 
 ## Signal visuel séparé
 Retour récurrent : l'utilisateur trouve souvent cet univers joli et dit aimer cet univers-là. Conserver ce signal comme propriété candidate de Genesis pendant la recherche du cœur du jeu. Ne jamais l'utiliser comme preuve qu'un probe est un game.
 
-## Recherche suivante
-Comparer avant tout nouveau build des familles capables de produire des décisions contextuelles plutôt qu'une action correcte unique. Inclure au minimum :
-- structure éditable × processus autonome × intérêts conflictuels ;
-- une action × deux conséquences mécaniquement utiles ;
-- information incomplète mais inférable × action irréversible/réversible à coût local ;
-- processus autonome × transformation réciproque du monde.
+## Décision produit — 2026-09-12
+Document : `docs/PRODUCT_TERRITORY_DECISION_2026-09.md`.
 
-Sélection uniquement si les ablations, le coût solo et le comportement humain discriminant sont propres. Prochain numéro disponible : EXP-036.
+Une recherche externe plus large a comparé cinq territoires :
+1. monde tactile/systémique avec terrain modifiable et processus autonomes ;
+2. tactique déterministe compacte ;
+3. réseau/logistique minimal sous demande autonome ;
+4. arcade mobile à une action multi-usage ;
+5. construction/physics puzzle systémique.
+
+### Territoire choisi — TEMPORARY PRODUCT LOCK
+**Monde tactile systémique / terrain vivant.**
+
+Thèse produit :
+> Le joueur remodèle directement un petit monde vivant. Plusieurs processus autonomes lisent le même état. Comme plusieurs intérêts partagent cette structure, une transformation utile modifie aussi les possibilités futures, et le nouvel état du monde devient la décision suivante.
+
+Ce choix ne signifie pas « le relief est forcément le jeu » ni « faire From Dust ». Le relief est un langage d'interaction disponible ; la propriété centrale est le **shared state** : une transformation doit avoir plusieurs conséquences autonomes compréhensibles et créer le contexte du prochain choix.
+
+Pourquoi arrêter temporairement l'exploration large :
+- preuves externes solides que ce type d'architecture peut produire du jeu (From Dust, Mini Metro/Motorways, Timberborn) ;
+- preuves Genesis compatibles (EXP-023 et EXP-035) ;
+- contre-exemples clairs qui définissent les limites (Terra Nil : joli mais répétitif si la stratégie ne varie pas ; From Dust : pathfinding/contrôles/simulation trop opaques ; Mini Metro : complexité cachée et perception d'aléatoire) ;
+- chemin de production compatible solo si la simulation reste discrète, déterministe et locale.
+
+### Réfutation intégrée
+Le territoire sera abandonné si la variété exige une quantité croissante de contenu artisanal, si l'action optimale reste la même d'une partie à l'autre, si le second processus n'ajoute que du bruit, ou si la lisibilité nécessite une couche de tutoriel/UI qui tue la manipulation directe.
+
+## Prochaine étape — vertical slice de GAME, pas EXP-036 isolé
+Working label interne : `Living Watershed`.
+
+Construire une session complète de 3–5 minutes avec :
+- un seul monde portrait continu ;
+- relief tactile déjà lisible ;
+- une déformation directe persistante ;
+- **deux processus autonomes partageant le même terrain** et ayant des intérêts incompatibles au moins localement ;
+- conséquences déterministes et visibles ;
+- état du monde qui persiste et rend le prochain choix différent ;
+- succès/échec lisible au niveau du monde ;
+- redémarrage immédiat ;
+- variation initiale suffisante pour empêcher une solution répétée mécaniquement.
+
+Exemple d'instanciation acceptable : des êtres lumineux cherchent des refuges tandis que des impulsions d'eau/danger suivent le même relief ; creuser un passage peut aider les êtres mais aussi ouvrir la voie au danger. La fiction peut changer : la propriété obligatoire est qu'une même édition change au moins deux conséquences futures significatives.
+
+### Critères de succès produit
+Le slice mérite une vraie production si l'humain :
+1. comprend la causalité sans tutoriel ;
+2. rencontre plusieurs choix plausibles servant des intérêts différents ;
+3. change de plan parce que son propre état précédent a créé un nouveau problème/opportunité ;
+4. attribue ses échecs et formule une autre stratégie ;
+5. prend des décisions différentes sur une seconde partie ;
+6. parle de ce qu'il essaie d'accomplir plutôt que des boutons ;
+7. manifeste spontanément l'envie de refaire une partie ou de tester une autre approche.
+
+### Interdits du slice
+Pas de méta-progression, boutique, cartes/loadout, campagne narrative, biomes multiples, pack de niveaux, multijoueur, roster d'ennemis générique, fluides continus ni pathfinding opaque.
+
+À partir de maintenant, on itère **le jeu** à l'intérieur de ce territoire tant que sa structure de décision reste vivante. On ne rouvre l'exploration large que si le vertical slice échoue au niveau génératif, pas à chaque problème de tuning ou de présentation.
 
 ## Toujours absent par défaut
-Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse ultérieure les exige réellement, pas comme pansement.
+Score, progression méta, économie, backend, comptes, multijoueur et contenu destiné à sauver une mécanique faible. Ils pourront revenir uniquement si une hypothèse produit ultérieure les exige réellement, pas comme pansement.
