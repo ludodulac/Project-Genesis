@@ -13,6 +13,7 @@ import { PersistentJourneyScene } from './presentation/PersistentJourneyScene';
 import { GrowingReachScene } from './presentation/GrowingReachScene';
 import { SelfAuthoredArtifactScene } from './presentation/SelfAuthoredArtifactScene';
 import { GuidedFlowScene } from './presentation/GuidedFlowScene';
+import { ConflictingFlowScene } from './presentation/ConflictingFlowScene';
 
 const probe = new URLSearchParams(window.location.search).get('probe');
 const scene = probe === 'trajectory'
@@ -39,7 +40,9 @@ const scene = probe === 'trajectory'
                       ? SelfAuthoredArtifactScene
                       : probe === 'guided-flow'
                         ? GuidedFlowScene
-                        : WorldScene;
+                        : probe === 'conflicting-flow'
+                          ? ConflictingFlowScene
+                          : WorldScene;
 
 new Phaser.Game({
   type: Phaser.AUTO,
