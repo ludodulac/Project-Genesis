@@ -53,16 +53,16 @@ jobs:
           path: artifacts
           if-no-files-found: error
       - name: Configure Pages
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/signal-game'
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/signal-game'
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/signal-game'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
