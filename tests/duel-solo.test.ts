@@ -3,6 +3,7 @@ import {
   SOLO_CARD_ORDER,
   chooseMachineAction,
   createSoloDuelState,
+  evaluateMachineChoices,
   resolveSoloExchange,
   rotateCard,
 } from '../src/duel/soloSimulation';
@@ -22,6 +23,19 @@ describe('DUEL V0 solo cards', () => {
     expect(cycled.queue).toEqual(['break', 'reversal', 'fade', 'drive', 'brace']);
   });
 
+  it('evaluates every machine card against every currently visible player answer', () => {
+    const state = createSoloDuelState();
+    const choices = evaluateMachineChoices(state);
+    expect(choices.map((choice) => choice.action)).toEqual(state.fighters[1].hand);
+    for (const choice of choices) {
+      expect(Number.isFinite(choice.score)).toBe(true);
+      expect(Number.isFinite(choice.worstCase)).toBe(true);
+      expect(Number.isFinite(choice.average)).toBe(true);
+      expect(choice.knockouts).toBeGreaterThanOrEqual(0);
+      expect(choice.knockouts).toBeLessThanOrEqual(state.fighters[0].hand.length);
+    }
+  });
+
   it('makes the machine choose only from its current four-card hand', () => {
     const state = createSoloDuelState();
     const action = chooseMachineAction(state);
@@ -38,11 +52,13 @@ describe('DUEL V0 solo cards', () => {
     expect(result.state.fighters[1].queue.at(-1)).toBe(machineAction);
   });
 
-  it('is deterministic for identical state and selected cards', () => {
+  it('is deterministic for identical visible hands and positions', () => {
     const a = createSoloDuelState();
     const b = createSoloDuelState();
     const machineA = chooseMachineAction(a);
     const machineB = chooseMachineAction(b);
+    expect(machineA).toBe(machineB);
+    expect(evaluateMachineChoices(a)).toEqual(evaluateMachineChoices(b));
     expect(resolveSoloExchange(a, 'press', machineA)).toEqual(resolveSoloExchange(b, 'press', machineB));
   });
 });
