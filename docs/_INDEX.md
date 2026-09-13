@@ -9,6 +9,7 @@ Commencer par `../AI_START_HERE.md`. Genesis est un laboratoire : lire le minimu
 - [ARCHITECTURE.md](ARCHITECTURE.md) — séparation simulation/rendu et architecture technique.
 - [VISUAL_LANGUAGE.md](VISUAL_LANGUAGE.md) — langage visuel lorsque le problème est perceptif, pas pour corriger une règle incompréhensible.
 - [PARKED_IDEAS.md](PARKED_IDEAS.md) — idées volontairement hors du chemin actif.
+- [duel/DUEL_V0.md](duel/DUEL_V0.md) — laboratoire compétitif DUEL, explicitement séparé de PETIT MONDE / Living Watershed.
 
 ## Règle de routage
 
