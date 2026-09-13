@@ -1,22 +1,24 @@
 # Project Genesis
 
-Laboratoire de game design pour construire un jeu mobile tactile, visuel, coloré et profondément rejouable avec une architecture volontairement légère.
+Project Genesis est désormais organisé pour accueillir plusieurs jeux/prototypes sous une même GitHub Pages.
 
-## Premier objectif — Genesis-01
+## Point d’entrée public
 
-Sur un téléphone, ouvrir le jeu, voir un petit monde vivant, toucher le terrain, le déformer et observer une chose réagir au relief. Le prototype doit donner envie de continuer à manipuler le monde avant même d'ajouter score, adversaire ou progression.
+`https://ludodulac.github.io/Project-Genesis/`
 
-## Ordre de construction
+La racine affiche le hub **Genesis Multijoueur**. Chaque jeu est enregistré dans `src/games/registry.ts` et possède sa propre route via le paramètre `?game=`.
 
-1. **Fondation** — état du monde, actions, simulation, rendu.
-2. **Jouet** — plaisir tactile, relief, mouvement, feedback.
-3. **Découverte** — expériences courtes pour trouver les mécaniques fortes.
-4. **Jeu** — objectif, tension, choix, victoire/défaite.
-5. **Profondeur** — interactions émergentes, bot, variété.
-6. **Produit** — accueil, sauvegarde, progression et réseau uniquement si justifiés.
+Jeux actuellement préparés :
+- `?game=duel-v0` — prototype Duel contre la machine, main de 4 cartes ;
+- `?game=duel-lab-v0` — ancien laboratoire de duel conservé pour référence ;
+- `?game=living-watershed` — accès direct au prototype existant tant qu’il n’est pas encore promu dans le hub.
 
-## Principe
+## Ajouter un jeu
 
-Le moteur décide ce qui arrive. La présentation montre ce qui arrive. Une animation n'est jamais une règle du jeu.
+1. ranger sa logique dans un dossier dédié sous `src/` ;
+2. conserver simulation et présentation séparées lorsque le jeu en a besoin ;
+3. ajouter son entrée dans `src/games/registry.ts` ;
+4. ajouter sa route dans `src/main.ts` ;
+5. ajouter tests et assets dédiés sans modifier les autres jeux inutilement.
 
-Voir `AI_START_HERE.md`, `PROJECT_PRINCIPLES.md` et `docs/ARCHITECTURE.md` avant toute modification substantielle.
+Le déploiement GitHub Pages reste géré par `.github/workflows/ci-pages.yml` lors d’un push sur `main`.
