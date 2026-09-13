@@ -31,3 +31,155 @@ canvas {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
+
+body.genesis-hub-page {
+  overflow: auto;
+  touch-action: auto;
+  background: #080d17;
+  color: #f8fafc;
+}
+
+body.genesis-hub-page #app {
+  display: block;
+  min-height: 100dvh;
+  height: auto;
+}
+
+.genesis-hub {
+  box-sizing: border-box;
+  width: min(100%, 980px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 48px 22px 56px;
+}
+
+.genesis-hub__header {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+
+.genesis-hub__eyebrow {
+  margin: 0 0 10px;
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.genesis-hub h1 {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.genesis-hub__intro {
+  max-width: 650px;
+  margin: 20px 0 0;
+  color: #a9b6ca;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.genesis-game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.genesis-game-card {
+  box-sizing: border-box;
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid #28364d;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #111a2a 0%, #0d1422 100%);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.22);
+}
+
+.genesis-game-card__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.genesis-game-card__status {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #17334a;
+  color: #8edcff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.genesis-game-card__id {
+  color: #64748b;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.genesis-game-card h2 {
+  margin: 28px 0 4px;
+  font-size: 30px;
+}
+
+.genesis-game-card__subtitle {
+  margin: 0;
+  color: #7dd3fc;
+  font-weight: 700;
+}
+
+.genesis-game-card__description {
+  margin: 16px 0 18px;
+  color: #a9b6ca;
+  line-height: 1.5;
+}
+
+.genesis-game-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 22px;
+}
+
+.genesis-game-card__tags span {
+  padding: 5px 8px;
+  border: 1px solid #33445e;
+  border-radius: 999px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.genesis-game-card__launch {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-radius: 13px;
+  background: #f4d35e;
+  color: #08111f;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+.genesis-game-card__launch:hover,
+.genesis-game-card__launch:focus-visible {
+  background: #ffe27a;
+}
+
+.genesis-hub__footer {
+  margin: 28px 0 0;
+  color: #687991;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .genesis-hub {
+    padding-top: 32px;
+  }
+}
