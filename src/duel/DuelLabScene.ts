@@ -15,6 +15,17 @@ const LABEL: Record<ActionId, string> = {
   press: 'PRESS', brace: 'BRACE', retreat: 'RETREAT', rush: 'RUSH', intercept: 'INTERCEPT',
   break: 'BREAK', reversal: 'REVERSAL', fade: 'FADE', drive: 'DRIVE',
 };
+const HELP: Record<ActionId, string> = {
+  press: 'PRESS — avancer d’une case et pousser légèrement',
+  brace: 'BRACE — tenir sa position et réduire la poussée reçue',
+  retreat: 'RETREAT — reculer d’une case',
+  rush: 'RUSH — avancer rapidement et pousser fort · coûte 2',
+  intercept: 'INTERCEPT — arrêter une avancée adverse · coûte 2',
+  break: 'BREAK — avancer et frapper une défense · coûte 2',
+  reversal: 'REVERSAL — repousser une attaque proche · coûte 3',
+  fade: 'FADE — reculer loin · coûte 1',
+  drive: 'DRIVE — très forte poussée au contact · coûte 3',
+};
 const TECH_COLOR: Record<TechniqueId, number> = {
   rush: 0xf5a742, intercept: 0x54c8ff, break: 0xff6f91, reversal: 0xbf8cff, fade: 0x63e6be, drive: 0xffd43b,
 };
@@ -27,7 +38,8 @@ export class DuelLabScene extends Phaser.Scene {
   private arena!: Phaser.GameObjects.Graphics;
   private controls: Phaser.GameObjects.GameObject[] = [];
   private reveal = '';
-  private note = 'Choose privately. Both choices resolve together.';
+  private note = 'Chaque joueur choisit une action.';
+  private helpOpen = true;
 
   constructor() { super('duel-lab-v0'); }
 
@@ -58,7 +70,7 @@ export class DuelLabScene extends Phaser.Scene {
     this.resolving = false;
     this.visualPositions = [this.state.players[0].position, this.state.players[1].position];
     this.reveal = '';
-    this.note = 'Choose privately. Both choices resolve together.';
+    this.note = 'Chaque joueur choisit une action.';
     this.refreshControls();
   }
 
@@ -70,6 +82,7 @@ export class DuelLabScene extends Phaser.Scene {
       I: [1, 0, false], O: [1, 1, false], P: [1, 2, false], J: [1, 0, true], K: [1, 1, true], L: [1, 2, true],
     };
     keyboard.on('keydown', (event: KeyboardEvent) => {
+      if (this.helpOpen) return;
       if (this.state.winner !== null) {
         if (event.code === 'Space' || event.code === 'Enter') this.resetMatch();
         return;
@@ -82,14 +95,16 @@ export class DuelLabScene extends Phaser.Scene {
   }
 
   private choose(player: 0 | 1, action: ActionId) {
-    if (this.resolving || this.state.winner !== null || this.pending[player] !== null) return;
+    if (this.helpOpen || this.resolving || this.state.winner !== null || this.pending[player] !== null) return;
     if (!isActionLegal(this.state, player, action)) {
-      this.note = `P${player + 1}: not enough energy for ${LABEL[action]}.`;
+      this.note = `Joueur ${player + 1} : pas assez d’énergie pour ${LABEL[action]}.`;
       this.refreshControls();
       return;
     }
     this.pending[player] = action;
-    this.note = this.pending[0] && this.pending[1] ? 'Both locked.' : `P${player + 1} locked. Opponent choice is hidden.`;
+    this.note = this.pending[0] && this.pending[1]
+      ? 'Les deux choix sont faits.'
+      : `Joueur ${player + 1} a choisi. À l’autre joueur.`;
     this.refreshControls();
     if (this.pending[0] && this.pending[1]) this.beginResolution();
   }
@@ -101,14 +116,19 @@ export class DuelLabScene extends Phaser.Scene {
     this.time.delayedCall(180, () => {
       const result = resolveExchange(this.state, actions[0], actions[1]);
       this.state = result.state;
-      this.reveal = `P1 ${LABEL[actions[0]]}  ×  ${LABEL[actions[1]]} P2`;
-      this.note = result.messages.length > 0 ? result.messages.join(' · ') : 'No clean opening. The state still changed.';
+      this.reveal = `J1 ${LABEL[actions[0]]}  ×  ${LABEL[actions[1]]} J2`;
+      this.note = result.messages.length > 0 ? result.messages.join(' · ') : 'La situation a changé.';
       this.refreshControls();
       this.time.delayedCall(520, () => {
         if (this.state.winner === null) {
-          this.pending = [null, null]; this.reveal = ''; this.note = 'Choose again.'; this.resolving = false; this.refreshControls();
+          this.pending = [null, null];
+          this.reveal = '';
+          this.note = 'Chaque joueur choisit une nouvelle action.';
+          this.resolving = false;
+          this.refreshControls();
         } else {
-          this.note = `P${this.state.winner + 1} wins. Tap REMATCH.`; this.refreshControls();
+          this.note = `Joueur ${this.state.winner + 1} gagne. Touchez REJOUER.`;
+          this.refreshControls();
         }
       });
     });
@@ -153,8 +173,10 @@ export class DuelLabScene extends Phaser.Scene {
     const y = this.trackY;
     const size = this.portrait ? 1.25 : 1;
     const g = this.arena;
-    g.fillStyle(color, 0.18); g.fillCircle(x, y - 5, 29 * size);
-    g.lineStyle(5 * size, color, 1); g.strokeCircle(x, y - 5, 18 * size);
+    g.fillStyle(color, 0.18);
+    g.fillCircle(x, y - 5, 29 * size);
+    g.lineStyle(5 * size, color, 1);
+    g.strokeCircle(x, y - 5, 18 * size);
     g.lineBetween(x, y + 13, x, y + 38 * size);
     g.lineBetween(x, y + 23, x + 16 * facing * size, y + 11);
     g.lineBetween(x, y + 37, x - 10 * size, y + 52 * size);
@@ -164,14 +186,78 @@ export class DuelLabScene extends Phaser.Scene {
   private refreshControls() {
     for (const object of this.controls) object.destroy();
     this.controls = [];
-    if (this.portrait) this.refreshPortraitControls(); else this.refreshLandscapeControls();
+    if (this.helpOpen) {
+      this.drawHelp();
+      return;
+    }
+    if (this.portrait) this.refreshPortraitControls();
+    else this.refreshLandscapeControls();
+    this.createHelpButton();
+  }
+
+  private drawHelp() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const margin = this.portrait ? 18 : 26;
+    const box = this.add.rectangle(width / 2, height / 2, width - margin * 2, height - margin * 2, 0x111827, 0.98)
+      .setStrokeStyle(2, 0x64748b);
+    this.controls.push(box);
+
+    const titleSize = this.portrait ? 26 : 22;
+    const bodySize = this.portrait ? 18 : 14;
+    const smallSize = this.portrait ? 15 : 12;
+    const center = width / 2;
+    const top = this.portrait ? 42 : 30;
+
+    this.addTrackedText(center, top, 'COMMENT JOUER', { fontSize: `${titleSize}px`, fontStyle: 'bold', color: '#ffffff' }, 0.5);
+    this.addTrackedText(center, top + (this.portrait ? 48 : 34), 'BUT : poussez l’autre combattant hors d’un bord rouge.', {
+      fontSize: `${bodySize}px`, fontStyle: 'bold', color: '#f8fafc', align: 'center', wordWrap: { width: width - 60 },
+    }, 0.5);
+    this.addTrackedText(center, top + (this.portrait ? 92 : 62), 'BLEU = Joueur 1   •   ROUGE = Joueur 2', {
+      fontSize: `${bodySize}px`, color: '#dbeafe', align: 'center',
+    }, 0.5);
+    this.addTrackedText(center, top + (this.portrait ? 130 : 88), 'À chaque échange : chaque joueur touche UNE action. Quand les deux ont choisi, le résultat apparaît.', {
+      fontSize: `${bodySize}px`, color: '#e2e8f0', align: 'center', wordWrap: { width: width - 70 },
+    }, 0.5);
+
+    const actionText = [
+      HELP.press, HELP.brace, HELP.retreat,
+      HELP.rush, HELP.intercept, HELP.break,
+      HELP.reversal, HELP.fade, HELP.drive,
+    ].join('\n');
+    this.addTrackedText(this.portrait ? 34 : 56, top + (this.portrait ? 210 : 138), actionText, {
+      fontSize: `${smallSize}px`, color: '#cbd5e1', lineSpacing: this.portrait ? 10 : 5,
+      wordWrap: { width: width - (this.portrait ? 68 : 112) },
+    });
+
+    this.addTrackedText(center, height - (this.portrait ? 118 : 78), 'L’énergie est indiquée près de chaque joueur. Si une action coûte de l’énergie, son coût est écrit sur le bouton.', {
+      fontSize: `${smallSize}px`, color: '#fde68a', align: 'center', wordWrap: { width: width - 60 },
+    }, 0.5);
+
+    const play = this.add.text(center, height - (this.portrait ? 62 : 38), 'COMMENCER', {
+      fontFamily: 'system-ui, sans-serif', fontSize: this.portrait ? '24px' : '18px', fontStyle: 'bold',
+      color: '#0b1020', backgroundColor: '#f7d154', padding: { x: this.portrait ? 34 : 26, y: this.portrait ? 16 : 10 },
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    play.on('pointerdown', () => { this.helpOpen = false; this.refreshControls(); });
+    this.controls.push(play);
+  }
+
+  private createHelpButton() {
+    const x = this.portrait ? 354 : 810;
+    const y = this.portrait ? 18 : 10;
+    const help = this.add.text(x, y, '?', {
+      fontFamily: 'system-ui, sans-serif', fontSize: this.portrait ? '22px' : '17px', fontStyle: 'bold',
+      color: '#ffffff', backgroundColor: '#334155', padding: { x: this.portrait ? 12 : 10, y: this.portrait ? 7 : 5 },
+    }).setOrigin(0.5, 0).setInteractive({ useHandCursor: true });
+    help.on('pointerdown', () => { this.helpOpen = true; this.refreshControls(); });
+    this.controls.push(help);
   }
 
   private refreshPortraitControls() {
     this.addTrackedText(16, 12, 'DUEL · LAB V0', { fontSize: '18px', color: '#91a4bf', fontStyle: 'bold' });
     this.drawPortraitPlayerPanel(0, 16, 48);
-    this.addTrackedText(195, 238, this.reveal || `EXCHANGE ${this.state.exchange + 1}`, { fontSize: '18px', color: '#ffffff', fontStyle: 'bold' }, 0.5);
-    this.addTrackedText(195, 420, this.note, { fontSize: '15px', color: '#d5e0ee', align: 'center', wordWrap: { width: 350 } }, 0.5);
+    this.addTrackedText(195, 238, this.reveal || `ÉCHANGE ${this.state.exchange + 1}`, { fontSize: '18px', color: '#ffffff', fontStyle: 'bold' }, 0.5);
+    this.addTrackedText(195, 420, this.note, { fontSize: '16px', color: '#d5e0ee', align: 'center', wordWrap: { width: 350 } }, 0.5);
     this.drawPortraitPlayerPanel(1, 16, 478);
     if (this.state.winner !== null) this.createRematch(195, 786);
   }
@@ -181,10 +267,14 @@ export class DuelLabScene extends Phaser.Scene {
     const locked = this.pending[playerIndex] !== null;
     this.addTrackedText(x, y, `JOUEUR ${playerIndex + 1}`, { fontSize: '17px', color: playerIndex === 0 ? '#79a8ff' : '#ff8ba3', fontStyle: 'bold' });
     this.addTrackedText(x + 112, y + 2, `ÉNERGIE ${player.energy}/5`, { fontSize: '15px', color: '#f7d154', fontStyle: 'bold' });
-    this.addTrackedText(x + 250, y + 2, `APRÈS ${LABEL[nextTechnique(player)]}`, { fontSize: '12px', color: '#a9bad0' });
+    this.addTrackedText(x + 250, y + 2, `ENSUITE ${LABEL[nextTechnique(player)]}`, { fontSize: '12px', color: '#a9bad0' });
     if (locked) {
-      const curtain = this.add.text(195, y + 86, 'CHOIX FAIT', { fontFamily: 'system-ui, sans-serif', fontSize: '22px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42', padding: { x: 90, y: 24 } }).setOrigin(0.5);
-      this.controls.push(curtain); return;
+      const curtain = this.add.text(195, y + 86, 'CHOIX FAIT', {
+        fontFamily: 'system-ui, sans-serif', fontSize: '22px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42',
+        padding: { x: 90, y: 24 },
+      }).setOrigin(0.5);
+      this.controls.push(curtain);
+      return;
     }
     for (let slot = 0; slot < 3; slot += 1) {
       this.createActionButton(playerIndex, FUNDAMENTALS[slot], x + slot * 120, y + 34, false, 114, 54, 14);
@@ -193,27 +283,33 @@ export class DuelLabScene extends Phaser.Scene {
   }
 
   private refreshLandscapeControls() {
-    this.addTrackedText(22, 7, 'DUEL · LAB V0', { fontSize: '13px', color: '#91a4bf' });
-    this.addTrackedText(422, 239, this.reveal || `EXCHANGE ${this.state.exchange + 1}`, { fontSize: '15px', color: this.reveal ? '#ffffff' : '#91a4bf', fontStyle: 'bold' }, 0.5);
-    this.addTrackedText(422, 260, this.note, { fontSize: '12px', color: '#b9c8db' }, 0.5);
-    this.drawLandscapePlayerPanel(0, 18, 'P1 · QWE / ASD');
-    this.drawLandscapePlayerPanel(1, 434, 'P2 · IOP / JKL');
-    if (this.state.winner !== null) this.createRematch(422, 322);
+    this.addTrackedText(22, 7, 'DUEL · LAB V0', { fontSize: '15px', color: '#91a4bf', fontStyle: 'bold' });
+    this.addTrackedText(422, 235, this.reveal || `ÉCHANGE ${this.state.exchange + 1}`, { fontSize: '17px', color: this.reveal ? '#ffffff' : '#91a4bf', fontStyle: 'bold' }, 0.5);
+    this.addTrackedText(422, 258, this.note, { fontSize: '14px', color: '#d5e0ee', align: 'center', wordWrap: { width: 720 } }, 0.5);
+    this.drawLandscapePlayerPanel(0, 18, 'JOUEUR 1 · BLEU · QWE / ASD');
+    this.drawLandscapePlayerPanel(1, 434, 'JOUEUR 2 · ROUGE · IOP / JKL');
+    if (this.state.winner !== null) this.createRematch(422, 325);
   }
 
   private drawLandscapePlayerPanel(playerIndex: 0 | 1, originX: number, title: string) {
     const player = this.state.players[playerIndex];
     const locked = this.pending[playerIndex] !== null;
-    this.addTrackedText(originX, 286, title, { fontSize: '11px', color: playerIndex === 0 ? '#79a8ff' : '#ff8ba3', fontStyle: 'bold' });
-    for (let pip = 0; pip < 5; pip += 1) this.controls.push(this.add.circle(originX + 118 + pip * 13, 292, 4, 0xf7d154, pip < player.energy ? 1 : 0.16));
-    this.addTrackedText(originX + 268, 286, `NEXT ${LABEL[nextTechnique(player)]}`, { fontSize: '10px', color: '#7f92ad' });
+    this.addTrackedText(originX, 284, title, { fontSize: '12px', color: playerIndex === 0 ? '#79a8ff' : '#ff8ba3', fontStyle: 'bold' });
+    for (let pip = 0; pip < 5; pip += 1) {
+      this.controls.push(this.add.circle(originX + 202 + pip * 14, 291, 5, 0xf7d154, pip < player.energy ? 1 : 0.16));
+    }
+    this.addTrackedText(originX + 285, 284, `ENSUITE ${LABEL[nextTechnique(player)]}`, { fontSize: '11px', color: '#a9bad0' });
     if (locked) {
-      const curtain = this.add.text(originX + 172, 337, 'LOCKED', { fontFamily: 'system-ui, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42', padding: { x: 94, y: 17 } }).setOrigin(0.5);
-      this.controls.push(curtain); return;
+      const curtain = this.add.text(originX + 172, 341, 'CHOIX FAIT', {
+        fontFamily: 'system-ui, sans-serif', fontSize: '19px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42',
+        padding: { x: 92, y: 20 },
+      }).setOrigin(0.5);
+      this.controls.push(curtain);
+      return;
     }
     for (let slot = 0; slot < 3; slot += 1) {
-      this.createActionButton(playerIndex, FUNDAMENTALS[slot], originX + slot * 116, 306, false, 108, 35, 10);
-      this.createActionButton(playerIndex, player.active[slot], originX + slot * 116, 347, true, 108, 35, 10);
+      this.createActionButton(playerIndex, FUNDAMENTALS[slot], originX + slot * 116, 303, false, 108, 40, 12);
+      this.createActionButton(playerIndex, player.active[slot], originX + slot * 116, 347, true, 108, 40, 12);
     }
   }
 
@@ -230,12 +326,17 @@ export class DuelLabScene extends Phaser.Scene {
   }
 
   private createRematch(x: number, y: number) {
-    const rematch = this.add.text(x, y, 'REMATCH', { fontFamily: 'system-ui, sans-serif', fontSize: this.portrait ? '24px' : '18px', fontStyle: 'bold', color: '#0b1020', backgroundColor: '#f7d154', padding: { x: this.portrait ? 38 : 22, y: this.portrait ? 16 : 10 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    rematch.on('pointerdown', () => this.resetMatch()); this.controls.push(rematch);
+    const rematch = this.add.text(x, y, 'REJOUER', {
+      fontFamily: 'system-ui, sans-serif', fontSize: this.portrait ? '24px' : '18px', fontStyle: 'bold', color: '#0b1020',
+      backgroundColor: '#f7d154', padding: { x: this.portrait ? 38 : 22, y: this.portrait ? 16 : 10 },
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    rematch.on('pointerdown', () => this.resetMatch());
+    this.controls.push(rematch);
   }
 
   private addTrackedText(x: number, y: number, text: string, style: Phaser.Types.GameObjects.Text.TextStyle, origin = 0) {
     const object = this.add.text(x, y, text, { fontFamily: 'system-ui, sans-serif', ...style }).setOrigin(origin, 0);
-    this.controls.push(object); return object;
+    this.controls.push(object);
+    return object;
   }
 }
