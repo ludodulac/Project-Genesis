@@ -21,6 +21,7 @@ const params = new URLSearchParams(window.location.search);
 const game = params.get('game');
 const probe = params.get('probe');
 const isDuel = game === 'duel-v0';
+const duelPortrait = isDuel && window.innerHeight > window.innerWidth;
 const scene = isDuel
   ? DuelLabScene
   : game === 'living-watershed'
@@ -56,8 +57,8 @@ const scene = isDuel
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'app',
-  width: isDuel ? 844 : 390,
-  height: isDuel ? 390 : 760,
+  width: isDuel ? (duelPortrait ? 390 : 844) : 390,
+  height: isDuel ? (duelPortrait ? 844 : 390) : 760,
   backgroundColor: isDuel ? '#0b1020' : '#dff7ff',
   scene: [scene],
   scale: {
