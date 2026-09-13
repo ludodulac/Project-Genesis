@@ -15,39 +15,42 @@ import { SelfAuthoredArtifactScene } from './presentation/SelfAuthoredArtifactSc
 import { GuidedFlowScene } from './presentation/GuidedFlowScene';
 import { ConflictingFlowScene } from './presentation/ConflictingFlowScene';
 import { LivingWatershedScene } from './presentation/LivingWatershedScene';
+import { PetitMondeLabScene } from './presentation/PetitMondeLabScene';
 
 const params = new URLSearchParams(window.location.search);
 const game = params.get('game');
 const probe = params.get('probe');
-const scene = game === 'living-watershed'
-  ? LivingWatershedScene
-  : probe === 'trajectory'
-    ? TrajectoryScene
-    : probe === 'tension'
-      ? TensionScene
-      : probe === 'cascade'
-        ? CascadeScene
-        : probe === 'threshold'
-          ? ThresholdScene
-          : probe === 'transfer'
-            ? TransferScene
-            : probe === 'discovery'
-              ? DiscoveryScene
-              : probe === 'global-pressure'
-                ? GlobalPressureScene
-                : probe === 'voluntary-risk'
-                  ? VoluntaryRiskScene
-                  : probe === 'persistent-journey'
-                    ? PersistentJourneyScene
-                    : probe === 'growing-reach'
-                      ? GrowingReachScene
-                      : probe === 'self-authored-artifact'
-                        ? SelfAuthoredArtifactScene
-                        : probe === 'guided-flow'
-                          ? GuidedFlowScene
-                          : probe === 'conflicting-flow'
-                            ? ConflictingFlowScene
-                            : WorldScene;
+const scene = game === 'petit-monde-lab'
+  ? PetitMondeLabScene
+  : game === 'living-watershed'
+    ? LivingWatershedScene
+    : probe === 'trajectory'
+      ? TrajectoryScene
+      : probe === 'tension'
+        ? TensionScene
+        : probe === 'cascade'
+          ? CascadeScene
+          : probe === 'threshold'
+            ? ThresholdScene
+            : probe === 'transfer'
+              ? TransferScene
+              : probe === 'discovery'
+                ? DiscoveryScene
+                : probe === 'global-pressure'
+                  ? GlobalPressureScene
+                  : probe === 'voluntary-risk'
+                    ? VoluntaryRiskScene
+                    : probe === 'persistent-journey'
+                      ? PersistentJourneyScene
+                      : probe === 'growing-reach'
+                        ? GrowingReachScene
+                        : probe === 'self-authored-artifact'
+                          ? SelfAuthoredArtifactScene
+                          : probe === 'guided-flow'
+                            ? GuidedFlowScene
+                            : probe === 'conflicting-flow'
+                              ? ConflictingFlowScene
+                              : WorldScene;
 
 new Phaser.Game({
   type: Phaser.AUTO,
