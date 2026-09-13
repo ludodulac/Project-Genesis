@@ -10,33 +10,13 @@ import {
   type TechniqueId,
 } from './simulation';
 
-const WIDTH = 844;
-const HEIGHT = 390;
-const TRACK_LEFT = 122;
-const TRACK_RIGHT = 722;
-const TRACK_Y = 145;
-const STEP = (TRACK_RIGHT - TRACK_LEFT) / 6;
-
 const FUNDAMENTALS: readonly ActionId[] = ['press', 'brace', 'retreat'];
 const LABEL: Record<ActionId, string> = {
-  press: 'PRESS',
-  brace: 'BRACE',
-  retreat: 'RETREAT',
-  rush: 'RUSH',
-  intercept: 'INTERCEPT',
-  break: 'BREAK',
-  reversal: 'REVERSAL',
-  fade: 'FADE',
-  drive: 'DRIVE',
+  press: 'PRESS', brace: 'BRACE', retreat: 'RETREAT', rush: 'RUSH', intercept: 'INTERCEPT',
+  break: 'BREAK', reversal: 'REVERSAL', fade: 'FADE', drive: 'DRIVE',
 };
-
 const TECH_COLOR: Record<TechniqueId, number> = {
-  rush: 0xf5a742,
-  intercept: 0x54c8ff,
-  break: 0xff6f91,
-  reversal: 0xbf8cff,
-  fade: 0x63e6be,
-  drive: 0xffd43b,
+  rush: 0xf5a742, intercept: 0x54c8ff, break: 0xff6f91, reversal: 0xbf8cff, fade: 0x63e6be, drive: 0xffd43b,
 };
 
 export class DuelLabScene extends Phaser.Scene {
@@ -47,11 +27,15 @@ export class DuelLabScene extends Phaser.Scene {
   private arena!: Phaser.GameObjects.Graphics;
   private controls: Phaser.GameObjects.GameObject[] = [];
   private reveal = '';
-  private note = 'Choose privately. Resolution begins when both players are locked.';
+  private note = 'Choose privately. Both choices resolve together.';
 
-  constructor() {
-    super('duel-lab-v0');
-  }
+  constructor() { super('duel-lab-v0'); }
+
+  private get portrait() { return this.scale.width < 600; }
+  private get trackLeft() { return this.portrait ? 45 : 122; }
+  private get trackRight() { return this.portrait ? 345 : 722; }
+  private get trackY() { return this.portrait ? 350 : 145; }
+  private get step() { return (this.trackRight - this.trackLeft) / 6; }
 
   create() {
     this.cameras.main.setBackgroundColor('#0b1020');
@@ -74,7 +58,7 @@ export class DuelLabScene extends Phaser.Scene {
     this.resolving = false;
     this.visualPositions = [this.state.players[0].position, this.state.players[1].position];
     this.reveal = '';
-    this.note = 'Choose privately. Resolution begins when both players are locked.';
+    this.note = 'Choose privately. Both choices resolve together.';
     this.refreshControls();
   }
 
@@ -82,10 +66,8 @@ export class DuelLabScene extends Phaser.Scene {
     const keyboard = this.input.keyboard;
     if (!keyboard) return;
     const map: Record<string, [0 | 1, number, boolean]> = {
-      Q: [0, 0, false], W: [0, 1, false], E: [0, 2, false],
-      A: [0, 0, true], S: [0, 1, true], D: [0, 2, true],
-      I: [1, 0, false], O: [1, 1, false], P: [1, 2, false],
-      J: [1, 0, true], K: [1, 1, true], L: [1, 2, true],
+      Q: [0, 0, false], W: [0, 1, false], E: [0, 2, false], A: [0, 0, true], S: [0, 1, true], D: [0, 2, true],
+      I: [1, 0, false], O: [1, 1, false], P: [1, 2, false], J: [1, 0, true], K: [1, 1, true], L: [1, 2, true],
     };
     keyboard.on('keydown', (event: KeyboardEvent) => {
       if (this.state.winner !== null) {
@@ -95,8 +77,7 @@ export class DuelLabScene extends Phaser.Scene {
       const command = map[event.key.toUpperCase()];
       if (!command) return;
       const [player, slot, advanced] = command;
-      const action = advanced ? this.state.players[player].active[slot] : FUNDAMENTALS[slot];
-      this.choose(player, action);
+      this.choose(player, advanced ? this.state.players[player].active[slot] : FUNDAMENTALS[slot]);
     });
   }
 
@@ -108,9 +89,7 @@ export class DuelLabScene extends Phaser.Scene {
       return;
     }
     this.pending[player] = action;
-    this.note = this.pending[0] && this.pending[1]
-      ? 'Both locked.'
-      : `P${player + 1} locked. Opponent choice remains hidden.`;
+    this.note = this.pending[0] && this.pending[1] ? 'Both locked.' : `P${player + 1} locked. Opponent choice is hidden.`;
     this.refreshControls();
     if (this.pending[0] && this.pending[1]) this.beginResolution();
   }
@@ -127,14 +106,9 @@ export class DuelLabScene extends Phaser.Scene {
       this.refreshControls();
       this.time.delayedCall(520, () => {
         if (this.state.winner === null) {
-          this.pending = [null, null];
-          this.reveal = '';
-          this.note = 'Read the new position, energy and public cycle. Choose again.';
-          this.resolving = false;
-          this.refreshControls();
+          this.pending = [null, null]; this.reveal = ''; this.note = 'Choose again.'; this.resolving = false; this.refreshControls();
         } else {
-          this.note = `P${this.state.winner + 1} owns the edge. Tap REMATCH or press Space.`;
-          this.refreshControls();
+          this.note = `P${this.state.winner + 1} wins. Tap REMATCH.`; this.refreshControls();
         }
       });
     });
@@ -143,118 +117,125 @@ export class DuelLabScene extends Phaser.Scene {
   private drawArena() {
     const g = this.arena;
     g.clear();
-
+    const width = this.scale.width;
+    const panelTop = this.portrait ? 272 : 22;
+    const panelHeight = this.portrait ? 160 : 210;
     g.fillStyle(0x0f172a, 1);
-    g.fillRoundedRect(22, 22, WIDTH - 44, 210, 22);
+    g.fillRoundedRect(this.portrait ? 12 : 22, panelTop, width - (this.portrait ? 24 : 44), panelHeight, 22);
 
-    // Territory: the outer cells are intentionally dangerous and visually distinct.
     for (let slot = 0; slot <= 6; slot += 1) {
-      const x = TRACK_LEFT + slot * STEP;
+      const x = this.trackLeft + slot * this.step;
       const edge = slot === 0 || slot === 6;
+      const cellWidth = this.portrait ? 42 : 76;
+      const cellHeight = this.portrait ? 72 : 56;
       g.fillStyle(edge ? 0x4a1d2f : 0x17233a, edge ? 0.9 : 0.72);
-      g.fillRoundedRect(x - 38, TRACK_Y - 28, 76, 56, 12);
+      g.fillRoundedRect(x - cellWidth / 2, this.trackY - cellHeight / 2, cellWidth, cellHeight, 10);
       g.lineStyle(edge ? 3 : 1, edge ? 0xff668a : 0x37506f, edge ? 0.9 : 0.6);
-      g.strokeRoundedRect(x - 38, TRACK_Y - 28, 76, 56, 12);
+      g.strokeRoundedRect(x - cellWidth / 2, this.trackY - cellHeight / 2, cellWidth, cellHeight, 10);
     }
     g.lineStyle(4, 0x6f87a8, 0.7);
-    g.lineBetween(TRACK_LEFT - 45, TRACK_Y + 36, TRACK_RIGHT + 45, TRACK_Y + 36);
-
+    g.lineBetween(this.trackLeft - 25, this.trackY + (this.portrait ? 48 : 36), this.trackRight + 25, this.trackY + (this.portrait ? 48 : 36));
     this.drawFighter(0, this.visualPositions[0], 0x79a8ff);
     this.drawFighter(1, this.visualPositions[1], 0xff7d9a);
 
-    // Public availability is echoed on the body: three colored marks = active techniques.
     for (const index of [0, 1] as const) {
-      const x = TRACK_LEFT + this.visualPositions[index] * STEP;
-      const player = this.state.players[index];
-      player.active.forEach((technique, slot) => {
+      const x = this.trackLeft + this.visualPositions[index] * this.step;
+      this.state.players[index].active.forEach((technique, slot) => {
         g.fillStyle(TECH_COLOR[technique], 1);
-        g.fillCircle(x - 12 + slot * 12, TRACK_Y - 47, 4.2);
+        g.fillCircle(x - 12 + slot * 12, this.trackY - (this.portrait ? 66 : 47), this.portrait ? 5 : 4.2);
       });
     }
   }
 
   private drawFighter(index: 0 | 1, position: number, color: number) {
-    const x = TRACK_LEFT + position * STEP;
+    const x = this.trackLeft + position * this.step;
     const facing = index === 0 ? 1 : -1;
+    const y = this.trackY;
+    const size = this.portrait ? 1.25 : 1;
     const g = this.arena;
-    g.fillStyle(color, 0.18);
-    g.fillCircle(x, TRACK_Y - 5, 29);
-    g.lineStyle(5, color, 1);
-    g.strokeCircle(x, TRACK_Y - 5, 18);
-    g.lineBetween(x, TRACK_Y + 13, x, TRACK_Y + 38);
-    g.lineBetween(x, TRACK_Y + 23, x + 16 * facing, TRACK_Y + 11);
-    g.lineBetween(x, TRACK_Y + 37, x - 10, TRACK_Y + 52);
-    g.lineBetween(x, TRACK_Y + 37, x + 10, TRACK_Y + 52);
+    g.fillStyle(color, 0.18); g.fillCircle(x, y - 5, 29 * size);
+    g.lineStyle(5 * size, color, 1); g.strokeCircle(x, y - 5, 18 * size);
+    g.lineBetween(x, y + 13, x, y + 38 * size);
+    g.lineBetween(x, y + 23, x + 16 * facing * size, y + 11);
+    g.lineBetween(x, y + 37, x - 10 * size, y + 52 * size);
+    g.lineBetween(x, y + 37, x + 10 * size, y + 52 * size);
   }
 
   private refreshControls() {
     for (const object of this.controls) object.destroy();
     this.controls = [];
+    if (this.portrait) this.refreshPortraitControls(); else this.refreshLandscapeControls();
+  }
 
-    this.addTrackedText(22, 7, 'DUEL · LAB V0', { fontSize: '13px', color: '#91a4bf' });
-    this.addTrackedText(WIDTH / 2, 239, this.reveal || `EXCHANGE ${this.state.exchange + 1}`, {
-      fontSize: '15px', color: this.reveal ? '#ffffff' : '#91a4bf', fontStyle: 'bold',
-    }, 0.5);
-    this.addTrackedText(WIDTH / 2, 260, this.note, { fontSize: '12px', color: '#b9c8db' }, 0.5);
+  private refreshPortraitControls() {
+    this.addTrackedText(16, 12, 'DUEL · LAB V0', { fontSize: '18px', color: '#91a4bf', fontStyle: 'bold' });
+    this.drawPortraitPlayerPanel(0, 16, 48);
+    this.addTrackedText(195, 238, this.reveal || `EXCHANGE ${this.state.exchange + 1}`, { fontSize: '18px', color: '#ffffff', fontStyle: 'bold' }, 0.5);
+    this.addTrackedText(195, 420, this.note, { fontSize: '15px', color: '#d5e0ee', align: 'center', wordWrap: { width: 350 } }, 0.5);
+    this.drawPortraitPlayerPanel(1, 16, 478);
+    if (this.state.winner !== null) this.createRematch(195, 786);
+  }
 
-    this.drawPlayerPanel(0, 18, 'P1 · QWE / ASD');
-    this.drawPlayerPanel(1, 434, 'P2 · IOP / JKL');
-
-    if (this.state.winner !== null) {
-      const rematch = this.add.text(WIDTH / 2, 322, 'REMATCH', {
-        fontFamily: 'system-ui, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#0b1020', backgroundColor: '#f7d154',
-        padding: { x: 22, y: 10 },
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      rematch.on('pointerdown', () => this.resetMatch());
-      this.controls.push(rematch);
+  private drawPortraitPlayerPanel(playerIndex: 0 | 1, x: number, y: number) {
+    const player = this.state.players[playerIndex];
+    const locked = this.pending[playerIndex] !== null;
+    this.addTrackedText(x, y, `JOUEUR ${playerIndex + 1}`, { fontSize: '17px', color: playerIndex === 0 ? '#79a8ff' : '#ff8ba3', fontStyle: 'bold' });
+    this.addTrackedText(x + 112, y + 2, `ÉNERGIE ${player.energy}/5`, { fontSize: '15px', color: '#f7d154', fontStyle: 'bold' });
+    this.addTrackedText(x + 250, y + 2, `APRÈS ${LABEL[nextTechnique(player)]}`, { fontSize: '12px', color: '#a9bad0' });
+    if (locked) {
+      const curtain = this.add.text(195, y + 86, 'CHOIX FAIT', { fontFamily: 'system-ui, sans-serif', fontSize: '22px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42', padding: { x: 90, y: 24 } }).setOrigin(0.5);
+      this.controls.push(curtain); return;
+    }
+    for (let slot = 0; slot < 3; slot += 1) {
+      this.createActionButton(playerIndex, FUNDAMENTALS[slot], x + slot * 120, y + 34, false, 114, 54, 14);
+      this.createActionButton(playerIndex, player.active[slot], x + slot * 120, y + 94, true, 114, 58, 14);
     }
   }
 
-  private drawPlayerPanel(playerIndex: 0 | 1, originX: number, title: string) {
+  private refreshLandscapeControls() {
+    this.addTrackedText(22, 7, 'DUEL · LAB V0', { fontSize: '13px', color: '#91a4bf' });
+    this.addTrackedText(422, 239, this.reveal || `EXCHANGE ${this.state.exchange + 1}`, { fontSize: '15px', color: this.reveal ? '#ffffff' : '#91a4bf', fontStyle: 'bold' }, 0.5);
+    this.addTrackedText(422, 260, this.note, { fontSize: '12px', color: '#b9c8db' }, 0.5);
+    this.drawLandscapePlayerPanel(0, 18, 'P1 · QWE / ASD');
+    this.drawLandscapePlayerPanel(1, 434, 'P2 · IOP / JKL');
+    if (this.state.winner !== null) this.createRematch(422, 322);
+  }
+
+  private drawLandscapePlayerPanel(playerIndex: 0 | 1, originX: number, title: string) {
     const player = this.state.players[playerIndex];
     const locked = this.pending[playerIndex] !== null;
     this.addTrackedText(originX, 286, title, { fontSize: '11px', color: playerIndex === 0 ? '#79a8ff' : '#ff8ba3', fontStyle: 'bold' });
-
-    for (let pip = 0; pip < 5; pip += 1) {
-      const dot = this.add.circle(originX + 118 + pip * 13, 292, 4, 0xf7d154, pip < player.energy ? 1 : 0.16);
-      this.controls.push(dot);
-    }
-
-    const next = nextTechnique(player);
-    this.addTrackedText(originX + 268, 286, `NEXT ${LABEL[next]}`, { fontSize: '10px', color: '#7f92ad' });
-
+    for (let pip = 0; pip < 5; pip += 1) this.controls.push(this.add.circle(originX + 118 + pip * 13, 292, 4, 0xf7d154, pip < player.energy ? 1 : 0.16));
+    this.addTrackedText(originX + 268, 286, `NEXT ${LABEL[nextTechnique(player)]}`, { fontSize: '10px', color: '#7f92ad' });
     if (locked) {
-      const curtain = this.add.text(originX + 172, 337, 'LOCKED', {
-        fontFamily: 'system-ui, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42',
-        padding: { x: 94, y: 17 },
-      }).setOrigin(0.5);
-      this.controls.push(curtain);
-      return;
+      const curtain = this.add.text(originX + 172, 337, 'LOCKED', { fontFamily: 'system-ui, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#d8e3f2', backgroundColor: '#1e2b42', padding: { x: 94, y: 17 } }).setOrigin(0.5);
+      this.controls.push(curtain); return;
     }
-
-    const fundamentals = FUNDAMENTALS;
     for (let slot = 0; slot < 3; slot += 1) {
-      this.createActionButton(playerIndex, fundamentals[slot], originX + slot * 116, 306, false);
-      this.createActionButton(playerIndex, player.active[slot], originX + slot * 116, 347, true);
+      this.createActionButton(playerIndex, FUNDAMENTALS[slot], originX + slot * 116, 306, false, 108, 35, 10);
+      this.createActionButton(playerIndex, player.active[slot], originX + slot * 116, 347, true, 108, 35, 10);
     }
   }
 
-  private createActionButton(player: 0 | 1, action: ActionId, x: number, y: number, advanced: boolean) {
+  private createActionButton(player: 0 | 1, action: ActionId, x: number, y: number, advanced: boolean, width: number, height: number, fontSize: number) {
     const legal = isActionLegal(this.state, player, action);
     const technique = advanced ? action as TechniqueId : null;
-    const suffix = technique ? ` ·${TECHNIQUE_COST[technique]}` : '';
-    const background = advanced ? '#22304a' : '#162033';
+    const suffix = technique ? ` · ${TECHNIQUE_COST[technique]}` : '';
     const button = this.add.text(x, y, `${LABEL[action]}${suffix}`, {
-      fontFamily: 'system-ui, sans-serif', fontSize: advanced ? '10px' : '10px', fontStyle: advanced ? 'bold' : 'normal',
-      color: legal ? '#edf5ff' : '#617087', backgroundColor: background, align: 'center', padding: { x: 8, y: 8 },
-    }).setFixedSize(108, 35).setInteractive({ useHandCursor: legal });
+      fontFamily: 'system-ui, sans-serif', fontSize: `${fontSize}px`, fontStyle: advanced ? 'bold' : 'normal',
+      color: legal ? '#edf5ff' : '#617087', backgroundColor: advanced ? '#22304a' : '#162033', align: 'center', padding: { x: 5, y: 8 },
+    }).setFixedSize(width, height).setInteractive({ useHandCursor: legal });
     if (legal) button.on('pointerdown', () => this.choose(player, action));
     this.controls.push(button);
   }
 
+  private createRematch(x: number, y: number) {
+    const rematch = this.add.text(x, y, 'REMATCH', { fontFamily: 'system-ui, sans-serif', fontSize: this.portrait ? '24px' : '18px', fontStyle: 'bold', color: '#0b1020', backgroundColor: '#f7d154', padding: { x: this.portrait ? 38 : 22, y: this.portrait ? 16 : 10 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    rematch.on('pointerdown', () => this.resetMatch()); this.controls.push(rematch);
+  }
+
   private addTrackedText(x: number, y: number, text: string, style: Phaser.Types.GameObjects.Text.TextStyle, origin = 0) {
     const object = this.add.text(x, y, text, { fontFamily: 'system-ui, sans-serif', ...style }).setOrigin(origin, 0);
-    this.controls.push(object);
-    return object;
+    this.controls.push(object); return object;
   }
 }
