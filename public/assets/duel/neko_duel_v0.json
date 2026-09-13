@@ -1,0 +1,24 @@
+{
+  "image": "neko_duel_v0.png",
+  "frameWidth": 192,
+  "frameHeight": 144,
+  "columns": 8,
+  "rows": 8,
+  "animations": {
+    "idle": { "frames": [0, 1, 2, 3], "fps": 6, "repeat": -1 },
+    "walk_forward": { "frames": [4, 5, 6, 7], "fps": 8, "repeat": 0 },
+    "walk_back": { "frames": [8, 9, 10, 11], "fps": 8, "repeat": 0 },
+    "press": { "frames": [12, 13, 14, 15], "fps": 12, "repeat": 0 },
+    "brace": { "frames": [16, 17, 18, 19], "fps": 7, "repeat": 0 },
+    "retreat": { "frames": [20, 21, 22, 23], "fps": 10, "repeat": 0 },
+    "rush": { "frames": [24, 25, 26, 27], "fps": 14, "repeat": 0 },
+    "intercept": { "frames": [28, 29, 30, 31], "fps": 12, "repeat": 0 },
+    "break": { "frames": [32, 33, 34, 35, 36], "fps": 10, "repeat": 0 },
+    "reversal": { "frames": [37, 38, 39, 40, 41], "fps": 12, "repeat": 0 },
+    "fade": { "frames": [42, 43, 44, 45], "fps": 11, "repeat": 0 },
+    "drive": { "frames": [46, 47, 48, 49, 50], "fps": 11, "repeat": 0 },
+    "hit": { "frames": [51, 52, 53, 54, 55], "fps": 10, "repeat": 0 },
+    "win": { "frames": [56, 57, 58, 59], "fps": 6, "repeat": -1 },
+    "lose": { "frames": [60, 61, 62, 63], "fps": 7, "repeat": 0 }
+  }
+}
