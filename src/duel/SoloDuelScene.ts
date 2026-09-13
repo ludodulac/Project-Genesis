@@ -37,7 +37,7 @@ export class SoloDuelScene extends Phaser.Scene {
   constructor() { super('duel-v0-solo'); }
 
   preload() {
-    this.load.spritesheet('neko-duel-v0', '/assets/duel/neko_duel_v0.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('neko-duel-v0', `${import.meta.env.BASE_URL}assets/duel/neko_duel_v0.png`, { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
