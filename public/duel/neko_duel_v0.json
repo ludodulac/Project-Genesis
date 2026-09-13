@@ -1,1 +1,28 @@
-placeholder
+{
+  "frames": {},
+  "animations": {
+    "idle": {"frames":["idle_00","idle_01","idle_02","idle_03"],"frameRate":6,"repeat":-1},
+    "walk_forward": {"frames":["walk_forward_00","walk_forward_01","walk_forward_02","walk_forward_03"],"frameRate":8,"repeat":-1},
+    "walk_back": {"frames":["walk_back_00","walk_back_01","walk_back_02","walk_back_03"],"frameRate":8,"repeat":-1},
+    "press": {"frames":["press_00","press_01","press_02","press_03"],"frameRate":12,"repeat":0},
+    "brace": {"frames":["brace_00","brace_01","brace_02","brace_03"],"frameRate":7,"repeat":-1},
+    "retreat": {"frames":["retreat_00","retreat_01","retreat_02","retreat_03"],"frameRate":10,"repeat":0},
+    "rush": {"frames":["rush_00","rush_01","rush_02","rush_03"],"frameRate":14,"repeat":0},
+    "intercept": {"frames":["intercept_00","intercept_01","intercept_02","intercept_03"],"frameRate":12,"repeat":0},
+    "break": {"frames":["break_00","break_01","break_02","break_03","break_04"],"frameRate":10,"repeat":0},
+    "reversal": {"frames":["reversal_00","reversal_01","reversal_02","reversal_03","reversal_04"],"frameRate":12,"repeat":0},
+    "fade": {"frames":["fade_00","fade_01","fade_02","fade_03"],"frameRate":11,"repeat":0},
+    "drive": {"frames":["drive_00","drive_01","drive_02","drive_03","drive_04"],"frameRate":11,"repeat":0},
+    "hit": {"frames":["hit_00","hit_01","hit_02","hit_03","hit_04"],"frameRate":10,"repeat":0},
+    "win": {"frames":["win_00","win_01","win_02","win_03"],"frameRate":6,"repeat":0},
+    "lose": {"frames":["lose_00","lose_01","lose_02","lose_03"],"frameRate":7,"repeat":0}
+  },
+  "meta": {
+    "image": "neko_duel_v0.png",
+    "format": "RGBA8888",
+    "size": {"w":2048,"h":1536},
+    "frameSize":{"w":256,"h":192},
+    "grid":{"columns":8,"rows":8,"frameCount":64},
+    "anchor":{"x":128,"y":168,"normalized":{"x":0.5,"y":0.875}}
+  }
+}
