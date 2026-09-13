@@ -20,9 +20,8 @@ const ACCENT: Record<ActionId, number> = {
   press: 0xf4d35e, brace: 0x66d9ef, retreat: 0x94a3b8, rush: 0xff8a4c, intercept: 0x38bdf8,
   break: 0xfb7185, reversal: 0xc084fc, fade: 0x5eead4, drive: 0xfacc15,
 };
-const ANIMATION: Record<ActionId, string> = {
-  press: 'neko-press', brace: 'neko-brace', retreat: 'neko-retreat', rush: 'neko-rush', intercept: 'neko-intercept',
-  break: 'neko-break', reversal: 'neko-reversal', fade: 'neko-fade', drive: 'neko-drive',
+const ACTION_FRAME: Record<ActionId, number> = {
+  press: 1, brace: 2, retreat: 3, rush: 4, intercept: 5, break: 6, reversal: 7, fade: 8, drive: 9,
 };
 
 export class SoloDuelScene extends Phaser.Scene {
@@ -38,17 +37,14 @@ export class SoloDuelScene extends Phaser.Scene {
   constructor() { super('duel-v0-solo'); }
 
   preload() {
-    this.load.spritesheet('neko-duel-v0', '/assets/duel/neko_duel_v0.png', { frameWidth: 192, frameHeight: 144 });
+    this.load.spritesheet('neko-duel-v0', '/assets/duel/neko_duel_v0.png', { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {
     this.cameras.main.setBackgroundColor('#080d17');
-    this.createAnimations();
     this.arena = this.add.graphics();
-    this.playerSprite = this.add.sprite(0, 0, 'neko-duel-v0', 0).setOrigin(0.5, 1).setScale(1.35);
-    this.machineSprite = this.add.sprite(0, 0, 'neko-duel-v0', 0).setOrigin(0.5, 1).setScale(1.35).setFlipX(true).setTint(0xffb5c2);
-    this.playerSprite.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => this.restoreIdle(this.playerSprite));
-    this.machineSprite.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => this.restoreIdle(this.machineSprite));
+    this.playerSprite = this.add.sprite(0, 0, 'neko-duel-v0', 0).setOrigin(0.5, 1).setScale(2.25);
+    this.machineSprite = this.add.sprite(0, 0, 'neko-duel-v0', 0).setOrigin(0.5, 1).setScale(2.25).setFlipX(true).setTint(0xffb5c2);
     this.resetMatch();
   }
 
@@ -57,27 +53,9 @@ export class SoloDuelScene extends Phaser.Scene {
     this.busy = false;
     this.message = 'Choisissez une carte.';
     this.reveal = '';
-    this.playerSprite.clearTint();
-    this.machineSprite.setTint(0xffb5c2);
-    this.playerSprite.play('neko-idle');
-    this.machineSprite.play('neko-idle');
+    this.playerSprite.clearTint().setFrame(0);
+    this.machineSprite.setTint(0xffb5c2).setFrame(0);
     this.refresh();
-  }
-
-  private createAnimations() {
-    if (this.anims.exists('neko-idle')) return;
-    const specs: Array<[string, number, number, number, number]> = [
-      ['idle', 0, 3, 6, -1], ['press', 12, 15, 12, 0], ['brace', 16, 19, 7, 0], ['retreat', 20, 23, 10, 0],
-      ['rush', 24, 27, 14, 0], ['intercept', 28, 31, 12, 0], ['break', 32, 36, 10, 0], ['reversal', 37, 41, 12, 0],
-      ['fade', 42, 45, 11, 0], ['drive', 46, 50, 11, 0], ['hit', 51, 55, 10, 0], ['win', 56, 59, 6, -1], ['lose', 60, 63, 7, 0],
-    ];
-    for (const [name, start, end, frameRate, repeat] of specs) {
-      this.anims.create({ key: `neko-${name}`, frames: this.anims.generateFrameNumbers('neko-duel-v0', { start, end }), frameRate, repeat });
-    }
-  }
-
-  private restoreIdle(sprite: Phaser.GameObjects.Sprite) {
-    if (this.state.winner === null) sprite.play('neko-idle', true);
   }
 
   private choose(action: ActionId) {
@@ -90,16 +68,18 @@ export class SoloDuelScene extends Phaser.Scene {
 
     this.time.delayedCall(260, () => {
       this.reveal = `${ICON[action]} ${LABEL[action]}   VS   ${ICON[machineAction]} ${LABEL[machineAction]}`;
-      this.playerSprite.play(ANIMATION[action], true);
-      this.machineSprite.play(ANIMATION[machineAction], true);
+      this.playerSprite.setFrame(ACTION_FRAME[action]);
+      this.machineSprite.setFrame(ACTION_FRAME[machineAction]);
       const result = resolveSoloExchange(this.state, action, machineAction);
       this.state = result.state;
       this.message = result.messages[0] ?? 'La position change.';
       this.refresh();
       this.tweenFighters();
 
-      this.time.delayedCall(720, () => {
+      this.time.delayedCall(620, () => {
         if (this.state.winner === null) {
+          this.playerSprite.setFrame(0);
+          this.machineSprite.setFrame(0);
           this.busy = false;
           this.reveal = '';
           this.message = 'Nouvelle main : choisissez une carte.';
@@ -108,12 +88,12 @@ export class SoloDuelScene extends Phaser.Scene {
         }
         if (this.state.winner === 0) {
           this.message = 'Victoire — la machine est sortie du terrain.';
-          this.playerSprite.play('neko-win', true);
-          this.machineSprite.play('neko-lose', true);
+          this.playerSprite.setFrame(10);
+          this.machineSprite.setFrame(11);
         } else {
           this.message = 'Défaite — vous êtes sorti du terrain.';
-          this.playerSprite.play('neko-lose', true);
-          this.machineSprite.play('neko-win', true);
+          this.playerSprite.setFrame(11);
+          this.machineSprite.setFrame(10);
         }
         this.refresh();
       });
@@ -151,7 +131,7 @@ export class SoloDuelScene extends Phaser.Scene {
     for (let slot = SOLO_ARENA_MIN; slot <= SOLO_ARENA_MAX; slot += 1) {
       const x = this.slotX(slot);
       const edge = slot === SOLO_ARENA_MIN || slot === SOLO_ARENA_MAX;
-      g.fillStyle(edge ? 0x6b1f35 : 0x17243a, edge ? 0.9 : 0.9);
+      g.fillStyle(edge ? 0x6b1f35 : 0x17243a, 0.9);
       g.fillRoundedRect(x - 19, y - 32, 38, 64, 8);
       g.lineStyle(edge ? 2 : 1, edge ? 0xff5577 : 0x38506e, 1);
       g.strokeRoundedRect(x - 19, y - 32, 38, 64, 8);
