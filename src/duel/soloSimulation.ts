@@ -34,6 +34,14 @@ export interface SoloExchangeResult {
   messages: string[];
 }
 
+export interface MachineChoiceScore {
+  action: ActionId;
+  score: number;
+  worstCase: number;
+  average: number;
+  knockouts: number;
+}
+
 export function createSoloDuelState(): SoloDuelState {
   return {
     fighters: [createFighter(1), createFighter(5)],
@@ -65,33 +73,58 @@ export function rotateCard(fighter: SoloFighterState, used: ActionId): SoloFight
   };
 }
 
-export function chooseMachineAction(state: SoloDuelState): ActionId {
+function scoreMachineOutcome(before: SoloDuelState, result: SoloExchangeResult): number {
+  if (result.state.winner === 1) return 1000;
+  if (result.state.winner === 0) return -1000;
+
+  const beforePlayer = before.fighters[0].position;
+  const beforeMachine = before.fighters[1].position;
+  const afterPlayer = result.state.fighters[0].position;
+  const afterMachine = result.state.fighters[1].position;
+
+  // The machine wants the player closer to the left ring-out while keeping
+  // itself away from the right ring-out. Position is the whole objective.
+  let score = (beforePlayer - afterPlayer) * 28 + (beforeMachine - afterMachine) * 18;
+  if (afterPlayer === SOLO_ARENA_MIN) score += 12;
+  if (afterMachine === SOLO_ARENA_MAX) score -= 18;
+  return score;
+}
+
+export function evaluateMachineChoices(state: SoloDuelState): MachineChoiceScore[] {
   const machine = state.fighters[1];
   const player = state.fighters[0];
-  const distance = machine.position - player.position;
-  const danger = machine.position >= SOLO_ARENA_MAX - 1;
 
-  let best = machine.hand[0];
-  let bestScore = Number.NEGATIVE_INFINITY;
-  for (const action of machine.hand) {
-    let score = 0;
-    if (action === 'press') score += distance <= 2 ? 5 : 3;
-    if (action === 'brace') score += distance <= 1 ? 5 : 1;
-    if (action === 'retreat') score += danger ? -8 : distance <= 1 ? 2 : -1;
-    if (action === 'rush') score += distance >= 2 ? 7 : 2;
-    if (action === 'intercept') score += distance <= 3 ? 6 : 1;
-    if (action === 'break') score += distance <= 2 ? 6 : 2;
-    if (action === 'reversal') score += distance <= 2 ? 7 : 1;
-    if (action === 'fade') score += danger ? -9 : distance <= 1 ? 4 : 0;
-    if (action === 'drive') score += distance === 1 ? 10 : -2;
-    if (danger && (action === 'press' || action === 'rush' || action === 'intercept' || action === 'reversal')) score += 4;
+  return machine.hand.map((action) => {
+    const outcomes = player.hand.map((playerAction) => {
+      const result = resolveSoloExchange(state, playerAction, action);
+      return {
+        score: scoreMachineOutcome(state, result),
+        knockout: result.state.winner === 1,
+      };
+    });
+    const scores = outcomes.map((outcome) => outcome.score);
+    const worstCase = Math.min(...scores);
+    const average = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+    const knockouts = outcomes.filter((outcome) => outcome.knockout).length;
 
-    if (score > bestScore) {
-      best = action;
-      bestScore = score;
-    }
-  }
-  return best;
+    // Mostly minimax: prefer a move that remains useful against every visible
+    // answer, then use average pressure and available ring-outs as tie-breakers.
+    return {
+      action,
+      worstCase,
+      average,
+      knockouts,
+      score: worstCase * 0.72 + average * 0.28 + knockouts * 8,
+    };
+  });
+}
+
+export function chooseMachineAction(state: SoloDuelState): ActionId {
+  const ranked = evaluateMachineChoices(state)
+    .map((choice, handIndex) => ({ ...choice, handIndex }))
+    .sort((a, b) => b.score - a.score || b.average - a.average || a.handIndex - b.handIndex);
+
+  return ranked[0]?.action ?? state.fighters[1].hand[0];
 }
 
 function toward(index: 0 | 1): number {
