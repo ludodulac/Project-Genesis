@@ -16,43 +16,48 @@ import { GuidedFlowScene } from './presentation/GuidedFlowScene';
 import { ConflictingFlowScene } from './presentation/ConflictingFlowScene';
 import { LivingWatershedScene } from './presentation/LivingWatershedScene';
 import { DuelLabScene } from './duel/DuelLabScene';
+import { SoloDuelScene } from './duel/SoloDuelScene';
 
 const params = new URLSearchParams(window.location.search);
 const game = params.get('game');
 const probe = params.get('probe');
-const isDuel = game === 'duel-v0';
-const duelPortrait = isDuel && window.innerHeight > window.innerWidth;
-const scene = isDuel
-  ? DuelLabScene
-  : game === 'living-watershed'
-    ? LivingWatershedScene
-    : probe === 'trajectory'
-      ? TrajectoryScene
-      : probe === 'tension'
-        ? TensionScene
-        : probe === 'cascade'
-          ? CascadeScene
-          : probe === 'threshold'
-            ? ThresholdScene
-            : probe === 'transfer'
-              ? TransferScene
-              : probe === 'discovery'
-                ? DiscoveryScene
-                : probe === 'global-pressure'
-                  ? GlobalPressureScene
-                  : probe === 'voluntary-risk'
-                    ? VoluntaryRiskScene
-                    : probe === 'persistent-journey'
-                      ? PersistentJourneyScene
-                      : probe === 'growing-reach'
-                        ? GrowingReachScene
-                        : probe === 'self-authored-artifact'
-                          ? SelfAuthoredArtifactScene
-                          : probe === 'guided-flow'
-                            ? GuidedFlowScene
-                            : probe === 'conflicting-flow'
-                              ? ConflictingFlowScene
-                              : WorldScene;
+const isSoloDuel = game === 'duel-v0';
+const isLegacyDuel = game === 'duel-lab-v0';
+const isDuel = isSoloDuel || isLegacyDuel;
+const duelPortrait = isSoloDuel || (isLegacyDuel && window.innerHeight > window.innerWidth);
+const scene = isSoloDuel
+  ? SoloDuelScene
+  : isLegacyDuel
+    ? DuelLabScene
+    : game === 'living-watershed'
+      ? LivingWatershedScene
+      : probe === 'trajectory'
+        ? TrajectoryScene
+        : probe === 'tension'
+          ? TensionScene
+          : probe === 'cascade'
+            ? CascadeScene
+            : probe === 'threshold'
+              ? ThresholdScene
+              : probe === 'transfer'
+                ? TransferScene
+                : probe === 'discovery'
+                  ? DiscoveryScene
+                  : probe === 'global-pressure'
+                    ? GlobalPressureScene
+                    : probe === 'voluntary-risk'
+                      ? VoluntaryRiskScene
+                      : probe === 'persistent-journey'
+                        ? PersistentJourneyScene
+                        : probe === 'growing-reach'
+                          ? GrowingReachScene
+                          : probe === 'self-authored-artifact'
+                            ? SelfAuthoredArtifactScene
+                            : probe === 'guided-flow'
+                              ? GuidedFlowScene
+                              : probe === 'conflicting-flow'
+                                ? ConflictingFlowScene
+                                : WorldScene;
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -66,7 +71,7 @@ new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   render: {
-    antialias: true,
-    pixelArt: false,
+    antialias: !isSoloDuel,
+    pixelArt: isSoloDuel,
   },
 });
