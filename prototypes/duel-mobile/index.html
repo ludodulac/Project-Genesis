@@ -1,214 +1,29 @@
-<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#090d17" />
-<title>Genesis Duel — Prototype mobile</title>
-<style>
-  :root{
-    --bg:#080c14;--panel:#101827;--panel2:#162238;--line:#263753;--text:#f7f2e8;--muted:#9cacbf;
-    --lily:#ff3d5d;--lily2:#ff9b42;--kitsu:#35a8ff;--kitsu2:#7be5ff;--gold:#ffd86a;
-    --safe:#26354b;--danger:#6f1d2d;--card:#111a2a;--shadow:0 12px 35px rgba(0,0,0,.38);
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;background:radial-gradient(circle at 50% 15%,#17233a 0,#0b111d 42%,#070a11 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
-  button{font:inherit}
-  .app{height:100dvh;max-width:520px;margin:0 auto;display:grid;grid-template-rows:auto auto 1fr auto;padding:env(safe-area-inset-top) 10px calc(env(safe-area-inset-bottom) + 8px);gap:8px;position:relative}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 2px 0}
-  .logo{font-weight:950;letter-spacing:.12em;font-size:14px}.logo b{color:var(--gold)}
-  .status{font-size:11px;color:var(--muted);text-align:right}
-  .enemy-zone,.player-zone{display:grid;gap:6px}
-  .fighter-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .fighter-id{display:flex;align-items:center;gap:8px;min-width:0}
-  .portrait{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#1f2b41,#0c121e);border:1px solid #344661;box-shadow:inset 0 0 16px rgba(255,255,255,.04)}
-  .portrait svg{width:33px;height:33px;image-rendering:pixelated}
-  .fighter-text strong{display:block;font-size:14px}.fighter-text small{display:block;color:var(--muted);font-size:10px}
-  .cooldowns{display:flex;gap:5px;align-items:center;color:var(--muted);font-size:10px}.pip{width:8px;height:8px;border-radius:50%;background:#2a3548}.pip.on{background:var(--gold);box-shadow:0 0 8px #ffd86a88}
-  .mini-hand,.hand{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-  .mini-card,.card{position:relative;border-radius:12px;border:1px solid #2c3a53;background:linear-gradient(180deg,#17243a,#0d1523);overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.24)}
-  .mini-card{height:52px;padding:6px}.mini-card .name{font-size:9px;font-weight:900;line-height:1.02}.mini-card .icons{position:absolute;left:6px;right:6px;bottom:5px;font-size:9px;color:#c8d3e3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mini-card.locked{opacity:.42;filter:saturate(.55)}.mini-card.chosen{outline:2px solid #fff4;transform:translateY(-2px)}
-  .arena{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:6px;background:linear-gradient(180deg,rgba(21,31,49,.88),rgba(10,15,25,.9));border:1px solid #293a56;border-radius:18px;padding:9px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-  .arena:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 49%,rgba(255,255,255,.025) 50%,transparent 51%);pointer-events:none}
-  .roundline{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted)}
-  .roundline strong{color:#fff;font-size:11px}
-  .lane-wrap{display:grid;place-items:center;min-height:0;position:relative}
-  .lane{width:100%;height:104px;display:grid;grid-template-columns:34px repeat(9,1fr) 34px;align-items:stretch;position:relative;filter:drop-shadow(0 10px 14px rgba(0,0,0,.32))}
-  .cell{border-top:1px solid #3a4962;border-bottom:1px solid #3a4962;border-right:1px solid #2b394e;background:linear-gradient(180deg,#243149,#192338 60%,#131c2d);position:relative}
-  .cell:nth-of-type(2){border-left:1px solid #3a4962;border-radius:8px 0 0 8px}.cell:nth-last-of-type(2){border-radius:0 8px 8px 0}
-  .cell:after{content:attr(data-n);position:absolute;bottom:4px;left:0;right:0;text-align:center;font-weight:800;color:#6d7d95;font-size:9px}
-  .void{display:grid;place-items:center;font-size:15px;font-weight:950;background:linear-gradient(180deg,#712238,#3d1220);border:1px solid #b53b58;color:#ffd6dc}.void.left{border-radius:10px 0 0 10px}.void.right{border-radius:0 10px 10px 0}
-  .token{position:absolute;top:15px;width:58px;height:70px;display:grid;place-items:center;transition:left .42s cubic-bezier(.2,.86,.2,1), transform .2s ease, filter .2s ease;z-index:5;pointer-events:none;will-change:left,transform}
-  .token svg{width:58px;height:70px;overflow:visible;image-rendering:pixelated;filter:drop-shadow(0 8px 5px rgba(0,0,0,.5))}
-  .token.hit{animation:hit .28s ease}.token.dodge{animation:dodge .38s ease}.token.guard{animation:guard .42s ease}.token.ring{animation:ring .7s ease forwards}
-  @keyframes hit{0%{transform:translateX(0) scale(1)}35%{transform:translateX(var(--hit,8px)) scale(.92)}100%{transform:translateX(0) scale(1)}}
-  @keyframes dodge{0%,100%{filter:brightness(1)}40%{filter:brightness(2);transform:translateY(-10px) scale(.92)}}
-  @keyframes guard{35%{filter:drop-shadow(0 0 14px #8cecff) brightness(1.6)}}
-  @keyframes ring{to{transform:translateY(-18px) rotate(18deg) scale(.6);opacity:0}}
-  .fx{position:absolute;inset:0;pointer-events:none;z-index:8}.burst{position:absolute;width:62px;height:62px;border-radius:50%;border:4px solid #fff6;transform:scale(.2);opacity:0}.burst.go{animation:burst .42s ease-out}@keyframes burst{0%{transform:scale(.15);opacity:1}100%{transform:scale(1.45);opacity:0}}
-  .reveal{height:66px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.reveal-card{height:58px;border-radius:12px;border:1px solid #33445f;background:#121c2d;padding:6px;display:flex;align-items:center;gap:7px;opacity:.55;transform:scale(.97);transition:.18s}.reveal-card.active{opacity:1;transform:scale(1);box-shadow:0 0 0 1px #ffffff18,0 8px 22px #0005}.reveal-card .badge{font-size:17px}.reveal-card strong{font-size:10px;display:block}.reveal-card small{font-size:9px;color:var(--muted);display:block}.versus{font-weight:950;color:#7587a3;font-size:10px}
-  .player-zone{padding-top:1px}.hint{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px}.hint b{color:#fff}
-  .card{height:102px;padding:7px;text-align:left;color:#fff;cursor:pointer;transition:transform .12s ease,border-color .12s,filter .12s;background:linear-gradient(180deg,#18243a,#0d1523 80%)}
-  .card:active{transform:translateY(-4px) scale(.98)}.card.selected{transform:translateY(-7px);border-color:#ffe18b;box-shadow:0 0 0 2px #ffe18b33,0 12px 22px #0008}.card.disabled{opacity:.43;filter:saturate(.5);pointer-events:none}
-  .card .art{height:47px;display:grid;place-items:center;font-size:30px;line-height:1}.card .name{font-weight:950;font-size:9px;line-height:1.02;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card .stats{font-size:9px;color:#c8d3e3;margin-top:4px;letter-spacing:.01em}.card .cd{position:absolute;right:5px;top:5px;border-radius:8px;padding:2px 5px;font-size:9px;font-weight:900;background:#0a111d;border:1px solid #3a4d69;color:#ffd86a}
-  .card.lily{border-bottom:3px solid var(--lily)}.card.kitsu{border-bottom:3px solid var(--kitsu)}
-  .confirm{position:absolute;left:50%;bottom:122px;transform:translateX(-50%) translateY(18px);opacity:0;pointer-events:none;border:0;border-radius:999px;padding:10px 20px;background:linear-gradient(180deg,#ffe58c,#ffc94e);color:#1a1608;font-weight:950;box-shadow:0 8px 30px #0009;transition:.18s;z-index:20}.confirm.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-  .toast{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%) scale(.92);opacity:0;z-index:30;background:#070b12e8;border:1px solid #425674;border-radius:16px;padding:12px 16px;text-align:center;pointer-events:none;transition:.18s;box-shadow:var(--shadow)}.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}.toast strong{display:block;font-size:20px}.toast small{color:var(--muted)}
-  .overlay{position:absolute;inset:0;background:linear-gradient(180deg,#09101cf2,#05080df5);display:grid;place-items:center;z-index:60;padding:22px}.overlay.hidden{display:none}.panel{width:min(100%,390px);background:linear-gradient(180deg,#152138,#0d1524);border:1px solid #334968;border-radius:22px;padding:18px;box-shadow:var(--shadow);text-align:center}.panel h1{margin:0;font-size:27px;letter-spacing:.08em}.panel h1 b{color:var(--gold)}.panel p{font-size:12px;color:var(--muted);line-height:1.45}.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.choice button,.again{border:1px solid #3e526f;border-radius:16px;background:#111b2d;color:#fff;padding:12px;font-weight:900}.choice button:first-child{box-shadow:inset 0 -3px 0 var(--lily)}.choice button:last-child{box-shadow:inset 0 -3px 0 var(--kitsu)}.choice svg{width:72px;height:72px;display:block;margin:auto}.rules-mini{margin-top:14px;padding-top:12px;border-top:1px solid #2e405a;text-align:left;font-size:11px;color:#b9c5d5;line-height:1.45}.again{margin-top:12px;background:linear-gradient(180deg,#ffe58c,#ffc94e);color:#181408;border:none;padding:12px 18px}.end-title{font-size:28px;font-weight:950;margin:3px 0}.end-sub{font-size:12px;color:var(--muted)}
-  @media (max-height:700px){.mini-card{height:46px}.arena{padding:7px}.lane{height:90px}.token{top:10px;height:64px}.token svg{height:64px}.reveal{height:54px}.reveal-card{height:48px}.card{height:91px}.card .art{height:39px;font-size:26px}.confirm{bottom:108px}}
-</style>
-</head>
-<body>
-<div class="app" id="app">
-  <div class="topbar"><div class="logo"><b>GENESIS</b> DUEL</div><div class="status" id="status">Choisis un combattant</div></div>
-
-  <section class="enemy-zone">
-    <div class="fighter-row">
-      <div class="fighter-id"><div class="portrait" id="enemyPortrait"></div><div class="fighter-text"><strong id="enemyName">Adversaire</strong><small>IA • options visibles</small></div></div>
-      <div class="cooldowns"><span>récup.</span><i class="pip" id="eCd1"></i><i class="pip" id="eCd2"></i></div>
-    </div>
-    <div class="mini-hand" id="enemyHand"></div>
-  </section>
-
-  <main class="arena">
-    <div class="roundline"><span>Ring-out aux extrémités</span><strong id="round">ÉCHANGE 1</strong><span id="score">0 — 0</span></div>
-    <div class="lane-wrap">
-      <div class="lane" id="lane"><div class="void left">×</div><div class="cell" data-n="1"></div><div class="cell" data-n="2"></div><div class="cell" data-n="3"></div><div class="cell" data-n="4"></div><div class="cell" data-n="5"></div><div class="cell" data-n="6"></div><div class="cell" data-n="7"></div><div class="cell" data-n="8"></div><div class="cell" data-n="9"></div><div class="void right">×</div><div class="token" id="playerToken"></div><div class="token" id="enemyToken"></div><div class="fx" id="fx"></div></div>
-    </div>
-    <div class="reveal"><div class="reveal-card" id="playerReveal"></div><div class="versus">VS</div><div class="reveal-card" id="enemyReveal"></div></div>
-  </main>
-
-  <section class="player-zone">
-    <div class="hint"><span><b id="playerName">Combattant</b> • choisis 1 coup</span><span id="edgeHint">Lis les 4 options adverses</span></div>
-    <div class="hand" id="playerHand"></div>
-  </section>
-
-  <button class="confirm" id="confirm">JOUER CE COUP</button>
-  <div class="toast" id="toast"><strong></strong><small></small></div>
-
-  <div class="overlay" id="startOverlay">
-    <div class="panel"><h1><b>GENESIS</b> DUEL</h1><p>Un duel éclair de lecture et de position. Les deux combattants choisissent en même temps. Pas de points de vie : fais sortir l'autre de la piste.</p><div class="choice"><button data-pick="lily" id="pickLily"></button><button data-pick="kitsu" id="pickKitsu"></button></div><div class="rules-mini">• 4 coups disponibles sont visibles de chaque côté.<br>• Un coup joué part en récupération pendant 2 échanges.<br>• Charge, esquive, parade, contre et traversée changent de valeur selon la position.<br>• Si vous vous croisez, les combattants se retournent automatiquement.</div></div>
-  </div>
-  <div class="overlay hidden" id="endOverlay"><div class="panel"><div class="end-title" id="endTitle">RING OUT</div><div class="end-sub" id="endSub"></div><button class="again" id="again">REVANCHE</button></div></div>
-</div>
-
-<script>
-const SVG = {
- lily: (flip=false)=>`<svg viewBox="0 0 64 72" aria-hidden="true" style="transform:scaleX(${flip?-1:1})"><g stroke="#31141b" stroke-width="2" stroke-linejoin="round"><circle cx="31" cy="16" r="12" fill="#f3c6a1"/><path d="M20 15c1-13 23-15 25 1l-7-4-3 5-7-5-3 5z" fill="#5b2631"/><circle cx="18" cy="8" r="7" fill="#7b3540"/><circle cx="45" cy="8" r="7" fill="#7b3540"/><circle cx="29" cy="18" r="1.7" fill="#201219"/><circle cx="38" cy="18" r="1.7" fill="#201219"/><path d="M23 31l12-5 11 9-4 20-18 0-5-16z" fill="#d72d44"/><path d="M25 34h17" stroke="#ffd16f"/><path d="M26 53l-8 14h10l5-12m8-2 7 14H38l-4-12" fill="#7a1f2f"/><path d="M20 36l-13 6 3 7 13-5m21-7 12 3-2 8-12-3" fill="#f3c6a1"/></g></svg>`,
- kitsu:(flip=false)=>`<svg viewBox="0 0 64 72" aria-hidden="true" style="transform:scaleX(${flip?-1:1})"><g stroke="#2b1a18" stroke-width="2" stroke-linejoin="round"><path d="M17 19L13 3l13 9M43 18 50 4l4 19" fill="#f28a3a"/><path d="M17 12c10-9 29-5 32 8 3 12-8 20-20 18-14-2-19-15-12-26z" fill="#f28a3a"/><path d="M18 21c7 2 13 0 18-5 4 7 8 9 13 8-1 10-10 15-20 14-7-1-11-7-11-17z" fill="#ffe8ca"/><circle cx="31" cy="23" r="1.7"/><circle cx="42" cy="23" r="1.7"/><path d="M46 30c-4 3-9 3-12 0" fill="none"/><path d="M22 39l13-7 15 9-5 17H24l-6-12z" fill="#1d2d44"/><path d="M17 42c-15 0-17 15-6 19 9 3 14-3 10-8-4-4-9 0-7 4" fill="#f28a3a"/><path d="M22 42h25" stroke="#3a98ff" stroke-width="6"/><path d="M26 56l-6 11h11l4-10m8-1 5 11h-11l-2-10" fill="#20293a"/></g></svg>`
-};
-
-const fighters = {
- lily:{name:'LILY',theme:'lily',moves:[
-  {id:'jab',name:'Poing léger',art:'🥊',move:1,push:1,range:1,type:'attack',speed:4,txt:'Avance 1 • pousse 1'},
-  {id:'jumpkick',name:'Pied sauté',art:'🦵',move:1,push:2,range:1,type:'attack',speed:3,pass:true,txt:'Avance 1 • peut traverser'},
-  {id:'whirl',name:'Tourbillon',art:'🔥',move:0,push:2,range:1,type:'attack',speed:2,txt:'Sur place • pousse 2'},
-  {id:'charge',name:'Charge flamboyante',art:'💥',move:2,push:2,range:1,type:'attack',speed:2,txt:'Avance 2 • pousse 2'},
-  {id:'evade',name:'Esquive arrière',art:'↩️',move:-1,push:0,range:0,type:'dodge',speed:5,txt:'Recule 1 • évite contact'},
-  {id:'parry',name:'Parade',art:'🛡️',move:0,push:1,range:1,type:'guard',speed:5,txt:'Bloque poussée • repousse 1'},
-  {id:'counter',name:'Contre-attaque',art:'⚡',move:0,push:2,range:1,type:'counter',speed:5,txt:'Si attaqué • pousse 2'},
-  {id:'fireball',name:'Projectile de flamme',art:'☄️',move:0,push:1,range:3,type:'attack',speed:3,txt:'Portée 3 • pousse 1'},
-  {id:'phoenix',name:'Envol du phénix',art:'🪽',move:1,push:3,range:1,type:'attack',speed:1,pass:true,txt:'Traverse • pousse 3'}
- ]},
- kitsu:{name:'KITSU',theme:'kitsu',moves:[
-  {id:'claw',name:'Griffe rapide',art:'🐾',move:1,push:1,range:1,type:'attack',speed:5,txt:'Avance 1 • pousse 1'},
-  {id:'run',name:'Course du vent',art:'💨',move:2,push:1,range:1,type:'attack',speed:4,txt:'Avance 2 • pousse 1'},
-  {id:'foxjump',name:'Saut du renard',art:'🌀',move:1,push:0,range:0,type:'dodge',speed:5,pass:true,txt:'Traverse l’attaque'},
-  {id:'blade',name:'Lame tourbillonnante',art:'🌪️',move:0,push:2,range:1,type:'attack',speed:3,txt:'Sur place • pousse 2'},
-  {id:'slide',name:'Glissade',art:'➿',move:-1,push:0,range:0,type:'dodge',speed:5,txt:'Recule 1 • esquive'},
-  {id:'feint',name:'Feinte',art:'👥',move:0,push:2,range:1,type:'feint',speed:4,txt:'Punit garde / contre'},
-  {id:'shadow',name:'Ombre du renard',art:'🌑',move:2,push:0,range:0,type:'dodge',speed:5,pass:true,choice:true,txt:'Traverse de 2'},
-  {id:'shuriken',name:'Shuriken de vent',art:'✦',move:0,push:1,range:3,type:'attack',speed:4,txt:'Portée 3 • pousse 1'},
-  {id:'autumn',name:'Tempête d’automne',art:'🍁',move:1,push:3,range:1,type:'attack',speed:2,txt:'Avance 1 • pousse 3'}
- ]}
-};
-
-let state={playerKey:'lily',enemyKey:'kitsu',pPos:2,ePos:6,round:1,pScore:0,eScore:0,selected:null,busy:false,pHand:[],eHand:[],pCd:[],eCd:[]};
-const $=s=>document.querySelector(s);
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-function portrait(key){return SVG[key](false)}
-function makeHand(key){return fighters[key].moves.slice(0,4).map(m=>m.id)}
-function byId(key,id){return fighters[key].moves.find(m=>m.id===id)}
-function nextAvailable(key,hand,cd){return fighters[key].moves.find(m=>!hand.includes(m.id)&&!cd.some(x=>x.id===m.id))?.id || fighters[key].moves.find(m=>!hand.includes(m.id))?.id || hand[0]}
-function cardStats(m){let bits=[]; if(m.move>0)bits.push('→'+m.move); if(m.move<0)bits.push('←'+Math.abs(m.move)); if(m.range)bits.push('◎'+m.range); if(m.push)bits.push('↠'+m.push); return bits.join('  ')}
-function render(){
- const pk=state.playerKey, ek=state.enemyKey;
- $('#playerName').textContent=fighters[pk].name; $('#enemyName').textContent=fighters[ek].name;
- $('#enemyPortrait').innerHTML=portrait(ek); $('#round').textContent='ÉCHANGE '+state.round; $('#score').textContent=state.pScore+' — '+state.eScore;
- $('#playerToken').innerHTML=SVG[pk](state.pPos>state.ePos); $('#enemyToken').innerHTML=SVG[ek](state.ePos>state.pPos);
- placeTokens();
- $('#playerHand').innerHTML=state.pHand.map(id=>{const m=byId(pk,id);return `<button class="card ${fighters[pk].theme} ${state.selected===id?'selected':''}" data-id="${id}"><div class="art">${m.art}</div><div class="name">${m.name}</div><div class="stats">${cardStats(m)}</div></button>`}).join('');
- $('#enemyHand').innerHTML=state.eHand.map(id=>{const m=byId(ek,id);return `<div class="mini-card"><div class="name">${m.name}</div><div class="icons">${cardStats(m)}</div></div>`}).join('');
- document.querySelectorAll('.card').forEach(b=>b.onclick=()=>selectCard(b.dataset.id));
- $('#confirm').classList.toggle('show',!!state.selected&&!state.busy);
- $('#eCd1').classList.toggle('on',state.eCd.some(x=>x.turns===2)); $('#eCd2').classList.toggle('on',state.eCd.some(x=>x.turns===1));
- $('#edgeHint').textContent=edgeText();
-}
-function placeTokens(){
- const lane=$('#lane'), total=lane.clientWidth, side=34, cells=(total-side*2)/9;
- const px=side+state.pPos*cells+cells/2-29, ex=side+state.ePos*cells+cells/2-29;
- $('#playerToken').style.left=px+'px'; $('#enemyToken').style.left=ex+'px';
-}
-window.addEventListener('resize',placeTokens);
-function edgeText(){const d=Math.min(state.pPos,8-state.pPos);return d<=1?'⚠ Bord dangereux':d===2?'Attention au ring-out':'Lis les 4 options adverses'}
-function selectCard(id){if(state.busy)return; state.selected=state.selected===id?null:id; render()}
-function updateCd(list){for(const x of list)x.turns--; return list.filter(x=>x.turns>0)}
-function rotateHand(key,hand,cd,used){const i=hand.indexOf(used); if(i<0)return hand; const fresh=nextAvailable(key,hand,cd); const n=[...hand]; n[i]=fresh; return n}
-function aiPick(){
- const ek=state.enemyKey, pk=state.playerKey; const edge=Math.min(state.ePos,8-state.ePos); const dist=Math.abs(state.ePos-state.pPos); const toward=state.ePos>state.pPos?-1:1;
- let best=null,bestScore=-999;
- for(const id of state.eHand){const m=byId(ek,id); let s=Math.random()*1.8;
-   if(m.type==='attack' && dist<=m.range+Math.max(0,m.move)) s+=2+m.push*.8;
-   if(edge<=1 && (m.type==='guard'||m.type==='counter'||m.type==='dodge'))s+=3;
-   if(edge<=1 && m.move*toward<0)s-=2;
-   if(m.pass && dist<=2)s+=1.5;
-   if(m.type==='feint' && state.pHand.some(pid=>['guard','counter'].includes(byId(pk,pid).type)))s+=1.4;
-   if(s>bestScore){bestScore=s;best=id}
- } return best;
-}
-function dirToward(a,b){return b>a?1:-1}
-function moveIntent(pos,other,m){if(m.move===0)return pos; const dir=dirToward(pos,other); return pos + (m.move>0?dir*m.move:-dir*Math.abs(m.move))}
-function showReveal(side,m,key){const el=$(side==='p'?'#playerReveal':'#enemyReveal'); el.innerHTML=`<div class="badge">${m.art}</div><div><strong>${m.name}</strong><small>${m.txt}</small></div>`; el.classList.add('active')}
-function clearReveal(){['#playerReveal','#enemyReveal'].forEach(s=>{$(s).classList.remove('active');$(s).innerHTML=''})}
-function toast(a,b='',ms=650){const t=$('#toast');t.querySelector('strong').textContent=a;t.querySelector('small').textContent=b;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
-function burstAt(pos){const lane=$('#lane'), total=lane.clientWidth, side=34,cells=(total-side*2)/9; const b=document.createElement('div'); b.className='burst go'; b.style.left=(side+pos*cells+cells/2-31)+'px'; b.style.top='20px'; $('#fx').appendChild(b); setTimeout(()=>b.remove(),500)}
-function resolveRound(pm,em){
- let p0=state.pPos,e0=state.ePos; let p1=moveIntent(p0,e0,pm),e1=moveIntent(e0,p0,em);
- const crossing=(p0<e0 && p1>=e1)||(p0>e0 && p1<=e1);
- if(crossing && !(pm.pass||em.pass)){
-   const left=Math.min(p0,e0),right=Math.max(p0,e0); if(p0<e0){p1=Math.min(p1,right-1);e1=Math.max(e1,left+1)}else{p1=Math.max(p1,right+1);e1=Math.min(e1,left-1)}
- }
- state.pPos=p1; state.ePos=e1; render();
- return new Promise(res=>setTimeout(()=>{
-   let dist=Math.abs(state.pPos-state.ePos); let pHit=pm.type==='attack'&&dist<=pm.range; let eHit=em.type==='attack'&&dist<=em.range;
-   if(pm.type==='feint'&&['guard','counter'].includes(em.type))pHit=true;
-   if(em.type==='feint'&&['guard','counter'].includes(pm.type))eHit=true;
-   if(em.type==='dodge'&&dist<=1)pHit=false; if(pm.type==='dodge'&&dist<=1)eHit=false;
-   if(pm.type==='counter'&&eHit){eHit=false;pHit=true} if(em.type==='counter'&&pHit){pHit=false;eHit=true}
-   if(pm.type==='guard'&&eHit){eHit=false; pushTarget('e',pm.push)}
-   if(em.type==='guard'&&pHit){pHit=false; pushTarget('p',em.push)}
-   if(pHit)pushTarget('e',pm.push); if(eHit)pushTarget('p',em.push);
-   if(pHit||eHit)burstAt(Math.round((state.pPos+state.ePos)/2));
-   if(pHit)$('#enemyToken').classList.add('hit'); if(eHit)$('#playerToken').classList.add('hit');
-   if(pm.type==='dodge')$('#playerToken').classList.add('dodge'); if(em.type==='dodge')$('#enemyToken').classList.add('dodge');
-   if(pm.type==='guard')$('#playerToken').classList.add('guard'); if(em.type==='guard')$('#enemyToken').classList.add('guard');
-   render(); setTimeout(()=>{document.querySelectorAll('.token').forEach(x=>x.classList.remove('hit','dodge','guard'));res()},430)
- },430));
-}
-function pushTarget(target,n){if(!n)return; if(target==='e'){const d=dirToward(state.pPos,state.ePos);state.ePos+=d*n}else{const d=dirToward(state.ePos,state.pPos);state.pPos+=d*n}}
-function ringResult(){if(state.pPos<0||state.pPos>8)return 'enemy';if(state.ePos<0||state.ePos>8)return 'player';return null}
-async function play(){if(!state.selected||state.busy)return; state.busy=true; $('#confirm').classList.remove('show'); const pId=state.selected,eId=aiPick(); const pm=byId(state.playerKey,pId),em=byId(state.enemyKey,eId); state.selected=null;
- $('#status').textContent='Révélation…'; showReveal('p',pm,state.playerKey); showReveal('e',em,state.enemyKey); toast('FIGHT',pm.name+'  ×  '+em.name,520); await new Promise(r=>setTimeout(r,520));
- await resolveRound(pm,em); const rr=ringResult(); if(rr){endMatch(rr);return}
- state.pCd=updateCd(state.pCd);state.eCd=updateCd(state.eCd); state.pHand=rotateHand(state.playerKey,state.pHand,state.pCd,pId); state.eHand=rotateHand(state.enemyKey,state.eHand,state.eCd,eId); state.pCd.push({id:pId,turns:2});state.eCd.push({id:eId,turns:2}); state.round++; state.busy=false; $('#status').textContent='À toi : lis, choisis, frappe'; setTimeout(clearReveal,400); render();
-}
-function endMatch(who){state.busy=true; const playerWon=who==='player'; if(playerWon)state.pScore++;else state.eScore++; const token=$(playerWon?'#enemyToken':'#playerToken'); token.classList.add('ring'); toast('RING OUT',playerWon?'Victoire !':'L’IA t’a sorti',900); setTimeout(()=>{ $('#endTitle').textContent=playerWon?'VICTOIRE':'DÉFAITE'; $('#endSub').textContent=playerWon?'Lecture parfaite. Rejoue pour confirmer.':'Change de lecture : l’IA ne connaît jamais ton choix secret.'; $('#endOverlay').classList.remove('hidden');},760)}
-function start(key){state.playerKey=key;state.enemyKey=key==='lily'?'kitsu':'lily';state.pPos=2;state.ePos=6;state.round=1;state.selected=null;state.busy=false;state.pCd=[];state.eCd=[];state.pHand=makeHand(state.playerKey);state.eHand=makeHand(state.enemyKey);$('#startOverlay').classList.add('hidden');$('#endOverlay').classList.add('hidden');$('#status').textContent='À toi : lis, choisis, frappe';clearReveal();render()}
-$('#confirm').onclick=play;$('#again').onclick=()=>start(state.playerKey);
-$('#pickLily').innerHTML=SVG.lily(false)+'<span>JOUER LILY</span>';$('#pickKitsu').innerHTML=SVG.kitsu(false)+'<span>JOUER KITSU</span>';
-document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>start(b.dataset.pick));
-$('#enemyPortrait').innerHTML=SVG.kitsu(false);render();
-</script>
-</body>
-</html>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Genesis Duel 2</title><style>:root{--bg:#080d17;--p:#111b2b;--line:#33445f;--txt:#f7f2e8;--mut:#9cacbf;--red:#ff4c61;--blue:#43b8ff;--gold:#ffd86a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 10%,#1a2942,#080d17 55%);color:var(--txt);font-family:system-ui,sans-serif}.app{max-width:520px;min-height:100dvh;margin:auto;padding:12px;display:flex;flex-direction:column;gap:10px}.top{display:flex;justify-content:space-between;align-items:center}.top b{color:var(--gold)}small,.mut{color:var(--mut)}.fighter{display:flex;justify-content:space-between;align-items:center}.hand{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.card{min-height:92px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(#18263d,#0e1726);color:white;padding:7px;text-align:left}.enemy .card{min-height:58px}.card.sel{outline:2px solid var(--gold);transform:translateY(-4px)}.name{font-size:10px;font-weight:900}.art{font-size:25px;text-align:center}.stats{font-size:9px;color:#cad4e3;margin-top:5px}.arena{background:#101a2a;border:1px solid var(--line);border-radius:18px;padding:10px}.lane{display:grid;grid-template-columns:28px repeat(9,1fr) 28px;height:105px;position:relative;margin:12px 0}.cell,.void{border:1px solid #354760;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-size:9px;color:#8292a9}.cell.start{box-shadow:inset 0 0 0 2px #ffd86a55}.void{background:#681d30;color:#ffd6dc;align-items:center;padding:0;font-weight:900}.token{position:absolute;top:13px;width:42px;height:65px;display:grid;place-items:center;font-size:34px;transition:left .35s}.token.p{filter:drop-shadow(0 0 8px #ff4c6188)}.token.e{filter:drop-shadow(0 0 8px #43b8ff88)}.reveal{min-height:52px;text-align:center;font-size:11px;color:#d8e2ef}.btn{border:0;border-radius:999px;background:var(--gold);padding:11px 18px;font-weight:900}.center{text-align:center}.cd{font-size:10px;color:var(--mut);min-height:16px}.overlay{position:fixed;inset:0;background:#080d17f5;display:grid;place-items:center;padding:20px;z-index:10}.panel{max-width:390px;background:#121d30;border:1px solid var(--line);border-radius:20px;padding:20px;text-align:center}.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice button{padding:18px;border-radius:14px;border:1px solid var(--line);background:#18263d;color:white;font-weight:900}.hidden{display:none}.direction{display:flex;gap:8px;justify-content:center;margin:8px 0}.direction button{border:1px solid var(--line);background:#18263d;color:#fff;border-radius:10px;padding:8px 12px}</style></head><body><div class="app"><div class="top"><strong><b>GENESIS</b> DUEL 2</strong><small id="round">ÉCHANGE 1</small></div><section class="enemy"><div class="fighter"><strong id="en">KITSU</strong><small>4 options publiques</small></div><div class="hand" id="eh"></div><div class="cd" id="ecd"></div></section><main class="arena"><div class="fighter"><small>Ring-out des deux côtés</small><strong id="score">0 — 0</strong></div><div class="lane" id="lane"><div class="void">×</div><div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell start">4</div><div class="cell">5</div><div class="cell start">6</div><div class="cell">7</div><div class="cell">8</div><div class="cell">9</div><div class="void">×</div><div class="token p" id="pt">🔥</div><div class="token e" id="et">🦊</div></div><div class="reveal" id="reveal">Choisis secrètement parmi tes 4 techniques.</div></main><section><div class="fighter"><strong id="pn">LILY</strong><small>tes 4 options</small></div><div class="hand" id="ph"></div><div class="cd" id="pcd"></div><div id="dir" class="direction hidden"><button data-dir="1">AVANCER 2</button><button data-dir="-1">RECULER 2</button></div><div class="center"><button class="btn hidden" id="play">JOUER CE COUP</button></div></section></div><div class="overlay" id="start"><div class="panel"><h1>GENESIS DUEL 2</h1><p class="mut">9 cases. Départ cases 4 et 6. Les quatre options sont publiques, le choix est secret. Pas de PV : pousse l'autre hors de la piste.</p><div class="choice"><button data-pick="lily">🔥 LILY</button><button data-pick="kitsu">🦊 KITSU</button></div></div></div><div class="overlay hidden" id="end"><div class="panel"><h1 id="result">RING OUT</h1><button class="btn" id="again">REVANCHE</button></div></div><script>
+const F={lily:{name:'LILY',icon:'🔥',moves:[
+{id:'jab',n:'Poing léger',a:'🥊',mv:1,push:1,r:1,t:'attack',x:'Avance 1 • pousse 1'},
+{id:'jump',n:'Coup de pied sauté',a:'🦵',mv:1,push:2,r:1,t:'attack',pass:1,x:'Avance 1 • pousse 2 • saut'},
+{id:'whirl',n:'Tourbillon de lanternes',a:'🔥',mv:0,push:2,r:1,t:'attack',x:'Sur place • pousse 2'},
+{id:'charge',n:'Charge flamboyante',a:'💥',mv:2,push:1,r:1,t:'attack',x:'Avance 2 • pousse 1'},
+{id:'evade',n:'Esquive arrière',a:'↩️',mv:-1,push:0,r:0,t:'dodge',x:'Recule 1 • évite contact'},
+{id:'parry',n:'Parade',a:'🛡️',mv:0,push:1,r:1,t:'guard',x:'Annule poussée • pousse 1'},
+{id:'counter',n:'Contre-attaque',a:'⚡',mv:0,push:2,r:1,t:'counter',x:'Si attaque contact • pousse 2'},
+{id:'fire',n:'Projectile de flamme',a:'☄️',mv:0,push:1,r:2,t:'attack',x:'Portée 2 • pousse 1'},
+{id:'phoenix',n:'Envol du phénix',a:'🪽',mv:1,push:3,r:1,t:'attack',pass:1,x:'Avance 1 • traverse • pousse 3'}]},kitsu:{name:'KITSU',icon:'🦊',moves:[
+{id:'claw',n:'Griffe rapide',a:'🐾',mv:1,push:1,r:1,t:'attack',x:'Avance 1 • pousse 1'},
+{id:'run',n:'Course du vent',a:'💨',mv:2,push:1,r:1,t:'attack',x:'Avance 2 • pousse 1'},
+{id:'jump',n:'Saut du renard',a:'🌀',mv:1,push:0,r:0,t:'dodge',pass:1,x:'Avance 1 • traverse'},
+{id:'blade',n:'Lame tourbillonnante',a:'🌪️',mv:0,push:2,r:1,t:'attack',x:'Sur place • pousse 2'},
+{id:'slide',n:'Glissade',a:'➿',mv:-1,push:0,r:0,t:'dodge',x:'Recule 1 • esquive'},
+{id:'feint',n:'Feinte',a:'👥',mv:0,push:2,r:1,t:'feint',x:'Punit parade / contre'},
+{id:'shadow',n:'Ombre du renard',a:'🌑',mv:2,push:0,r:0,t:'dodge',pass:1,choice:1,x:'Avance OU recule 2 • traverse'},
+{id:'shuriken',n:'Shuriken de vent',a:'✦',mv:0,push:1,r:2,t:'attack',x:'Portée 2 • pousse 1'},
+{id:'autumn',n:'Tempête d’automne',a:'🍁',mv:1,push:3,r:1,t:'attack',x:'Avance 1 • pousse 3'}]}};
+let S={pk:'lily',ek:'kitsu',p:3,e:5,round:1,ps:0,es:0,ph:[],eh:[],pc:[],ec:[],sel:null,choice:1,busy:false};const $=q=>document.querySelector(q),M=(k,id)=>F[k].moves.find(m=>m.id===id),shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function setupHand(k){return shuffle(F[k].moves.map(m=>m.id)).slice(0,4)}function toward(a,b){return b>a?1:-1}function intent(pos,other,m,choice=1){if(m.choice)return pos+toward(pos,other)*m.mv*choice;return pos+toward(pos,other)*m.mv}function stats(m){return m.x}function cdText(k,c){return c.length?'Récupération : '+c.map(z=>M(k,z.id).n+' ('+z.turns+')').join(' • '):'Récupération : aucune'}
+function render(){ $('#pn').textContent=F[S.pk].name;$('#en').textContent=F[S.ek].name;$('#pt').textContent=F[S.pk].icon;$('#et').textContent=F[S.ek].icon;$('#round').textContent='ÉCHANGE '+S.round;$('#score').textContent=S.ps+' — '+S.es;$('#ph').innerHTML=S.ph.map(id=>{let m=M(S.pk,id);return `<button class="card ${S.sel===id?'sel':''}" data-id="${id}"><div class="art">${m.a}</div><div class="name">${m.n}</div><div class="stats">${stats(m)}</div></button>`}).join('');$('#eh').innerHTML=S.eh.map(id=>{let m=M(S.ek,id);return `<div class="card"><div class="name">${m.n}</div><div class="stats">${stats(m)}</div></div>`}).join('');$('#pcd').textContent=cdText(S.pk,S.pc);$('#ecd').textContent=cdText(S.ek,S.ec);document.querySelectorAll('#ph .card').forEach(b=>b.onclick=()=>{if(S.busy)return;S.sel=b.dataset.id;S.choice=1;render()});let sm=S.sel&&M(S.pk,S.sel);$('#dir').classList.toggle('hidden',!(sm&&sm.choice));$('#play').classList.toggle('hidden',!S.sel||S.busy);place()}
+function place(){let lane=$('#lane'),w=lane.clientWidth,side=28,cw=(w-side*2)/9;$('#pt').style.left=(side+S.p*cw+cw/2-21)+'px';$('#et').style.left=(side+S.e*cw+cw/2-21)+'px'}addEventListener('resize',place);
+function age(c){return c.map(z=>({...z,turns:z.turns-1})).filter(z=>z.turns>0)}function refill(k,hand,cd,used){let h=hand.filter(x=>x!==used),blocked=new Set([...h,...cd.map(z=>z.id),used]);let pool=shuffle(F[k].moves.map(m=>m.id).filter(id=>!blocked.has(id)));if(pool[0])h.push(pool[0]);return h}function ai(){let dist=Math.abs(S.p-S.e),edge=Math.min(S.e,8-S.e),best=S.eh[0],bs=-99;for(let id of S.eh){let m=M(S.ek,id),v=Math.random();if(m.t==='attack'&&dist<=m.r+Math.max(0,m.mv))v+=2+m.push;if(edge<=1&&['guard','counter','dodge'].includes(m.t))v+=3;if(m.pass&&dist<=2)v+=1;if(m.t==='feint'&&S.ph.some(x=>['guard','counter'].includes(M(S.pk,x).t)))v+=1.5;if(v>bs){bs=v;best=id}}return best}
+function push(target,n){if(!n)return;if(target==='e')S.e+=toward(S.p,S.e)*n;else S.p+=toward(S.e,S.p)*n}
+function resolve(pm,em){let p0=S.p,e0=S.e,p1=intent(p0,e0,pm,S.choice),e1=intent(e0,p0,em,1);let cross=(p0<e0&&p1>=e1)||(p0>e0&&p1<=e1);if(cross&&!(pm.pass||em.pass)){if(p0<e0){p1=Math.min(p1,e0-1);e1=Math.max(e1,p0+1)}else{p1=Math.max(p1,e0+1);e1=Math.min(e1,p0-1)}}S.p=p1;S.e=e1;let d=Math.abs(S.p-S.e),pHit=pm.t==='attack'&&d<=pm.r,eHit=em.t==='attack'&&d<=em.r;if(pm.t==='feint'&&['guard','counter'].includes(em.t)&&d<=pm.r)pHit=true;if(em.t==='feint'&&['guard','counter'].includes(pm.t)&&d<=em.r)eHit=true;if(em.t==='dodge'&&d<=1)pHit=false;if(pm.t==='dodge'&&d<=1)eHit=false;let pContact=eHit&&d<=1,eContact=pHit&&d<=1;if(pm.t==='counter'&&pContact){eHit=false;pHit=true}if(em.t==='counter'&&eContact){pHit=false;eHit=true}if(pm.t==='guard'&&eHit){eHit=false;push('e',pm.push)}if(em.t==='guard'&&pHit){pHit=false;push('p',em.push)}if(pHit)push('e',pm.push);if(eHit)push('p',em.push)}
+function ring(){let po=S.p<0||S.p>8,eo=S.e<0||S.e>8;if(po&&eo)return'draw';if(po)return'enemy';if(eo)return'player';return null}async function play(){if(!S.sel||S.busy)return;S.busy=true;let pid=S.sel,eid=ai(),pm=M(S.pk,pid),em=M(S.ek,eid);$('#reveal').innerHTML=`<b>${pm.a} ${pm.n}</b> &nbsp; VS &nbsp; <b>${em.a} ${em.n}</b>`;render();await new Promise(r=>setTimeout(r,450));resolve(pm,em);render();let rr=ring();if(rr){if(rr==='player')S.ps++;if(rr==='enemy')S.es++;$('#result').textContent=rr==='player'?'VICTOIRE — RING OUT':rr==='enemy'?'DÉFAITE — RING OUT':'DOUBLE RING OUT';$('#end').classList.remove('hidden');return}S.pc=age(S.pc);S.ec=age(S.ec);S.pc.push({id:pid,turns:2});S.ec.push({id:eid,turns:2});S.ph=refill(S.pk,S.ph,S.pc,pid);S.eh=refill(S.ek,S.eh,S.ec,eid);S.round++;S.sel=null;S.choice=1;S.busy=false;render()}
+function start(k){S.pk=k;S.ek=k==='lily'?'kitsu':'lily';S.p=3;S.e=5;S.round=1;S.ph=setupHand(S.pk);S.eh=setupHand(S.ek);S.pc=[];S.ec=[];S.sel=null;S.choice=1;S.busy=false;$('#start').classList.add('hidden');$('#end').classList.add('hidden');$('#reveal').textContent='Choisis secrètement parmi tes 4 techniques.';render()}document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>start(b.dataset.pick));document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{S.choice=+b.dataset.dir;document.querySelectorAll('[data-dir]').forEach(x=>x.style.outline='');b.style.outline='2px solid #ffd86a'});$('#play').onclick=play;$('#again').onclick=()=>start(S.pk);render();</script></body></html>
